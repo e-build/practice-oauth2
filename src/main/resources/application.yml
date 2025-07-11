@@ -1,0 +1,20 @@
+server:
+  port: 9001
+
+spring:
+  application:
+    name: practice-oauth2
+  security:
+    oauth2:
+      authorizationserver:
+        issuer: http://localhost:9001
+
+logging:
+  level:
+    org.springframework.security: trace
+  pattern:
+    console: "%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level [rId=%X{rId:-}] %logger{36} - %msg%n"
+
+springdoc:
+  show-oauth2-endpoints: true
+  trim-kotlin-indent: true
