@@ -1,4 +1,4 @@
-package me.practice.oauth2.filter
+package me.practice.oauth2.client.api.configuration
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.MDC
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import java.util.*
+import java.util.UUID
 
 @Component
 class MDCFilter : OncePerRequestFilter() {

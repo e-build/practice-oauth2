@@ -1,4 +1,4 @@
-package me.practice.oauth2.configuration
+package me.practice.oauth2.api.configuration
 
 import org.springframework.boot.autoconfigure.security.oauth2.server.servlet.OAuth2AuthorizationServerProperties
 import org.springframework.context.annotation.Bean
@@ -42,14 +42,22 @@ class SecurityConfiguration(
 			.let { authorizationServerConfigurer ->
 				http.securityMatcher(authorizationServerConfigurer.endpointsMatcher)
 					.authorizeHttpRequests {
-						it.anyRequest().permitAll()
+						it.anyRequest().authenticated()
 					}
-					.csrf { it.disable() }
+					.csrf { csrf ->
+						csrf.ignoringRequestMatchers(authorizationServerConfigurer.endpointsMatcher)
+					}
 					.with(authorizationServerConfigurer) {
-						it.authorizationServerSettings(authorizationServerSettings())
-						it.registeredClientRepository(registeredClientRepository())
+						it
+							.authorizationServerSettings(authorizationServerSettings())
+							.registeredClientRepository(registeredClientRepository())
+							// OIDC 활성화
+							.oidc(Customizer.withDefaults())
 					}
 			}
+
+		// 로그인 폼 설정
+		http.formLogin(Customizer.withDefaults())
 
 		return http.build()
 	}
@@ -66,11 +74,17 @@ class SecurityConfiguration(
 				it
 //					.requestMatchers("/public/**").permitAll()
 //					.requestMatchers("/oauth2/**").permitAll()
-//					.requestMatchers("/.well-known/**").permitAll()
+					.requestMatchers("/favicon.ico").permitAll()
+					.requestMatchers("/error").permitAll()
+					.requestMatchers("/.well-known/**").permitAll()
 					.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 					.anyRequest().authenticated()
 			}
-			.formLogin(Customizer.withDefaults())
+			.formLogin{ form ->
+				form
+					.defaultSuccessUrl("http://localhost:9001/home", true)  // 로그인 성공 시 홈으로 리다이렉트
+					.permitAll()
+			}
 			.csrf { it.disable() } // 개발 편의상 비활성화
 
 		return http.build()
@@ -96,7 +110,8 @@ class SecurityConfiguration(
 			.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
 			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
 			.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-			.redirectUri("http://localhost:9001/authorized") // 인증 성공 시 redirect uri
+			.redirectUri("http://localhost:9001/login/oauth2/code/my-oauth2-server")
+//			.redirectUri("http://localhost:9001/home")
 			.scope(OidcScopes.OPENID)
 			.scope(OidcScopes.PROFILE)
 			.scope("read")
@@ -143,7 +158,7 @@ class SecurityConfiguration(
 		val leader = User.builder()
 			.username("leader")
 			.password(passwordEncoder().encode("leader"))
-			.roles("USER", "LEADER")
+			.roles("LEADER", "STAFF")
 			.build()
 
 		return InMemoryUserDetailsManager(staff, leader)

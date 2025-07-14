@@ -1,6 +1,5 @@
-package me.practice.oauth2.configuration
+package me.practice.oauth2.client.api.configuration
 
-import me.practice.oauth2.filter.MDCFilter
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

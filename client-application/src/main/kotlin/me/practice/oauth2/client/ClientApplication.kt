@@ -1,11 +1,13 @@
-package me.practice.oauth2
+package me.practice.oauth2.client
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class PracticeOauth2Application
+class ClientApplication(){
+
+}
 
 fun main(args: Array<String>) {
-	runApplication<PracticeOauth2Application>(*args)
+    runApplication<ClientApplication>(*args)
 }
