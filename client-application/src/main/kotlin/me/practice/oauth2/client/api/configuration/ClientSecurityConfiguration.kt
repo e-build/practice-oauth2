@@ -8,7 +8,9 @@ import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfiguration {
+class ClientSecurityConfiguration(
+    private val cookieOAuth2AuthorizationRequestRepository: CookieOAuth2AuthorizationRequestRepository
+) {
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -16,13 +18,15 @@ class SecurityConfiguration {
             .authorizeHttpRequests { authorize ->
                 authorize
                     .requestMatchers("/home").authenticated()
-//                    .requestMatchers("/", "/error", "/login").permitAll()
                     .anyRequest().permitAll()
             }
             .oauth2Login { oauth2 ->
                 oauth2
-                    .loginPage("/oauth2/authorization/my-oauth2-server")
-//                    .defaultSuccessUrl("/home", true)
+                    .authorizationEndpoint { authorizationEndpoint ->
+                        authorizationEndpoint
+                            .authorizationRequestRepository(cookieOAuth2AuthorizationRequestRepository)
+                    }
+                    .defaultSuccessUrl("/home", true)
             }
             .logout { logout ->
                 logout

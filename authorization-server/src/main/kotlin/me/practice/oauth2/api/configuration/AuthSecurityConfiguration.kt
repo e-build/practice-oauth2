@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder
+import org.springframework.security.crypto.password.NoOpPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod
@@ -30,7 +31,7 @@ import java.util.*
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfiguration(
+class AuthSecurityConfiguration(
 	private val oAuth2AuthorizationServerProperties: OAuth2AuthorizationServerProperties,
 ) {
 
@@ -51,8 +52,7 @@ class SecurityConfiguration(
 						it
 							.authorizationServerSettings(authorizationServerSettings())
 							.registeredClientRepository(registeredClientRepository())
-							// OIDC 활성화
-							.oidc(Customizer.withDefaults())
+							.oidc(Customizer.withDefaults()) // OIDC 활성화
 					}
 			}
 
@@ -72,17 +72,14 @@ class SecurityConfiguration(
 		http
 			.authorizeHttpRequests {
 				it
-//					.requestMatchers("/public/**").permitAll()
-//					.requestMatchers("/oauth2/**").permitAll()
 					.requestMatchers("/favicon.ico").permitAll()
 					.requestMatchers("/error").permitAll()
 					.requestMatchers("/.well-known/**").permitAll()
 					.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 					.anyRequest().authenticated()
 			}
-			.formLogin{ form ->
+			.formLogin { form ->
 				form
-					.defaultSuccessUrl("http://localhost:9001/home", true)  // 로그인 성공 시 홈으로 리다이렉트
 					.permitAll()
 			}
 			.csrf { it.disable() } // 개발 편의상 비활성화
@@ -103,7 +100,8 @@ class SecurityConfiguration(
 	 */
 	@Bean
 	fun registeredClientRepository(): RegisteredClientRepository {
-		val registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
+		val registeredClient = RegisteredClient
+			.withId(UUID.randomUUID().toString())
 			.clientId("oauth2-client")
 			.clientSecret("{noop}secret")
 			.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
@@ -111,14 +109,13 @@ class SecurityConfiguration(
 			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
 			.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
 			.redirectUri("http://localhost:9001/login/oauth2/code/my-oauth2-server")
-//			.redirectUri("http://localhost:9001/home")
 			.scope(OidcScopes.OPENID)
 			.scope(OidcScopes.PROFILE)
 			.scope("read")
 			.scope("write")
 			.clientSettings(
 				ClientSettings.builder()
-					.requireAuthorizationConsent(true)   // 동의 화면 요구
+					.requireAuthorizationConsent(false) // scope 동의 화면 요구
 					.build()
 			)
 			.tokenSettings(
@@ -141,6 +138,7 @@ class SecurityConfiguration(
 		val idForEncode = "bcrypt"
 		val encoders = mutableMapOf<String, PasswordEncoder>()
 		encoders[idForEncode] = BCryptPasswordEncoder()
+		encoders["noop"] = NoOpPasswordEncoder.getInstance() // 이 줄 추가
 		return DelegatingPasswordEncoder(idForEncode, encoders)
 	}
 

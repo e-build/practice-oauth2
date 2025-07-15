@@ -11,7 +11,7 @@ class FilterConfiguration {
 	fun mdcFilterRegistration(mdcFilter: MDCFilter): FilterRegistrationBean<MDCFilter> {
 		return FilterRegistrationBean<MDCFilter>().apply {
 			this.filter = mdcFilter
-			this.order = -101
+			this.order = Integer.MIN_VALUE
 			this.addUrlPatterns("/*")
 		}
 	}

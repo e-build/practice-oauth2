@@ -9,11 +9,17 @@ spring:
     oauth2:
       authorizationserver:
         issuer: http://localhost:9000
+#  session:
+#    store-type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 logging:
   level:
-#    org.springframework.security: TRACE
-    org.springframework.web: DEBUG
+    org.springframework.security: TRACE
+#    org.springframework.web: DEBUG
   pattern:
     console: "%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level [rId=%X{rId:-}] %logger{36} - %msg%n"
 
