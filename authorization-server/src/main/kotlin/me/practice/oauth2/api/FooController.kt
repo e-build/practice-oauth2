@@ -11,13 +11,4 @@ class FooController {
 	fun foo(): ResponseEntity<String> {
 		return ResponseEntity.ok("authorized")
 	}
-
-//	@GetMapping("/")
-//	fun home(authentication: Authentication?): String {
-//		return if (authentication?.isAuthenticated == true) {
-//			"redirect:/swagger-ui/index.html"  // 인증된 사용자는 Swagger로
-//		} else {
-//			"redirect:/login"  // 인증되지 않은 사용자는 로그인으로
-//		}
-//	}
 }

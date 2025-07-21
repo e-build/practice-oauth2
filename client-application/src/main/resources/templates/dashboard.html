@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+<h1>Dashboard</h1>
+
+<div id="login_status">Checking authentication...</div>
+
+<br/>
+
+<button id="logout_btn">🚪 Logout</button>
+
+<script>
+    const clientId = "oauth2-client";
+    const clientSecret = "secret";
+    const redirectUri = "http://localhost:9001/dashboard";
+    const authServerAuthorizeUrl = "http://localhost:9000/oauth2/authorize";
+    const tokenUrl = "http://localhost:9000/oauth2/token";
+    const state = crypto.randomUUID();
+
+    changeStatusToLoginSuccess();
+
+    async function fetchToken(code) {
+        const body = new URLSearchParams({
+            grant_type: "authorization_code",
+            code: code,
+            redirect_uri: redirectUri,
+            client_id: clientId,
+            client_secret: clientSecret
+        });
+
+        const res = await fetch(tokenUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: body.toString()
+        });
+
+        if (!res.ok) throw new Error("Token exchange failed");
+
+        const tokenResponse = await res.json();
+        localStorage.setItem("access_token", tokenResponse.access_token);
+        localStorage.setItem("refresh_token", tokenResponse.refresh_token);
+
+        changeStatusToLoginSuccess();
+    }
+
+    function changeStatusToLoginSuccess() {
+        const token = localStorage.getItem("access_token");
+        if (token) {
+            document.getElementById("login_status").innerText = "✅ Login successful!";
+        }
+    }
+
+    async function fetchProtectedData() {
+        const token = localStorage.getItem("access_token");
+
+        if (!token) {
+            redirectToAuth();
+            return;
+        }
+
+        const res = await fetch("http://localhost:9001/dashboard", {
+            headers: {
+                Authorization: "Bearer " + token
+            }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+            localStorage.removeItem("access_token");
+            redirectToAuth();
+            return;
+        }
+
+        const data = await res.json();
+        document.getElementById("content").innerText = `Hello ${data.username}`;
+    }
+
+    function redirectToAuth() {
+        const params = new URLSearchParams({
+            response_type: "code",
+            client_id: clientId,
+            redirect_uri: redirectUri,
+            scope: "read",
+            state: state
+        });
+
+        window.location.href = `${authServerAuthorizeUrl}?${params.toString()}`;
+    }
+
+    // ✅ 로그아웃 함수
+    function logout() {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        window.location.href = "http://localhost:9000/logout";
+    }
+
+    // ✅ 버튼에 이벤트 핸들러 연결
+    document.getElementById("logout_btn").addEventListener("click", logout);
+
+    (async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get("code");
+
+        if (code && !localStorage.getItem("access_token")) {
+            try {
+                await fetchToken(code);
+                window.history.replaceState({}, document.title, "/dashboard");
+            } catch (e) {
+                alert("로그인 실패. 다시 시도해주세요.");
+                return;
+            }
+        }
+
+        await fetchProtectedData();
+    })();
+</script>
+</body>
+</html>

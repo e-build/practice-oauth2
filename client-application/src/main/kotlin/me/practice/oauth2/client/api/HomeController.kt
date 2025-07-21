@@ -1,51 +1,32 @@
 package me.practice.oauth2.client.api
 
-import jakarta.servlet.http.HttpServletRequest
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.oauth2.core.user.OAuth2User
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 
+
 @Controller
 class HomeController {
 
-	@GetMapping("/")
-	fun index(): String {
-		return "index"
-	}
 
-	@GetMapping("/login")
-	fun login(): String {
-		return "login"
-	}
-
-	@GetMapping("/home")
-	fun home(
-		@AuthenticationPrincipal oauth2User: OAuth2User?,
+	/**
+	 * 보호된 대시보드 페이지를 반환합니다.
+	 * 인증된 사용자의 JWT 토큰에서 정보를 추출하여 뷰에 전달합니다.
+	 * @param model 뷰에 데이터를 전달하기 위한 모델 객체
+	 * @param jwt 인증된 사용자의 JWT 객체
+	 * @return 대시보드 페이지 템플릿 이름
+	 */
+	@GetMapping("/dashboard")
+	fun dashboard(
 		model: Model,
+		@AuthenticationPrincipal jwt: Jwt?,
 	): String {
-		println(">>> authenticated user = ${oauth2User?.name}")
-		oauth2User?.let {
-			model.addAttribute("name", it.getAttribute<String>("name") ?: it.name)
-			model.addAttribute("authorities", it.authorities)
-			model.addAttribute("attributes", it.attributes)
-		}
-		return "home"
+		model.addAttribute("username", jwt?.getClaimAsString("username") ?: "")
+		model.addAttribute("role", jwt?.getClaimAsString("role") ?: "")
+		model.addAttribute("userId", jwt?.getClaimAsString("user_id") ?: "")
+		return "dashboard"
 	}
 
-	@GetMapping("/check")
-	fun check(
-		request: HttpServletRequest,
-	) {
-
-		val session = request.getSession(false)
-		if (session == null) {
-			println("session 존재하지 않음")
-			return
-		}
-
-		println("session.attributeNames : ${session.attributeNames.toList().joinToString(separator = ", ")}")
-		println("springSecurityContext : ${session.getAttribute("SPRING_SECURITY_CONTEXT")}")
-	}
 }

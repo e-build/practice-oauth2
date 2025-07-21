@@ -10,6 +10,12 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-authorization-server")
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
+	// 프론트엔드 페이지를 위한 Thymeleaf 추가
+	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+
+	// JSON 처리
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
