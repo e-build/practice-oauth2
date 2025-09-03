@@ -19,9 +19,9 @@
   - SSO 
   - 소셜 로그인 - GOOGLE, KAKAO, ...
 - 구현
-  - [] 테이블 설계 확립
+  - [X] 테이블 설계 확립
     - Spring Authorization Server(SAS)를 쓸 거면 반드시 가져가야 하는 3개 코어 테이블
-      - `client` (등록된 OAuth 클라이언트: grant, redirect-uri, scope, token settings 등)
+      - `client` (등록된 OAuth 클라이언트: grant, redirect-uri, scope, token settings 등) ->  
       - `authorization` (인가 레코드와 토큰: code, access, refresh, id_token, device/user code)
       - `authorizationConsent` (사용자 → 클라이언트에 부여한 권한 동의 내역)
     - Spring Authorization Server 코어 테이블과 연동되어 인증, 인가 관리 테이블
