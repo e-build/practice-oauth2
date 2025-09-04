@@ -57,18 +57,4 @@ class CustomUserDetails(
     fun getAccount(): IoIdpAccount {
         return account
     }
-
-    /**
-     * Shopl Client ID 반환
-     */
-    fun getShoplClientId(): String {
-        return account.shoplClientId
-    }
-
-    /**
-     * 계정 ID 반환  
-     */
-    fun getAccountId(): String {
-        return account.id
-    }
 }

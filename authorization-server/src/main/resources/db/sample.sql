@@ -6,33 +6,33 @@ INSERT INTO shopl_authentication.io_idp_account
 (id, shopl_client_id, shopl_user_id, email, phone, name, status, is_email_verified, is_temp_pwd, pwd, failed_attempts, reg_dt)
 VALUES
 -- 이메일 로그인 테스트용 계정
-('ACCT001', 'CLIENT001', 'user001', 'test@example.com', '01012345678', '홍길동', 'ACTIVE', 1, 0, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
-('ACCT002', 'CLIENT001', 'user002', 'admin@example.com', '01023456789', '관리자', 'ACTIVE', 1, 0, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
+('ACCT001', 'CLIENT001', 'user001', 'test@example.com', '01012345678', '홍길동', 'ACTIVE', 1, 0, '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
+('ACCT002', 'CLIENT001', 'user002', 'admin@example.com', '01023456789', '관리자', 'ACTIVE', 1, 0, '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
 
 -- 전화번호 로그인 테스트용 계정 (이메일 없음)
-('ACCT003', 'CLIENT001', 'user003', NULL, '01034567890', '김철수', 'ACTIVE', 0, 0, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
+('ACCT003', 'CLIENT001', 'user003', NULL, '01034567890', '김철수', 'ACTIVE', 0, 0, '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
 
 -- 다른 클라이언트 계정
-('ACCT004', 'CLIENT002', 'user004', 'user@client2.com', '01045678901', '이영희', 'ACTIVE', 1, 0, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
+('ACCT004', 'CLIENT002', 'user004', 'user@client2.com', '01045678901', '이영희', 'ACTIVE', 1, 0, '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
 
 -- 임시 비밀번호 계정 (평문: "temp1234")
-('ACCT005', 'CLIENT001', 'user005', 'temp@example.com', '01056789012', '임시사용자', 'ACTIVE', 1, 1, '$2a$10$8K1p/wFkTbsJHOfbCo8.7uKn4UE5vEn4DzD5w9I9vEHjpZYPv4FXi', 0, NOW()),
+('ACCT005', 'CLIENT001', 'user005', 'temp@example.com', '01056789012', '임시사용자', 'ACTIVE', 1, 1, '{bcrypt}$2a$10$8K1p/wFkTbsJHOfbCo8.7uKn4UE5vEn4DzD5w9I9vEHjpZYPv4FXi', 0, NOW()),
 
 -- 계정 잠김 테스트용 계정 (3시간 후 자동 해제)
-('ACCT006', 'CLIENT001', 'user006', 'locked@example.com', '01067890123', '잠김사용자', 'ACTIVE', 1, 0, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 5, NOW()),
+('ACCT006', 'CLIENT001', 'user006', 'locked@example.com', '01067890123', '잠김사용자', 'ACTIVE', 1, 0, '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 5, NOW()),
 
 -- 비활성 계정
-('ACCT007', 'CLIENT001', 'user007', 'inactive@example.com', '01078901234', '비활성사용자', 'INACTIVE', 1, 0, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
+('ACCT007', 'CLIENT001', 'user007', 'inactive@example.com', '01078901234', '비활성사용자', 'INACTIVE', 1, 0, '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
 
 -- 이메일과 전화번호 모두 있는 계정
-('ACCT008', 'CLIENT001', 'user008', 'both@example.com', '01089012345', '종합사용자', 'ACTIVE', 1, 0, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
+('ACCT008', 'CLIENT001', 'user008', 'both@example.com', '01089012345', '종합사용자', 'ACTIVE', 1, 0, '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
 
 -- NoOp 암호화 테스트용 계정 (개발용)
 ('ACCT009', 'CLIENT001', 'user009', 'noop@example.com', '01090123456', 'NoOp사용자', 'ACTIVE', 1, 0, '{noop}plaintext', 0, NOW()),
 
 -- 다양한 전화번호 형식 테스트
-('ACCT010', 'CLIENT001', 'user010', 'phone1@example.com', '010-1111-2222', '하이픈전화', 'ACTIVE', 1, 0, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
-('ACCT011', 'CLIENT001', 'user011', 'phone2@example.com', '01022223333', '일반전화', 'ACTIVE', 1, 0, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW());
+('ACCT010', 'CLIENT001', 'user010', 'phone1@example.com', '010-1111-2222', '하이픈전화', 'ACTIVE', 1, 0, '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW()),
+('ACCT011', 'CLIENT001', 'user011', 'phone2@example.com', '01022223333', '일반전화', 'ACTIVE', 1, 0, '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 0, NOW());
 
 -- 2. OAuth2 클라이언트 등록 데이터 (Spring Authorization Server용)
 INSERT INTO shopl_authentication.io_idp_client

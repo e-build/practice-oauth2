@@ -23,7 +23,7 @@ spring:
 logging:
   level:
     org.springframework.security: TRACE
-#    org.springframework.web: DEBUG
+    org.springframework.web: DEBUG
   pattern:
     console: "%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level [rId=%X{rId:-}] %logger{36} - %msg%n"
 

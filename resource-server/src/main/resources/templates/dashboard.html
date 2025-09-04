@@ -90,7 +90,7 @@
     </div>
 
     <script>
-        const clientId = "oauth2-client";
+        const idpClientId = "oauth2-client";
         const clientSecret = "secret";
         const redirectUri = "http://localhost:9001/dashboard";
         const authServerAuthorizeUrl = "http://localhost:9000/oauth2/authorize";
@@ -107,7 +107,7 @@
                 grant_type: "authorization_code",
                 code: code,
                 redirect_uri: redirectUri,
-                client_id: clientId,
+                client_id: idpClientId,
                 client_secret: clientSecret
             });
 
@@ -233,7 +233,7 @@
         function redirectToAuth() {
             const params = new URLSearchParams({
                 response_type: "code",
-                client_id: clientId,
+                client_id: idpClientId,
                 redirect_uri: redirectUri,
                 scope: "openid profile read write",
                 state: state

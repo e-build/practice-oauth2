@@ -34,12 +34,12 @@ class CustomAuthenticationProvider(
 		// 비밀번호 검증
 		if (userDetails.password != null && !passwordEncoder.matches(rawPassword, userDetails.password)) {
 			// 로그인 실패 처리 (실패 횟수 증가 등)
-			handleAuthenticationFailure(userDetails.getAccountId())
+			handleAuthenticationFailure(userDetails.getAccount().id)
 			throw BadCredentialsException("Invalid password")
 		}
 
 		// 로그인 성공 처리
-		handleAuthenticationSuccess(userDetails.getAccountId())
+		handleAuthenticationSuccess(userDetails.getAccount().id)
 
 		return UsernamePasswordAuthenticationToken(
 			userDetails,

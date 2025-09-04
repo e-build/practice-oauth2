@@ -5,7 +5,6 @@ import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet
 import com.nimbusds.jose.jwk.source.JWKSource
 import com.nimbusds.jose.proc.SecurityContext
-import me.practice.oauth2.service.DatabaseRegisteredClientRepository
 import org.springframework.boot.autoconfigure.security.oauth2.server.servlet.OAuth2AuthorizationServerProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -15,21 +14,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.crypto.password.NoOpPasswordEncoder
-import org.springframework.security.oauth2.core.AuthorizationGrantType
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod
-import org.springframework.security.oauth2.core.oidc.OidcScopes
 import org.springframework.security.oauth2.jwt.JwtDecoder
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType
-import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings
-import org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat
-import org.springframework.security.oauth2.server.authorization.settings.TokenSettings
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer
 import org.springframework.security.web.SecurityFilterChain
@@ -41,7 +33,6 @@ import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
-import java.time.Duration
 import java.util.*
 
 @Configuration
@@ -51,6 +42,8 @@ class AuthSecurityConfiguration(
 	private val customAuthenticationProvider: CustomAuthenticationProvider,
 	private val customUserDetailsService: CustomUserDetailsService,
 	private val registeredClientRepository: RegisteredClientRepository,
+	private val oAuth2AuthorizationService: OAuth2AuthorizationService,
+	private val oAuth2AuthorizationConsentService: OAuth2AuthorizationConsentService,
 ) {
 
 	/**
@@ -62,7 +55,9 @@ class AuthSecurityConfiguration(
 	@Bean
 	@Order(1)
 	@Throws(Exception::class)
-	fun authorizationServerSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+	fun authorizationServerSecurityFilterChain(
+		http: HttpSecurity,
+	): SecurityFilterChain {
 		OAuth2AuthorizationServerConfigurer.authorizationServer().let { authorizationServerConfigurer ->
 			http.securityMatcher(authorizationServerConfigurer.endpointsMatcher).cors(Customizer.withDefaults())
 				.authorizeHttpRequests {
@@ -73,8 +68,8 @@ class AuthSecurityConfiguration(
 				}.with(authorizationServerConfigurer) {
 					it.authorizationServerSettings(authorizationServerSettings())
 						.registeredClientRepository(registeredClientRepository)
-
-						// OIDC 지원 (OpenID Connect) - JWT ID 토큰 발급을 위해 필요
+						.authorizationService(oAuth2AuthorizationService)
+						.authorizationConsentService(oAuth2AuthorizationConsentService)
 						.oidc(Customizer.withDefaults())
 				}
 		}

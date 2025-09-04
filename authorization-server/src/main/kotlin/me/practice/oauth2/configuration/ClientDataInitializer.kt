@@ -48,56 +48,74 @@ class ClientDataInitializer {
         val shoplClientId = "CLIENT001"
 
         // 1. 웹 애플리케이션 클라이언트
-        val webClient = createRegisteredClient(
-            clientId = "client001-web",
-            clientName = "CLIENT001 Web Application",
-            redirectUris = listOf(
-                "http://localhost:9001/dashboard",
-                "http://localhost:9001/callback"
-            ),
-            scopes = listOf("openid", "profile", "read", "write")
-        )
-        registeredClientRepository.save(webClient)
-        mappingService.createMapping(shoplClientId, webClient.id)
+        val webClientId = "client001-web"
+        if (registeredClientRepository.findByClientId(webClientId) == null) {
+            val webClient = createRegisteredClient(
+                clientId = webClientId,
+                clientName = "CLIENT001 Web Application",
+                redirectUris = listOf(
+                    "http://localhost:9001/dashboard",
+                    "http://localhost:9001/callback"
+                ),
+                scopes = listOf("openid", "profile", "read", "write")
+            )
+            registeredClientRepository.save(webClient)
+            mappingService.createMapping(shoplClientId, webClient.id)
+            println("✨ 생성됨: $webClientId")
+        } else {
+            println("⚠️ 이미 존재함: $webClientId")
+        }
 
         // 2. 모바일 앱 클라이언트  
-        val mobileClient = createRegisteredClient(
-            clientId = "client001-mobile",
-            clientName = "CLIENT001 Mobile App",
-            redirectUris = listOf(
-                "client001mobile://callback",
-                "http://localhost:9001/mobile/callback"
-            ),
-            scopes = listOf("openid", "profile", "read"),
-            accessTokenTtl = Duration.ofHours(1) // 모바일은 더 긴 TTL
-        )
-        registeredClientRepository.save(mobileClient)
-        mappingService.createMapping(shoplClientId, mobileClient.id)
+        val mobileClientId = "client001-mobile"
+        if (registeredClientRepository.findByClientId(mobileClientId) == null) {
+            val mobileClient = createRegisteredClient(
+                clientId = mobileClientId,
+                clientName = "CLIENT001 Mobile App",
+                redirectUris = listOf(
+                    "client001mobile://callback",
+                    "http://localhost:9001/mobile/callback"
+                ),
+                scopes = listOf("openid", "profile", "read"),
+                accessTokenTtl = Duration.ofHours(1) // 모바일은 더 긴 TTL
+            )
+            registeredClientRepository.save(mobileClient)
+            mappingService.createMapping(shoplClientId, mobileClient.id)
+            println("✨ 생성됨: $mobileClientId")
+        } else {
+            println("⚠️ 이미 존재함: $mobileClientId")
+        }
 
         // 3. API 전용 클라이언트 (Client Credentials Grant)
-        val apiClient = RegisteredClient
-            .withId(UUID.randomUUID().toString())
-            .clientId("client001-api")
-            .clientName("CLIENT001 API Client")
-            .clientSecret(NoOpPasswordEncoder.getInstance().encode("{noop}api-secret"))
-            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-            .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-            .scope("api:read")
-            .scope("api:write")
-            .clientSettings(
-                ClientSettings.builder()
-                    .requireAuthorizationConsent(false)
-                    .build()
-            )
-            .tokenSettings(
-                TokenSettings.builder()
-                    .accessTokenTimeToLive(Duration.ofHours(2))
-                    .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)
-                    .build()
-            )
-            .build()
-        registeredClientRepository.save(apiClient)
-        mappingService.createMapping(shoplClientId, apiClient.id)
+        val apiClientId = "client001-api"
+        if (registeredClientRepository.findByClientId(apiClientId) == null) {
+            val apiClient = RegisteredClient
+                .withId(UUID.randomUUID().toString())
+                .clientId(apiClientId)
+                .clientName("CLIENT001 API Client")
+                .clientSecret(NoOpPasswordEncoder.getInstance().encode("{noop}api-secret"))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .scope("api:read")
+                .scope("api:write")
+                .clientSettings(
+                    ClientSettings.builder()
+                        .requireAuthorizationConsent(false)
+                        .build()
+                )
+                .tokenSettings(
+                    TokenSettings.builder()
+                        .accessTokenTimeToLive(Duration.ofHours(2))
+                        .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)
+                        .build()
+                )
+                .build()
+            registeredClientRepository.save(apiClient)
+            mappingService.createMapping(shoplClientId, apiClient.id)
+            println("✨ 생성됨: $apiClientId")
+        } else {
+            println("⚠️ 이미 존재함: $apiClientId")
+        }
     }
 
     /**
@@ -110,32 +128,44 @@ class ClientDataInitializer {
         val shoplClientId = "CLIENT002"
 
         // 1. 통합 웹/모바일 클라이언트
-        val unifiedClient = createRegisteredClient(
-            clientId = "client002-unified",
-            clientName = "CLIENT002 Unified Application",
-            redirectUris = listOf(
-                "http://localhost:9002/dashboard",
-                "http://localhost:9002/callback",
-                "client002app://callback"
-            ),
-            scopes = listOf("openid", "profile", "read", "write", "admin")
-        )
-        registeredClientRepository.save(unifiedClient)
-        mappingService.createMapping(shoplClientId, unifiedClient.id)
+        val unifiedClientId = "client002-unified"
+        if (registeredClientRepository.findByClientId(unifiedClientId) == null) {
+            val unifiedClient = createRegisteredClient(
+                clientId = unifiedClientId,
+                clientName = "CLIENT002 Unified Application",
+                redirectUris = listOf(
+                    "http://localhost:9002/dashboard",
+                    "http://localhost:9002/callback",
+                    "client002app://callback"
+                ),
+                scopes = listOf("openid", "profile", "read", "write", "admin")
+            )
+            registeredClientRepository.save(unifiedClient)
+            mappingService.createMapping(shoplClientId, unifiedClient.id)
+            println("✨ 생성됨: $unifiedClientId")
+        } else {
+            println("⚠️ 이미 존재함: $unifiedClientId")
+        }
 
         // 2. 제3자 통합 클라이언트
-        val thirdPartyClient = createRegisteredClient(
-            clientId = "client002-integration",
-            clientName = "CLIENT002 Third Party Integration",
-            redirectUris = listOf(
-                "https://client002-partner.com/callback",
-                "http://localhost:9002/integration/callback"
-            ),
-            scopes = listOf("integration:read", "integration:write"),
-            requireConsent = true // 제3자는 동의 화면 필요
-        )
-        registeredClientRepository.save(thirdPartyClient)
-        mappingService.createMapping(shoplClientId, thirdPartyClient.id)
+        val thirdPartyClientId = "client002-integration"
+        if (registeredClientRepository.findByClientId(thirdPartyClientId) == null) {
+            val thirdPartyClient = createRegisteredClient(
+                clientId = thirdPartyClientId,
+                clientName = "CLIENT002 Third Party Integration",
+                redirectUris = listOf(
+                    "https://client002-partner.com/callback",
+                    "http://localhost:9002/integration/callback"
+                ),
+                scopes = listOf("integration:read", "integration:write"),
+                requireConsent = true // 제3자는 동의 화면 필요
+            )
+            registeredClientRepository.save(thirdPartyClient)
+            mappingService.createMapping(shoplClientId, thirdPartyClient.id)
+            println("✨ 생성됨: $thirdPartyClientId")
+        } else {
+            println("⚠️ 이미 존재함: $thirdPartyClientId")
+        }
     }
 
     /**

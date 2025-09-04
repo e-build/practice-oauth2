@@ -1,3 +1,5 @@
+create schema shopl_authentication;
+use shopl_authentication;
 
 # SAS core 스키마 :: client
 create table shopl_authentication.io_idp_client
@@ -61,6 +63,7 @@ create table shopl_authentication.io_idp_authorization
 # SAS core 스키마 :: authorizationconsent
 create table shopl_authentication.io_idp_authorizationconsent
 (
+    id                   bigint auto_increment primary key,
     registered_client_id varchar(255)  not null,
     principal_name       varchar(255)  not null,
     authorities          varchar(1000) not null,
@@ -70,29 +73,29 @@ create table shopl_authentication.io_idp_authorizationconsent
 -- 계정(주체)
 create table shopl_authentication.io_idp_account
 (
-    id              VARCHAR(20) PRIMARY KEY,
-    shopl_client_id VARCHAR(20)  NOT NULL,
-    shopl_user_id   VARCHAR(20)  NOT NULL,
+    id                VARCHAR(20) PRIMARY KEY,
+    shopl_client_id   VARCHAR(20)  NOT NULL,
+    shopl_user_id     VARCHAR(20)  NOT NULL,
 
     # ID 관련
-    email           varchar(255) null comment '사용자 이메일',
-    phone           varchar(30)  null comment '사용자 휴대폰 번호',
-    name            varchar(100) null comment '사용자 이름',
-    status          varchar(20)           default 'ACTIVE' null comment '계정 상태 (ACTIVE, INACTIVE, BLOCKED 등)',
-    is_email_verified        TINYINT(1)   NOT NULL DEFAULT 0,
+    email             varchar(255) null comment '사용자 이메일',
+    phone             varchar(30)  null comment '사용자 휴대폰 번호',
+    name              varchar(100) null comment '사용자 이름',
+    status            varchar(20)           default 'ACTIVE' null comment '계정 상태 (ACTIVE, INACTIVE, BLOCKED 등)',
+    is_email_verified TINYINT(1)   NOT NULL DEFAULT 0,
 
     # 패스워드 관련
-    is_temp_pwd     TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '임시 비밀번호 여부',
-    pwd             VARCHAR(255) NOT NULL COMMENT '비밀번호 해시',
-    before_pwd      VARCHAR(255) NULL     DEFAULT NULL COMMENT '이전 비밀번호 해시',
-    pwd_update_dt   DATETIME     NULL     DEFAULT NULL COMMENT '비밀번호 업데이트 시점',
-    pwd_expires_dt  DATETIME     NULL     DEFAULT NULL COMMENT '비밀번호 만료 시점',
-    failed_attempts INT          NOT NULL DEFAULT 0 COMMENT '로그인 실패 횟수',
-    locked_until_dt DATETIME     NULL     DEFAULT NULL COMMENT '계정 잠금 해제 시점',
+    is_temp_pwd       TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '임시 비밀번호 여부',
+    pwd               VARCHAR(255) NOT NULL COMMENT '비밀번호 해시',
+    before_pwd        VARCHAR(255) NULL     DEFAULT NULL COMMENT '이전 비밀번호 해시',
+    pwd_update_dt     DATETIME     NULL     DEFAULT NULL COMMENT '비밀번호 업데이트 시점',
+    pwd_expires_dt    DATETIME     NULL     DEFAULT NULL COMMENT '비밀번호 만료 시점',
+    failed_attempts   INT          NOT NULL DEFAULT 0 COMMENT '로그인 실패 횟수',
+    locked_until_dt   DATETIME     NULL     DEFAULT NULL COMMENT '계정 잠금 해제 시점',
 
-    reg_dt          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    mod_dt          DATETIME     NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-    del_dt          DATETIME     NULL     DEFAULT NULL,
+    reg_dt            DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    mod_dt            DATETIME     NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    del_dt            DATETIME     NULL     DEFAULT NULL,
 
     INDEX idx_shopl_client_user (shopl_client_id, shopl_user_id),
     INDEX idx_status (status)
