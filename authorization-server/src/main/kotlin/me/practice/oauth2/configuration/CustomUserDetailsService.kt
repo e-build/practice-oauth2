@@ -2,6 +2,7 @@ package me.practice.oauth2.configuration
 
 import me.practice.oauth2.entity.IoIdpAccount
 import me.practice.oauth2.entity.IoIdpAccountRepository
+import me.practice.oauth2.service.ShoplClientMappingService
 import me.practice.oauth2.utils.UserIdentifierValidator
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -48,13 +49,26 @@ class CustomUserDetailsService(
 		return CustomUserDetails(account)
 	}
 
-	/**
-	 * shopl client ID와 사용자 식별자로 사용자를 조회합니다.
-	 */
-	@Transactional(readOnly = true)
-	fun loadUserByShoplClientAndIdentifier(shoplClientId: String, userIdentifier: String): UserDetails {
-		return loadUserByUsername("$shoplClientId:$userIdentifier")
-	}
+    /**
+     * OAuth Client ID를 통해 해당 Shopl Client의 사용자만 조회하도록 제한하는 메서드
+     * 추후 멀티테넌트 보안 강화 시 사용
+     */
+    @Transactional(readOnly = true)
+    fun loadUserByUsernameWithClientValidation(
+		username: String,
+		idpClientId: String,
+		mappingService: ShoplClientMappingService
+    ): UserDetails {
+        // OAuth Client가 속한 Shopl Client 확인
+        val shoplClientId = mappingService.findShoplClientIdByIdpClientId(idpClientId)
+            ?: throw UsernameNotFoundException("Invalid OAuth client: $idpClientId")
+
+        // 해당 Shopl Client의 사용자만 조회
+        val account = findAccountByShoplClientAndIdentifier(shoplClientId, username)
+            ?: throw UsernameNotFoundException("User not found in client $shoplClientId: $username")
+
+        return CustomUserDetails(account)
+    }
 
 	/**
 	 * shopl client ID와 함께 사용자 식별자로 계정을 찾습니다.

@@ -5,6 +5,7 @@ import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet
 import com.nimbusds.jose.jwk.source.JWKSource
 import com.nimbusds.jose.proc.SecurityContext
+import me.practice.oauth2.service.DatabaseRegisteredClientRepository
 import org.springframework.boot.autoconfigure.security.oauth2.server.servlet.OAuth2AuthorizationServerProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -49,6 +50,7 @@ class AuthSecurityConfiguration(
 	private val oAuth2AuthorizationServerProperties: OAuth2AuthorizationServerProperties,
 	private val customAuthenticationProvider: CustomAuthenticationProvider,
 	private val customUserDetailsService: CustomUserDetailsService,
+	private val registeredClientRepository: RegisteredClientRepository,
 ) {
 
 	/**
@@ -70,7 +72,7 @@ class AuthSecurityConfiguration(
 					csrf.ignoringRequestMatchers(authorizationServerConfigurer.endpointsMatcher)
 				}.with(authorizationServerConfigurer) {
 					it.authorizationServerSettings(authorizationServerSettings())
-						.registeredClientRepository(registeredClientRepository())
+						.registeredClientRepository(registeredClientRepository)
 
 						// OIDC 지원 (OpenID Connect) - JWT ID 토큰 발급을 위해 필요
 						.oidc(Customizer.withDefaults())
@@ -122,45 +124,6 @@ class AuthSecurityConfiguration(
 	@Bean
 	fun authorizationServerSettings(): AuthorizationServerSettings {
 		return AuthorizationServerSettings.builder().issuer(oAuth2AuthorizationServerProperties.issuer).build()
-	}
-
-	/**
-	 * OAuth2 클라이언트 등록 정보 관리
-	 * - 클라이언트 ID, Secret, 허용된 Grant Type, Scope 등 정의
-	 * - Authorization Code Grant 플로우 사용
-	 */
-	@Bean
-	fun registeredClientRepository(): RegisteredClientRepository {
-		val registeredClient = RegisteredClient.withId(UUID.randomUUID().toString()).clientId("oauth2-client")
-			.clientSecret(NoOpPasswordEncoder.getInstance().encode("{noop}secret")) // 개발용 - 프로덕션에서는 BCrypt 사용
-			.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-			.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
-			// Authorization Code Grant 플로우만 허용
-			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-			// 리프레시 토큰을 통한 토큰 갱신 허용
-			.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-			// 인증 완료 후 리다이렉트될 URI (클라이언트 앱의 콜백 URL)
-			.redirectUri("http://localhost:9001/dashboard")
-			// 지원할 scope 정의
-			.scope(OidcScopes.OPENID) // OpenID Connect 지원
-			.scope(OidcScopes.PROFILE) // 프로필 정보 접근
-			.scope("read") // 읽기 권한
-			.scope("write") // 쓰기 권한
-			.clientSettings(
-				ClientSettings.builder()
-					// 사용자 동의 화면 생략 (개발 편의상)
-					.requireAuthorizationConsent(false).build()
-			).tokenSettings(
-				TokenSettings.builder()
-					// 액세스 토큰 만료 시간 (5분)
-					.accessTokenTimeToLive(Duration.ofMinutes(5))
-					// 리프레시 토큰 만료 시간 (60분)
-					.refreshTokenTimeToLive(Duration.ofMinutes(60))
-					// JWT 토큰 형식 사용 (opaque 토큰 대신)
-					.accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED).build()
-			).build()
-
-		return InMemoryRegisteredClientRepository(registeredClient)
 	}
 
 	/**
