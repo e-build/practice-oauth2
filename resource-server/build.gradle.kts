@@ -9,7 +9,9 @@ dependencies {
 	// OAuth2 Client 제거 -> Resource Server로 변경
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
+	// DB
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	runtimeOnly("com.mysql:mysql-connector-j")
 
 //	 JWT 처리를 위한 의존성
 //	implementation("org.springframework.security:spring-security-oauth2-jose")

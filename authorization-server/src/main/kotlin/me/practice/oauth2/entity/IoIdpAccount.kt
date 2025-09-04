@@ -6,10 +6,7 @@ import java.time.LocalDateTime
 @Entity
 @Table(
     name = "io_idp_account",
-    indexes = [
-        Index(name = "idx_shopl_client_user", columnList = "shoplClientId,shoplUserId"),
-        Index(name = "idx_status", columnList = "status")
-    ]
+	catalog = "shopl_authentication",
 )
 data class IoIdpAccount(
     @Id
@@ -41,7 +38,7 @@ data class IoIdpAccount(
     val isTempPwd: Boolean = false,
     
     @Column(name = "pwd", nullable = false)
-    val pwd: String,
+    val pwd: String? = null,
     
     @Column(name = "before_pwd")
     val beforePwd: String? = null,

@@ -1,6 +1,5 @@
 -- 설계 과정 샘플
-DROP TABLE io_client_info;
-CREATE TABLE io_client_info
+CREATE TABLE shopl.io_client_info
 (
     id     VARCHAR(20) PRIMARY KEY,
     NAME   VARCHAR(200) NOT NULL,
@@ -9,8 +8,7 @@ CREATE TABLE io_client_info
     mod_dt DATETIME     NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 );
 
-DROP TABLE io_client_oauth_option;
-CREATE TABLE io_client_oauth_option
+CREATE TABLE shopl.io_client_oauth_option
 (
     id                    VARCHAR(20) PRIMARY KEY,
     client_id             VARCHAR(20) NOT NULL,

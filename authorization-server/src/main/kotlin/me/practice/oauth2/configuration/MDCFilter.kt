@@ -1,4 +1,4 @@
-package me.practice.oauth2.client.api.configuration
+package me.practice.oauth2.configuration
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest

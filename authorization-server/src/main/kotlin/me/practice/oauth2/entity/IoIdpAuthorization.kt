@@ -4,7 +4,10 @@ import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "io_idp_authorization")
+@Table(
+	name = "io_idp_authorization",
+	catalog = "shopl_authentication"
+)
 data class IoIdpAuthorization(
     @Id
     val id: String,

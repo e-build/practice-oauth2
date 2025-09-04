@@ -3,7 +3,10 @@ package me.practice.oauth2.entity
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "io_idp_authorizationconsent")
+@Table(
+	name = "io_idp_authorizationconsent",
+	catalog = "shopl_authentication"
+)
 data class IoIdpAuthorizationConsent(
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

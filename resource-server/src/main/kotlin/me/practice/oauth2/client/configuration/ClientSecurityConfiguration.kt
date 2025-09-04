@@ -1,4 +1,4 @@
-package me.practice.oauth2.client.api.configuration
+package me.practice.oauth2.client.configuration
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

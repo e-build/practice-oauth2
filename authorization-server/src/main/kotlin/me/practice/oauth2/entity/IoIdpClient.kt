@@ -4,7 +4,10 @@ import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "io_idp_client")
+@Table(
+	name = "io_idp_client",
+	catalog = "shopl_authentication"
+)
 data class IoIdpClient(
     @Id
     val id: String,

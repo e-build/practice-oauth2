@@ -1,4 +1,4 @@
-package me.practice.oauth2.client.api.configuration
+package me.practice.oauth2.client.configuration
 
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt

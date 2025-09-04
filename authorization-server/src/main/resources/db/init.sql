@@ -1,6 +1,6 @@
 
 # SAS core 스키마 :: client
-create table io_idp_client
+create table shopl_authentication.io_idp_client
 (
     id                            varchar(255)                        not null
         primary key,
@@ -19,7 +19,7 @@ create table io_idp_client
 );
 
 # SAS core 스키마 :: authorization
-create table io_idp_authorization
+create table shopl_authentication.io_idp_authorization
 (
     id                            varchar(255) not null
         primary key,
@@ -59,7 +59,7 @@ create table io_idp_authorization
 );
 
 # SAS core 스키마 :: authorizationconsent
-create table io_idp_authorizationconsent
+create table shopl_authentication.io_idp_authorizationconsent
 (
     registered_client_id varchar(255)  not null,
     principal_name       varchar(255)  not null,
@@ -68,7 +68,7 @@ create table io_idp_authorizationconsent
 );
 
 -- 계정(주체)
-create table io_idp_account
+create table shopl_authentication.io_idp_account
 (
     id              VARCHAR(20) PRIMARY KEY,
     shopl_client_id VARCHAR(20)  NOT NULL,
@@ -99,7 +99,7 @@ create table io_idp_account
 );
 
 -- OAuth 연동 정보
-create table io_idp_account_oauth_link
+create table shopl_authentication.io_idp_account_oauth_link
 (
     id                VARCHAR(20) PRIMARY KEY,
     account_id        VARCHAR(20)                                                                NOT NULL,
@@ -121,7 +121,7 @@ create table io_idp_account_oauth_link
 );
 
 -- 고객사 단위 SSO 설정
-create table io_idp_shopl_client_sso_setting
+create table shopl_authentication.io_idp_shopl_client_sso_setting
 (
     id                          VARCHAR(20) PRIMARY KEY,
     shopl_client_id             VARCHAR(20) UNIQUE                 NOT NULL,
@@ -165,7 +165,7 @@ create table io_idp_shopl_client_sso_setting
                                          saml_x509_cert IS NOT NULL))
 );
 
-create table io_idp_shopl_client_mapping
+create table shopl_authentication.io_idp_shopl_client_mapping
 (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     shopl_client_id VARCHAR(20)  NOT NULL,

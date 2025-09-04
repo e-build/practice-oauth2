@@ -8,8 +8,11 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-authorization-server")
+
+	// DB
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	runtimeOnly("com.mysql:mysql-connector-j")
 
 	// Nimbus JOSE + JWT 라이브러리 (JWK, JWT 처리용)
 	implementation("com.nimbusds:nimbus-jose-jwt:9.37.3")

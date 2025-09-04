@@ -1,4 +1,4 @@
-package me.practice.oauth2.api.configuration
+package me.practice.oauth2.configuration
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.info.Info

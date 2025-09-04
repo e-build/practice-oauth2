@@ -3,7 +3,10 @@ package me.practice.oauth2.entity
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "io_idp_shopl_client_mapping")
+@Table(
+	name = "io_idp_shopl_client_mapping",
+	catalog = "shopl_authentication"
+)
 data class IoIdpShoplClientMapping(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
