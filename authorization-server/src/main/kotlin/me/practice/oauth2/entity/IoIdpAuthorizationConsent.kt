@@ -4,8 +4,8 @@ import jakarta.persistence.*
 
 @Entity
 @Table(
-	name = "io_idp_authorizationconsent",
-	catalog = "shopl_authentication"
+	name = "io_idp_authorization_consent",
+	catalog = "shopl_authorization"
 )
 data class IoIdpAuthorizationConsent(
 	@Id

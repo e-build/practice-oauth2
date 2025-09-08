@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 @Entity
 @Table(
 	name = "io_idp_shopl_client_sso_setting",
-	catalog = "shopl_authentication"
+	catalog = "shopl_authorization"
 )
 data class IoIdpShoplClientSsoSetting(
     @Id

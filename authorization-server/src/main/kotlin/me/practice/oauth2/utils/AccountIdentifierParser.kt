@@ -1,11 +1,14 @@
 package me.practice.oauth2.utils
 
+import me.practice.oauth2.service.AccountIdentifierType
+import org.springframework.stereotype.Component
 import java.util.regex.Pattern
 
 /**
  * 사용자 식별자(username) 타입을 판단하는 유틸리티 클래스
  */
-object UserIdentifierValidator {
+@Component
+class AccountIdentifierParser {
     
     // 이메일 정규식 (RFC 5322 기준 단순화)
     private val EMAIL_PATTERN = Pattern.compile(
@@ -55,15 +58,13 @@ object UserIdentifierValidator {
     /**
      * 사용자 식별자의 타입을 반환
      */
-    fun getIdentifierType(identifier: String): IdentifierType {
+    fun parse(identifier: String): AccountIdentifierType {
         return when {
-            isEmail(identifier) -> IdentifierType.EMAIL
-            isPhoneNumber(identifier) -> IdentifierType.PHONE
-            else -> IdentifierType.UNKNOWN
+            isEmail(identifier) -> AccountIdentifierType.EMAIL
+            isPhoneNumber(identifier) -> AccountIdentifierType.PHONE
+            else -> AccountIdentifierType.UNKNOWN
         }
     }
     
-    enum class IdentifierType {
-        EMAIL, PHONE, UNKNOWN
-    }
+
 }

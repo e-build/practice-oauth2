@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 @Entity
 @Table(
 	name = "io_idp_account_oauth_link",
-	catalog = "shopl_authentication"
+	catalog = "shopl_authorization"
 )
 data class IoIdpAccountOauthLink(
 	@Id

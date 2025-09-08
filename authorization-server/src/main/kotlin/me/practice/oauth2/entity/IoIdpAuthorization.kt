@@ -9,7 +9,7 @@ import java.time.Instant
 @Entity
 @Table(
 	name = "io_idp_authorization",
-	catalog = "shopl_authentication"
+	catalog = "shopl_authorization"
 )
 data class IoIdpAuthorization(
 	@Id

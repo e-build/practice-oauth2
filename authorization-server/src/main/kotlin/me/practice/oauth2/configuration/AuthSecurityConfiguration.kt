@@ -15,8 +15,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.oauth2.jwt.JwtDecoder
+import org.springframework.security.oauth2.server.authorization.InMemoryOAuth2AuthorizationService
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration
@@ -42,7 +42,7 @@ class AuthSecurityConfiguration(
 	private val customAuthenticationProvider: CustomAuthenticationProvider,
 	private val customUserDetailsService: CustomUserDetailsService,
 	private val registeredClientRepository: RegisteredClientRepository,
-	private val oAuth2AuthorizationService: OAuth2AuthorizationService,
+//	private val oAuth2AuthorizationService: OAuth2AuthorizationService,
 	private val oAuth2AuthorizationConsentService: OAuth2AuthorizationConsentService,
 ) {
 
@@ -68,7 +68,8 @@ class AuthSecurityConfiguration(
 				}.with(authorizationServerConfigurer) {
 					it.authorizationServerSettings(authorizationServerSettings())
 						.registeredClientRepository(registeredClientRepository)
-						.authorizationService(oAuth2AuthorizationService)
+//						.authorizationService(oAuth2AuthorizationService)
+						.authorizationService(inMemoryAuthorization())
 						.authorizationConsentService(oAuth2AuthorizationConsentService)
 						.oidc(Customizer.withDefaults())
 				}
@@ -80,6 +81,14 @@ class AuthSecurityConfiguration(
 		return http.build()
 	}
 
+	fun inMemoryAuthorization(): InMemoryOAuth2AuthorizationService {
+		return InMemoryOAuth2AuthorizationService()
+	}
+
+//	fun jdbcOAuth2AuthorizationService(): OAuth2AuthorizationService {
+//		return JdbcOAuth2AuthorizationService()
+//	}
+
 	/**
 	 * 2. 일반적인 애플리케이션 인증을 위한 SecurityFilterChain
 	 * - Authorization Server 자체의 관리 페이지나 기타 엔드포인트 보호
@@ -88,11 +97,14 @@ class AuthSecurityConfiguration(
 	@Bean
 	@Order(2)
 	fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
-		http.authenticationProvider(customAuthenticationProvider).cors(Customizer.withDefaults())
+		http.authenticationProvider(customAuthenticationProvider)
+			.cors(Customizer.withDefaults())
 			.authorizeHttpRequests {
-				it.requestMatchers("/favicon.ico").permitAll().requestMatchers("/error").permitAll()
-					.requestMatchers("/.well-known/**").permitAll().requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
-					.permitAll().requestMatchers("/login").permitAll()
+				it.requestMatchers("/favicon.ico").permitAll()
+					.requestMatchers("/error").permitAll()
+					.requestMatchers("/.well-known/**").permitAll()
+					.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+					.requestMatchers("/login").permitAll()
 					.requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
 					.requestMatchers("/").permitAll() // 루트 경로 허용 추가
 					.anyRequest().authenticated()
@@ -100,7 +112,8 @@ class AuthSecurityConfiguration(
 				form.loginPage("/login") // 커스텀 로그인 페이지 경로
 					.defaultSuccessUrl("http://localhost:9001/dashboard", true) // 로그인 성공 시 리다이렉트 URL 명시적 설정
 					.permitAll()
-			}.logout {
+			}
+			.logout {
 				it.logoutUrl("/logout").logoutSuccessUrl("http://localhost:9001/dashboard").invalidateHttpSession(true)
 					.clearAuthentication(true).deleteCookies("JSESSIONID")
 			}.requestCache { cache ->
