@@ -5,18 +5,22 @@ import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet
 import com.nimbusds.jose.jwk.source.JWKSource
 import com.nimbusds.jose.proc.SecurityContext
+import me.practice.oauth2.infrastructure.redis.AuthorizationJsonCodec
+import me.practice.oauth2.infrastructure.redis.RedisAuthorizationProperties
+import me.practice.oauth2.infrastructure.redis.RedisOAuth2AuthorizationService
 import org.springframework.boot.autoconfigure.security.oauth2.server.servlet.OAuth2AuthorizationServerProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.oauth2.jwt.JwtDecoder
-import org.springframework.security.oauth2.server.authorization.InMemoryOAuth2AuthorizationService
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration
@@ -42,8 +46,10 @@ class AuthSecurityConfiguration(
 	private val customAuthenticationProvider: CustomAuthenticationProvider,
 	private val customUserDetailsService: CustomUserDetailsService,
 	private val registeredClientRepository: RegisteredClientRepository,
-//	private val oAuth2AuthorizationService: OAuth2AuthorizationService,
 	private val oAuth2AuthorizationConsentService: OAuth2AuthorizationConsentService,
+	private val stringRedisTemplate: StringRedisTemplate,
+	private val authorizationJsonCodec: AuthorizationJsonCodec,
+	private val redisAuthorizationProperties: RedisAuthorizationProperties
 ) {
 
 	/**
@@ -68,8 +74,7 @@ class AuthSecurityConfiguration(
 				}.with(authorizationServerConfigurer) {
 					it.authorizationServerSettings(authorizationServerSettings())
 						.registeredClientRepository(registeredClientRepository)
-//						.authorizationService(oAuth2AuthorizationService)
-						.authorizationService(inMemoryAuthorization())
+						.authorizationService(redisOAuth2AuthorizationService())
 						.authorizationConsentService(oAuth2AuthorizationConsentService)
 						.oidc(Customizer.withDefaults())
 				}
@@ -81,13 +86,14 @@ class AuthSecurityConfiguration(
 		return http.build()
 	}
 
-	fun inMemoryAuthorization(): InMemoryOAuth2AuthorizationService {
-		return InMemoryOAuth2AuthorizationService()
+	@Bean
+	fun redisOAuth2AuthorizationService(): OAuth2AuthorizationService {
+		return RedisOAuth2AuthorizationService(
+			redis = stringRedisTemplate,
+			codec = authorizationJsonCodec,
+			props = redisAuthorizationProperties
+		)
 	}
-
-//	fun jdbcOAuth2AuthorizationService(): OAuth2AuthorizationService {
-//		return JdbcOAuth2AuthorizationService()
-//	}
 
 	/**
 	 * 2. 일반적인 애플리케이션 인증을 위한 SecurityFilterChain

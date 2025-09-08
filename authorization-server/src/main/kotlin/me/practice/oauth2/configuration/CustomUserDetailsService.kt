@@ -1,10 +1,10 @@
 package me.practice.oauth2.configuration
 
+import me.practice.oauth2.domain.AccountIdentifierType
 import me.practice.oauth2.entity.IoIdpAccount
 import me.practice.oauth2.entity.IoIdpAccountRepository
 import me.practice.oauth2.entity.IoIdpClient
 import me.practice.oauth2.entity.IoIdpClientRepository
-import me.practice.oauth2.service.AccountIdentifierType
 import me.practice.oauth2.utils.AccountIdentifierParser
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -84,6 +84,8 @@ class CustomUserDetailsService(
 				// 이메일, 휴대폰이 아닌 경우 shopl_user_id로 간주
 				accountRepository.findByShoplClientIdAndShoplUserId(shoplClientId, userIdentifier)
 			}
+
+			else -> null
 		}
 	}
 
@@ -105,6 +107,8 @@ class CustomUserDetailsService(
 				// 이메일, 휴대폰이 아닌 경우는 지원하지 않음
 				null
 			}
+
+			else -> null
 		}
 	}
 }

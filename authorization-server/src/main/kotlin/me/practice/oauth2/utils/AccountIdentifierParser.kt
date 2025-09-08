@@ -1,6 +1,6 @@
 package me.practice.oauth2.utils
 
-import me.practice.oauth2.service.AccountIdentifierType
+import me.practice.oauth2.domain.AccountIdentifierType
 import org.springframework.stereotype.Component
 import java.util.regex.Pattern
 

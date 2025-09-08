@@ -30,3 +30,9 @@ logging:
 springdoc:
   show-oauth2-endpoints: true
   trim-kotlin-indent: true
+
+app:
+  auth:
+    redis:
+      key-prefix: "app:auth:"
+      idx-prefix: "app:idx:"

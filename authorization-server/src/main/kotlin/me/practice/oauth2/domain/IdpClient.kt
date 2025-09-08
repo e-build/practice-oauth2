@@ -65,14 +65,18 @@ class IdpClient(
 		parseStringList(this.doScopes).forEach { builder.scope(it) }
 
 		// Client Settings 파싱
-		builder.clientSettings(/* clientSettings = */ objectMapper.parseClientSettings(
-			this.doClientSettings,
-			this.doShoplClientId,
-			this.doPlatform
-		))
+		builder.clientSettings(
+			objectMapper.parseClientSettings(
+				this.doClientSettings,
+				this.doShoplClientId,
+				this.doPlatform
+			)
+		)
 
 		// Token Settings 파싱
-		builder.tokenSettings(objectMapper.parseTokenSettings(this.doTokenSettings))
+		builder.tokenSettings(
+			objectMapper.parseTokenSettings(this.doTokenSettings)
+		)
 
 		registeredClient = builder.build()
 	}
