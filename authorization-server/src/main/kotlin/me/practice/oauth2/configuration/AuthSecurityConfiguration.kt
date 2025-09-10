@@ -49,7 +49,7 @@ class AuthSecurityConfiguration(
 	private val oAuth2AuthorizationConsentService: OAuth2AuthorizationConsentService,
 	private val stringRedisTemplate: StringRedisTemplate,
 	private val authorizationJsonCodec: AuthorizationJsonCodec,
-	private val redisAuthorizationProperties: RedisAuthorizationProperties
+	private val redisAuthorizationProperties: RedisAuthorizationProperties,
 ) {
 
 	/**
@@ -120,8 +120,12 @@ class AuthSecurityConfiguration(
 					.permitAll()
 			}
 			.logout {
-				it.logoutUrl("/logout").logoutSuccessUrl("http://localhost:9001/dashboard").invalidateHttpSession(true)
-					.clearAuthentication(true).deleteCookies("JSESSIONID")
+				it
+					.logoutUrl("/logout")
+					.logoutSuccessUrl("http://localhost:9001/dashboard")
+					.invalidateHttpSession(true)
+					.clearAuthentication(true)
+					.deleteCookies("JSESSIONID")
 			}.requestCache { cache ->
 				cache.requestCache(HttpSessionRequestCache())
 			}

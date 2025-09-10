@@ -1,0 +1,53 @@
+{
+  "realm": "shopl-sandbox",
+  "enabled": true,
+  "sslRequired": "NONE",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": false,
+  "clients": [
+    {
+      "clientId": "as-broker",
+      "name": "Authorization Server (broker)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "as-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:8080/login/oauth2/code/keycloak-acme",
+        "http://localhost:9000/login/oauth2/code/keycloak-acme"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:8080/logout-success,http://localhost:9000/logout-success"
+      },
+      "webOrigins": [
+        "+"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "alice",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "alice@acme.com",
+      "firstName": "Alice",
+      "lastName": "Acme",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

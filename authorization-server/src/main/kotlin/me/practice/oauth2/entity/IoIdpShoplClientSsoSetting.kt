@@ -21,6 +21,12 @@ data class IoIdpShoplClientSsoSetting(
     val ssoType: SsoType,
     
     // OIDC 필드들
+	@Column(name = "oidc_client_id", length = 50)
+	val oidcClientId: String? = null,
+
+	@Column(name = "oidc_secret", length = 500)
+	val oidcClientSecret: String? = null,
+
     @Column(name = "oidc_issuer", length = 500)
     val oidcIssuer: String? = null,
     

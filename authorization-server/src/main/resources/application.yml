@@ -11,6 +11,17 @@ spring:
     password: 1234qwer!
   security:
     oauth2:
+      client:
+        keycloak-acme:
+          issuer-uri: http://localhost:8081/realms/shopl-sandbox
+        registration:
+          keycloak-acme:
+            provider: keycloak-acme
+            client-id: as-broker
+            client-secret: as-secret
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: openid, email, profile
       authorizationserver:
         issuer: http://localhost:9000
 #  session:
