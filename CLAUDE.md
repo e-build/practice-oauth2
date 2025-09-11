@@ -1,0 +1,19 @@
+# Claude Code를 위한 프로젝트 가이드라인
+
+## 1. 프로젝트 개요
+- 이 프로젝트는 Kotlin, Spring boot 사용하는 REST API 서버입니다.
+- 데이터베이스는 MySQL 8을 사용하며, ORM은 JPA를 사용합니다.
+- OAuth 2.0 기반 인증/인가를 제공하는 서버 개발을 학습하기 위한 프로젝트입니다.
+
+## 2. 주요 구조
+- 크게 두개의 모듈이 존재합니다.
+- authorization-server - 인증/인가 제공 서버
+- resource-server - 리소스 페이지, 리소스 API 를 제공하는 서버
+
+## 3. 핵심 명령어
+- **개발 서버 시작:** 
+- `./gradlew :authorization-server:bootRun`
+
+## 4. 코딩 스타일 가이드
+
+## 5. 설치된 주요 도구
