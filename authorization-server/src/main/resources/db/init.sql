@@ -110,27 +110,28 @@ create table shopl_authorization.io_idp_shopl_client_sso_setting
     del_dt                      datetime                                                                                           null
 );
 
-CREATE TABLE shopl_authorization.io_idp_login_history
+CREATE TABLE io_idp_login_history
 (
-    id                  BIGINT                          NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    idp_client_id       VARCHAR(64)                     NOT NULL,
-    shopl_user_id       VARCHAR(64)                     NOT NULL,
-    platform            ENUM ('DASHBOARD', 'APP')       NOT NULL,
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    shopl_client_id     VARCHAR(20) NOT NULL,
+    shopl_user_id       VARCHAR(20) NOT NULL,
+    platform            ENUM('DASHBOARD', 'APP') NOT NULL,
 
-    principal_hash      CHAR(64)                        NULL,     -- SHA-256(salt + normalized principal)
-    principal_hint      VARCHAR(255)                    NULL,     -- 마스킹된 식별자
+    login_time          DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    login_type          ENUM('BASIC', 'SOCIAL', 'SSO') NOT NULL,
+    provider            VARCHAR(64) NULL,
 
-    result              ENUM ('SUCCESS', 'FAIL')        NOT NULL,
-    failure_reason_type VARCHAR(50)                     NULL,     -- 'INVALID_CREDENTIALS', 'ACCOUNT_LOCKED', 'CONSENT_DENIED', 'PROVIDER_ERROR', 'TIMEOUT', 'INTERNAL_ERROR', 'RATE_LIMIT'
+    result              ENUM('SUCCESS', 'FAIL') NOT NULL,
+    failure_reason      VARCHAR(100) NULL,
 
-    login_type          ENUM ('BASIC', 'SOCIAL', 'SSO') NOT NULL, -- BASIC | SOCIAL | SSO
-    provider            VARCHAR(64)                     NULL,     -- GOOGLE, APPLE, NAVER, {SSO_CLIENT_NAME}, ...
+    ip_address          VARCHAR(45) NULL,
+    user_agent          TEXT NULL,
+    location            VARCHAR(200) NULL,
 
-    authorization_id    VARCHAR(100)                    NOT NULL, -- Redis OAuth2Authorization.id
-    session_id          VARCHAR(128)                    NOT NULL,
+    session_id          VARCHAR(128) NOT NULL,
 
-    scope               JSON                            NOT NULL,
-
-    reg_dt              DATETIME(3)                     NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
+    INDEX idx_user_client_time (shopl_user_id, shopl_client_id, login_time),
+    INDEX idx_result_time (result, login_time),
+    INDEX idx_client_time (shopl_client_id, login_time)
 )
 ;
