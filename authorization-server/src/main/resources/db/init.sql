@@ -1,30 +1,31 @@
 create table shopl_authorization.io_idp_client
 (
-    id                            varchar(255)                        not null primary key comment 'PK, 내부 식별자',
-    client_id                     varchar(255)                        not null comment 'OAuth2 Client ID',
-    shopl_client_id               varchar(20)                         null comment '고객사 ID (멀티테넌시 지원용)',
-    platform                      ENUM ('DASHBOARD', 'APP')           null comment '클라이언트 플랫폼 타입',
+    id                            varchar(255)                             not null primary key comment 'PK, 내부 식별자',
+    idp_client_id                 varchar(255)                             not null comment 'OAuth2 Client ID',
 
-    client_id_issued_at           timestamp default CURRENT_TIMESTAMP not null comment 'Client ID 발급 시각',
-    client_secret                 varchar(255)                        null comment 'Client Secret (암호화 저장 권장)',
-    client_secret_expires_at      timestamp                           null comment 'Client Secret 만료 시각',
-    client_name                   varchar(255)                        not null comment '클라이언트 이름 (식별용)',
-    client_authentication_methods varchar(1000)                       not null comment '인증 방식 (client_secret_basic, private_key_jwt 등)',
-    authorization_grant_types     varchar(1000)                       not null comment '허용된 Grant Types',
-    redirect_uris                 varchar(1000)                       null comment '등록된 Redirect URI 목록',
-    post_logout_redirect_uris     varchar(1000)                       null comment '로그아웃 후 Redirect URI',
-    scopes                        varchar(1000)                       not null comment '허용된 Scope 목록',
-    client_settings               varchar(2000)                       not null comment '클라이언트 설정 (JSON 직렬화)',
-    token_settings                varchar(2000)                       not null comment '토큰 발급 관련 설정 (만료, 서명 등)'
+    shopl_client_id               varchar(20)                              null comment '고객사 ID (멀티테넌시 지원용)',
+    platform                      ENUM ('DASHBOARD', 'APP')                null comment '클라이언트 플랫폼 타입',
+    environment                   ENUM ('SHOPL', 'CPS','SSS', 'QA', 'DEV') null comment '클라이언트 운영 환경',
+
+    client_id_issued_at           timestamp default CURRENT_TIMESTAMP      not null comment 'Client ID 발급 시각',
+    client_secret                 varchar(255)                             null comment 'Client Secret (암호화 저장 권장)',
+    client_secret_expires_at      timestamp                                null comment 'Client Secret 만료 시각',
+    client_name                   varchar(255)                             not null comment '클라이언트 이름 (식별용)',
+    client_authentication_methods varchar(1000)                            not null comment '인증 방식 (client_secret_basic, private_key_jwt 등)',
+    authorization_grant_types     varchar(1000)                            not null comment '허용된 Grant Types',
+    redirect_uris                 varchar(1000)                            null comment '등록된 Redirect URI 목록',
+    post_logout_redirect_uris     varchar(1000)                            null comment '로그아웃 후 Redirect URI',
+    scopes                        varchar(1000)                            not null comment '허용된 Scope 목록',
+    client_settings               varchar(2000)                            not null comment '클라이언트 설정 (JSON 직렬화)',
+    token_settings                varchar(2000)                            not null comment '토큰 발급 관련 설정 (만료, 서명 등)'
 );
-
 
 create table shopl_authorization.io_idp_authorization_consent
 (
-    id                   bigint auto_increment primary key comment 'PK',
-    registered_client_id varchar(255)  not null comment 'OAuth2 Client ID',
-    principal_name       varchar(255)  not null comment '사용자 식별자 (username, email 등)',
-    authorities          varchar(1000) not null comment '동의한 권한(scope/role 목록)'
+    id             bigint auto_increment primary key comment 'PK',
+    idp_client_id  varchar(255)  not null comment 'OAuth2 Client ID',
+    principal_name varchar(255)  not null comment '사용자 식별자 (username, email 등)',
+    authorities    varchar(1000) not null comment '동의한 권한(scope/role 목록)'
 );
 
 create table shopl_authorization.io_idp_account
@@ -41,7 +42,7 @@ create table shopl_authorization.io_idp_account
     is_cert_email   TINYINT(1)   NOT NULL DEFAULT 0 comment '이메일 인증 여부',
 
     is_temp_pwd     TINYINT(1)   NOT NULL DEFAULT 0 comment '임시 비밀번호 여부',
-    pwd             VARCHAR(255) NOT NULL comment '비밀번호 해시',
+    pwd             VARCHAR(255) NULL comment '비밀번호 해시',
     before_pwd      VARCHAR(255) NULL     DEFAULT NULL comment '이전 비밀번호 해시',
     pwd_update_dt   DATETIME     NULL     DEFAULT NULL comment '비밀번호 업데이트 시각',
 
@@ -75,7 +76,7 @@ create table shopl_authorization.io_idp_account_oauth_link
     INDEX idx_provider_email (provider_type, email_at_provider)
 );
 
-create table io_idp_shopl_client_sso_setting
+create table shopl_authorization.io_idp_shopl_client_sso_setting
 (
     id                          varchar(20)                                                                                        not null primary key,
     shopl_client_id             varchar(20) unique                                                                                 not null,
@@ -108,3 +109,28 @@ create table io_idp_shopl_client_sso_setting
     mod_dt                      datetime                                                                                           null on update CURRENT_TIMESTAMP,
     del_dt                      datetime                                                                                           null
 );
+
+CREATE TABLE shopl_authorization.io_idp_login_history
+(
+    id                  BIGINT                          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    idp_client_id       VARCHAR(64)                     NOT NULL,
+    shopl_user_id       VARCHAR(64)                     NOT NULL,
+    platform            ENUM ('DASHBOARD', 'APP')       NOT NULL,
+
+    principal_hash      CHAR(64)                        NULL,     -- SHA-256(salt + normalized principal)
+    principal_hint      VARCHAR(255)                    NULL,     -- 마스킹된 식별자
+
+    result              ENUM ('SUCCESS', 'FAIL')        NOT NULL,
+    failure_reason_type VARCHAR(50)                     NULL,     -- 'INVALID_CREDENTIALS', 'ACCOUNT_LOCKED', 'CONSENT_DENIED', 'PROVIDER_ERROR', 'TIMEOUT', 'INTERNAL_ERROR', 'RATE_LIMIT'
+
+    login_type          ENUM ('BASIC', 'SOCIAL', 'SSO') NOT NULL, -- BASIC | SOCIAL | SSO
+    provider            VARCHAR(64)                     NULL,     -- GOOGLE, APPLE, NAVER, {SSO_CLIENT_NAME}, ...
+
+    authorization_id    VARCHAR(100)                    NOT NULL, -- Redis OAuth2Authorization.id
+    session_id          VARCHAR(128)                    NOT NULL,
+
+    scope               JSON                            NOT NULL,
+
+    reg_dt              DATETIME(3)                     NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
+)
+;
