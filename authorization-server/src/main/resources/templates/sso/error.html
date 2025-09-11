@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>SSO Authentication Error</title>
+    <style>
+        body {
+            background: #f5f6fa;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .error-container {
+            background: #fff;
+            padding: 2rem 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            max-width: 100%;
+            text-align: center;
+        }
+
+        h2 {
+            color: #dc3545;
+            margin-bottom: 1.5rem;
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+
+        .error-details {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+<div class="error-container">
+    <div class="error-icon">⚠️</div>
+    <h2>SSO Authentication Failed</h2>
+    
+    <div class="error-message">
+        <p>We encountered an error while trying to authenticate you with the SSO provider.</p>
+        <p>This could be due to:</p>
+        <ul style="text-align: left; display: inline-block;">
+            <li>Provider configuration issues</li>
+            <li>Network connectivity problems</li>
+            <li>Invalid or expired credentials</li>
+            <li>Provider service temporarily unavailable</li>
+        </ul>
+    </div>
+    
+    <!-- Error details if available -->
+    <div class="error-details" th:if="${error}">
+        <strong>Error Details:</strong> <span th:text="${error}">Unknown error</span>
+    </div>
+    
+    <div class="action-buttons">
+        <a href="/login" class="btn btn-primary">Try Again</a>
+        <a href="/sso/providers" class="btn btn-secondary">Choose Different Provider</a>
+    </div>
+</div>
+
+<script>
+    // Auto-redirect after 30 seconds
+    setTimeout(function() {
+        if (confirm('Would you like to be redirected to the login page?')) {
+            window.location.href = '/login';
+        }
+    }, 30000);
+</script>
+</body>
+</html>

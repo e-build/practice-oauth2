@@ -12,8 +12,6 @@ spring:
   security:
     oauth2:
       client:
-        keycloak-acme:
-          issuer-uri: http://localhost:8081/realms/shopl-sandbox
         registration:
           keycloak-acme:
             provider: keycloak-acme
@@ -22,6 +20,9 @@ spring:
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope: openid, email, profile
+        provider:
+          keycloak-acme:
+            issuer-uri: http://localhost:8081/realms/shopl-sandbox
       authorizationserver:
         issuer: http://localhost:9000
 #  session:

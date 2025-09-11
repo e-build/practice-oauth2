@@ -40,7 +40,7 @@ data class IoIdpAccount(
 	@Column(name = "is_temp_pwd", nullable = false)
     val isTempPwd: Boolean = false,
 
-	@Column(name = "pwd", nullable = false)
+	@Column(name = "pwd")
     val pwd: String? = null,
 
 	@Column(name = "before_pwd")

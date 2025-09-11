@@ -52,16 +52,59 @@
             font-size: 1rem;
             cursor: pointer;
             transition: background 0.2s ease;
+            margin-bottom: 0.5rem;
         }
 
         button:hover {
             background-color: #3b5cb8;
+        }
+
+        .sso-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+
+        .sso-title {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .sso-button {
+            background-color: #28a745;
+            margin-bottom: 0.5rem;
+        }
+
+        .sso-button:hover {
+            background-color: #218838;
+        }
+
+        .sso-keycloak {
+            background-color: #6c757d;
+        }
+
+        .sso-keycloak:hover {
+            background-color: #5a6268;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 <body>
 <div class="login-container">
     <h2>Login</h2>
+    
+    <!-- Error message display -->
+    <div id="error-message" class="error-message" style="display: none;"></div>
+    
+    <!-- Basic Login Form -->
     <form method="post" action="/login">
         <label>
             <span>Username</span><br/>
@@ -71,8 +114,78 @@
             <span>Password</span><br/>
             <input type="password" name="password" required />
         </label>
-        <button type="submit">Login</button>
+        <button type="submit">Login with Username/Password</button>
     </form>
+    
+    <!-- SSO Login Section -->
+    <div class="sso-section">
+        <div class="sso-title">Or sign in with SSO</div>
+        
+        <!-- Keycloak SSO (기존 설정) -->
+        <button type="button" class="sso-button sso-keycloak" onclick="loginWithKeycloak()">
+            Continue with Keycloak
+        </button>
+        
+        <!-- Dynamic SSO Providers (will be populated by JavaScript) -->
+        <div id="dynamic-sso-providers"></div>
+    </div>
 </div>
+
+<script>
+    // URL 파라미터에서 에러 메시지 확인
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    
+    if (error) {
+        const errorMessage = document.getElementById('error-message');
+        switch(error) {
+            case 'sso_failed':
+                errorMessage.textContent = 'SSO authentication failed. Please try again.';
+                break;
+            case 'sso_authentication_failed':
+                errorMessage.textContent = 'SSO authentication error occurred.';
+                break;
+            default:
+                errorMessage.textContent = 'Authentication failed. Please check your credentials.';
+        }
+        errorMessage.style.display = 'block';
+    }
+    
+    // Keycloak SSO 로그인
+    function loginWithKeycloak() {
+        const clientId = urlParams.get('client_id') || 'CLIENT001';
+        window.location.href = '/oauth2/authorization/keycloak-acme?client_id=' + encodeURIComponent(clientId);
+    }
+    
+    // 동적 SSO 제공자 로드
+    function loadDynamicSsoProviders() {
+        const clientId = urlParams.get('client_id') || 'CLIENT001';
+        
+        fetch('/sso/api/providers/' + encodeURIComponent(clientId))
+            .then(response => response.json())
+            .then(providers => {
+                const container = document.getElementById('dynamic-sso-providers');
+                
+                providers.forEach(provider => {
+                    if (provider.enabled && provider.registrationId !== 'keycloak-acme') {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = 'sso-button';
+                        button.textContent = 'Continue with ' + provider.displayName;
+                        button.onclick = function() {
+                            window.location.href = '/oauth2/authorization/' + provider.registrationId + '?client_id=' + encodeURIComponent(clientId);
+                        };
+                        container.appendChild(button);
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Failed to load SSO providers:', error);
+            });
+    }
+    
+    // 페이지 로드 시 동적 SSO 제공자 로드
+    document.addEventListener('DOMContentLoaded', loadDynamicSsoProviders);
+</script>
 </body>
 </html>

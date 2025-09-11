@@ -1,6 +1,9 @@
 package me.practice.oauth2.configuration
 
 import me.practice.oauth2.entity.IoIdpAccount
+import me.practice.oauth2.entity.IoIdpAccountRepository
+import me.practice.oauth2.utils.JsonUtils
+import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.core.*
@@ -66,6 +69,8 @@ data class AccessTokenDTO(
 
 object RedisAuthorizationConverter {
 
+	val logger = LoggerFactory.getLogger(this::class.java)
+
 	fun toDTO(auth: OAuth2Authorization): RedisAuthorizationDTO {
 		val state = auth.getAttribute<String>("state")
 		val code = auth.getToken(OAuth2AuthorizationCode::class.java)
@@ -116,12 +121,16 @@ object RedisAuthorizationConverter {
 	fun fromDTO(
 		dto: RedisAuthorizationDTO,
 		registeredClientRepository: RegisteredClientRepository,
+		ioIdpAccountRepository: IoIdpAccountRepository,
 	): OAuth2Authorization {
 		val rc = requireNotNull(registeredClientRepository.findById(dto.registeredClientId)) {
 			"RegisteredClient not found: ${dto.registeredClientId}"
 		}
 
-		val coercedAttrs = coerceAttributes(dto.attributes)
+		val coercedAttrs = coerceAttributes(
+			attrs = dto.attributes,
+			ioIdpAccountRepository = ioIdpAccountRepository
+		)
 
 		val builder = OAuth2Authorization.withRegisteredClient(rc)
 			.id(dto.id)
@@ -162,39 +171,236 @@ object RedisAuthorizationConverter {
 		return builder.build()
 	}
 
-	private fun coerceAttributes(attrs: Map<String, Any?>): Map<String, Any?> {
+	private fun coerceAttributes(
+		attrs: Map<String, Any?>,
+		ioIdpAccountRepository: IoIdpAccountRepository
+	): Map<String, Any?> {
+		logger.trace("Coercing attributes with keys: ${attrs.keys}")
+		
 		val authzReqRaw = attrs[AttrKeys.AUTHZ_REQ]
 		val authzReq = when (authzReqRaw) {
-			null -> null
-			is OAuth2AuthorizationRequest -> authzReqRaw
-			is Map<*, *> -> runCatching { rebuildAuthorizationRequest(authzReqRaw) }.getOrNull()
-			else -> null // 알 수 없으면 그대로 둔다
+			null -> {
+				logger.trace("No authorization request found in attributes")
+				null
+			}
+			is OAuth2AuthorizationRequest -> {
+				logger.trace("Authorization request already in correct type")
+				authzReqRaw
+			}
+			is Map<*, *> -> {
+				runCatching { 
+					rebuildAuthorizationRequest(authzReqRaw) 
+				}.onFailure { e ->
+					logger.warn("Failed to rebuild authorization request: ${e.message}")
+				}.getOrNull()
+			}
+			else -> {
+				logger.warn("Unknown authorization request type: ${authzReqRaw?.javaClass}")
+				null
+			}
 		}
 
-		val principalRaw = attrs[AttrKeys.PRINCIPAL]  // (버그 픽스) 잘못된 키 체크 수정
+		val principalRaw = attrs[AttrKeys.PRINCIPAL]
 		val principal = when (principalRaw) {
-			null -> null
-			is Principal -> principalRaw
-			is Map<*, *> -> runCatching { rebuildPrincipal(principalRaw) }.getOrNull()
-			else -> null
+			null -> {
+				logger.trace("No principal found in attributes")
+				null
+			}
+			is Principal -> {
+				logger.trace("Principal already in correct type: ${principalRaw.javaClass.simpleName}")
+				principalRaw
+			}
+			is Map<*, *> -> {
+				runCatching {
+					rebuildPrincipal(principalRaw, ioIdpAccountRepository)
+				}.onFailure { e ->
+					logger.error("Failed to rebuild principal from map: ${e.message}", e)
+				}.getOrNull()
+			}
+			else -> {
+				logger.warn("Unknown principal type: ${principalRaw?.javaClass}")
+				null
+			}
 		}
 
-		if (authzReq == null && principal == null) return attrs
+		if (authzReq == null && principal == null) {
+			logger.trace("No attributes to coerce")
+			return attrs
+		}
 
 		return attrs.toMutableMap().apply {
-			if (authzReq != null) put(AttrKeys.AUTHZ_REQ, authzReq)
-			if (principal != null) put(AttrKeys.PRINCIPAL, principal)
+			if (authzReq != null) {
+				put(AttrKeys.AUTHZ_REQ, authzReq)
+				logger.trace("Coerced authorization request")
+			}
+			if (principal != null) {
+				put(AttrKeys.PRINCIPAL, principal)
+				logger.debug("Coerced principal to ${principal.javaClass.simpleName}")
+			}
 		}
 	}
 
-	private fun rebuildPrincipal(src: Map<*, *>): Principal {
-		// principal > account 구조 가정
-		val principalMap = src["principal"].asOrNull<Map<*, *>>()
-			?: error("principal missing in map")
-		val accountMap = principalMap["account"].asOrNull<Map<*, *>>()
-			?: error("principal.account missing")
+	private fun rebuildPrincipal(
+		src: Map<*, *>,
+		ioIdpAccountRepository: IoIdpAccountRepository
+	): Principal {
+		val principalData = src["principal"] ?: src
+		val accountMap = when (principalData) {
+			is Map<*, *> -> principalData["account"].asOrNull<Map<*, *>>()
+			else -> null
+		}
+		
+		return if (accountMap != null) {
+			rebuildBasicPrincipal(src, accountMap)
+		} else {
+			rebuildSsoPrincipal(src, principalData, ioIdpAccountRepository)
+		}
+	}
 
-		val ioIdpAccount = IoIdpAccount(
+	private fun rebuildBasicPrincipal(src: Map<*, *>, accountMap: Map<*, *>): Principal {
+		val authorities = extractAuthorities(src)
+		val account = createBasicAccount(accountMap)
+		val userDetails = CustomUserDetails(account)
+		
+		return UsernamePasswordAuthenticationToken(userDetails, null, authorities).apply {
+			src["details"]?.let { this.details = it }
+		}
+	}
+
+	private fun rebuildSsoPrincipal(
+		src: Map<*, *>, 
+		principalData: Any?, 
+		ioIdpAccountRepository: IoIdpAccountRepository
+	): Principal {
+		val authorities = extractAuthorities(src)
+		val principalMap = principalData.asOrNull<Map<*, *>>() 
+			?: error("SSO principal data is not a map")
+		
+		logger.debug("Rebuilding SSO principal from data: ${principalMap.keys}")
+		
+		// OAuth2User/OidcUser의 속성을 바탕으로 실제 계정 조회
+		val account = findOrCreateSsoAccount(principalMap, ioIdpAccountRepository)
+		val userDetails = CustomUserDetails(account)
+		
+		return UsernamePasswordAuthenticationToken(userDetails, null, authorities).apply {
+			src["details"]?.let { this.details = it }
+		}
+	}
+	
+	/**
+	 * SSO 계정 조회/생성
+	 * UserProvisioningService와 일관성 있게 처리
+	 */
+	private fun findOrCreateSsoAccount(
+		principalMap: Map<*, *>,
+		ioIdpAccountRepository: IoIdpAccountRepository
+	): IoIdpAccount {
+		// OAuth2User 속성에서 기본 정보 추출
+		val providerUserId = extractProviderUserId(principalMap)
+		val email = principalMap["email"] as? String
+		val name = extractDisplayName(principalMap)
+		val shoplClientId = extractShoplClientId(principalMap)
+		
+		logger.debug("Looking for SSO account - providerUserId: $providerUserId, email: $email, clientId: $shoplClientId")
+		
+		// 1. 이메일로 기존 계정 검색 (가장 안전한 방법)
+		if (email != null) {
+			val existingAccount = ioIdpAccountRepository.findByShoplClientIdAndEmail(shoplClientId, email)
+			if (existingAccount != null) {
+				logger.debug("Found existing account by email: ${existingAccount.id}")
+				return existingAccount
+			}
+		}
+		
+		// 2. provider_user_id 패턴으로 계정 ID 생성 후 검색
+		val generatedAccountId = "sso_${providerUserId}"
+		val accountById = runCatching {
+			ioIdpAccountRepository.findById(generatedAccountId).orElse(null)
+		}.getOrNull()
+		
+		if (accountById != null) {
+			logger.debug("Found existing account by generated ID: ${accountById.id}")
+			return accountById
+		}
+		
+		// 3. 계정이 없는 경우 최소한의 정보로 생성 (방어 코드)
+		logger.warn("Creating fallback account for SSO user: $providerUserId (email: $email)")
+		
+		return IoIdpAccount(
+			id = generatedAccountId,
+			shoplClientId = shoplClientId,
+			shoplUserId = providerUserId,
+			shoplLoginId = email ?: "${providerUserId}@sso.fallback",
+			email = email,
+			phone = null,
+			name = name,
+			status = "ACTIVE",
+			isCertEmail = email != null,
+			isTempPwd = false,
+			regDt = LocalDateTime.now()
+		)
+	}
+	
+	/**
+	 * 다양한 OAuth2 제공자에서 사용자 ID 추출
+	 */
+	private fun extractProviderUserId(principalMap: Map<*, *>): String {
+		val candidates = listOf(
+			"sub" to principalMap["sub"] as? String,
+			"id" to principalMap["id"]?.toString(),
+			"preferred_username" to principalMap["preferred_username"] as? String,
+			"name" to principalMap["name"] as? String,
+			"oid" to principalMap["oid"] as? String,
+			"response.id" to (principalMap["response"] as? Map<*, *>)?.get("id")?.toString()
+		)
+		
+		val found = candidates.firstOrNull { it.second != null }
+		if (found != null) {
+			logger.debug("Extracted provider user ID from '${found.first}': ${found.second}")
+			return found.second!!
+		}
+		
+		val availableKeys = principalMap.keys.joinToString(", ")
+		val errorMsg = "Could not extract provider user ID from principal. Available keys: [$availableKeys]"
+		logger.error(errorMsg)
+		throw IllegalArgumentException(errorMsg)
+	}
+	
+	/**
+	 * 사용자 표시 이름 추출
+	 */
+	private fun extractDisplayName(principalMap: Map<*, *>): String? {
+		return principalMap["name"] as? String
+			?: principalMap["given_name"] as? String
+			?: principalMap["nickname"] as? String
+			?: (principalMap["response"] as? Map<*, *>)?.get("name") as? String
+	}
+	
+	/**
+	 * Shopl 클라이언트 ID 추출
+	 */
+	private fun extractShoplClientId(principalMap: Map<*, *>): String {
+		return principalMap["client_id"] as? String
+			?: principalMap["aud"] as? String  // audience claim
+			?: "CLIENT001"  // 기본값
+	}
+
+	private fun extractAuthorities(src: Map<*, *>): List<SimpleGrantedAuthority> {
+		val authoritiesSrc: Collection<*>? = src["authorities"].asOrNull<Collection<*>>()
+		return authoritiesSrc
+			?.mapNotNull { auth ->
+				when (auth) {
+					is String -> auth
+					is Map<*, *> -> auth["authority"].asOrNull<String>()
+					else -> null
+				}
+			}
+			?.map(::SimpleGrantedAuthority)
+			?: emptyList()
+	}
+
+	private fun createBasicAccount(accountMap: Map<*, *>): IoIdpAccount {
+		return IoIdpAccount(
 			id = accountMap["id"] as String,
 			shoplClientId = accountMap["shoplClientId"] as String,
 			shoplUserId = accountMap["shoplUserId"] as String,
@@ -213,29 +419,8 @@ object RedisAuthorizationConverter {
 			modDt = accountMap["modDt"].asOrNull<String>().toLdtOrNull(),
 			delDt = accountMap["delDt"].asOrNull<String>().toLdtOrNull(),
 		)
-
-		val userDetails = CustomUserDetails(ioIdpAccount)
-
-		// 권한 복원: ["ROLE_X", ...] 또는 [{authority:"ROLE_X"}, ...] 모두 허용
-		val authoritiesSrc: Collection<*>? =
-			src["authorities"].asOrNull<Collection<*>>()
-				?: principalMap["authorities"].asOrNull<Collection<*>>()
-
-		val authorities = authoritiesSrc
-			?.mapNotNull {
-				when (it) {
-					is String -> it
-					is Map<*, *> -> it["authority"].asOrNull<String>()
-					else -> null
-				}
-			}
-			?.map(::SimpleGrantedAuthority)
-			?: emptyList()
-
-		return UsernamePasswordAuthenticationToken(userDetails, null, authorities).apply {
-			src["details"]?.let { this.details = it }
-		}
 	}
+
 
 	private fun rebuildAuthorizationRequest(src: Map<*, *>): OAuth2AuthorizationRequest {
 		val authorizationUri = src["authorizationUri"] as? String

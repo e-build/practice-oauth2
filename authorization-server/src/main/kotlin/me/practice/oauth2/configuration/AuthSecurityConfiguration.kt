@@ -8,6 +8,8 @@ import com.nimbusds.jose.proc.SecurityContext
 import me.practice.oauth2.infrastructure.redis.AuthorizationJsonCodec
 import me.practice.oauth2.infrastructure.redis.RedisAuthorizationProperties
 import me.practice.oauth2.infrastructure.redis.RedisOAuth2AuthorizationService
+import me.practice.oauth2.service.CompositeClientRegistrationRepository
+import me.practice.oauth2.handler.SsoAuthenticationSuccessHandler
 import org.springframework.boot.autoconfigure.security.oauth2.server.servlet.OAuth2AuthorizationServerProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -50,6 +52,8 @@ class AuthSecurityConfiguration(
 	private val stringRedisTemplate: StringRedisTemplate,
 	private val authorizationJsonCodec: AuthorizationJsonCodec,
 	private val redisAuthorizationProperties: RedisAuthorizationProperties,
+	private val compositeClientRegistrationRepository: CompositeClientRegistrationRepository,
+	private val ssoAuthenticationSuccessHandler: SsoAuthenticationSuccessHandler,
 ) {
 
 	/**
@@ -111,6 +115,7 @@ class AuthSecurityConfiguration(
 					.requestMatchers("/.well-known/**").permitAll()
 					.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 					.requestMatchers("/login").permitAll()
+					.requestMatchers("/sso/**").permitAll() // SSO 관련 엔드포인트 허용
 					.requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
 					.requestMatchers("/").permitAll() // 루트 경로 허용 추가
 					.anyRequest().authenticated()
@@ -118,6 +123,12 @@ class AuthSecurityConfiguration(
 				form.loginPage("/login") // 커스텀 로그인 페이지 경로
 					.defaultSuccessUrl("http://localhost:9001/dashboard", true) // 로그인 성공 시 리다이렉트 URL 명시적 설정
 					.permitAll()
+			}
+			.oauth2Login { oauth2 ->
+				oauth2.clientRegistrationRepository(compositeClientRegistrationRepository)
+					.loginPage("/login") // 기본 로그인 페이지 사용
+					.successHandler(ssoAuthenticationSuccessHandler)
+					.failureUrl("/login?error=sso_failed")
 			}
 			.logout {
 				it

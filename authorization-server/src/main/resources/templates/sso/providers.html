@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Select SSO Provider</title>
+    <style>
+        body {
+            background: #f5f6fa;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .sso-container {
+            background: #fff;
+            padding: 2rem 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            max-width: 100%;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .provider-list {
+            margin-bottom: 2rem;
+        }
+
+        .provider-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .provider-item:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .provider-button {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .provider-button:hover {
+            background-color: #218838;
+        }
+
+        .provider-button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .provider-name {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .provider-type {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .no-providers {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 2rem;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .client-info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .client-info strong {
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+<div class="sso-container">
+    <h2>Select SSO Provider</h2>
+    
+    <!-- Client Information -->
+    <div class="client-info" th:if="${clientId}">
+        <strong>Client:</strong> <span th:text="${clientId}">Unknown</span>
+    </div>
+    
+    <!-- SSO Providers List -->
+    <div class="provider-list">
+        <div th:if="${providers != null and !providers.isEmpty()}">
+            <div class="provider-item" th:each="provider : ${providers}">
+                <div class="provider-name" th:text="${provider.displayName}">Provider Name</div>
+                <div class="provider-type" th:text="${'Type: ' + provider.type}">Type: OIDC</div>
+                <button 
+                    type="button" 
+                    class="provider-button"
+                    th:disabled="${!provider.enabled}"
+                    th:onclick="'startSsoAuthentication(\'' + ${provider.registrationId} + '\')'">
+                    <span th:if="${provider.enabled}">Continue with</span>
+                    <span th:if="${!provider.enabled}">Provider Not Available</span>
+                    <span th:text="${provider.displayName}">Provider</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- No providers available -->
+        <div class="no-providers" th:if="${providers == null or providers.isEmpty()}">
+            <p>No SSO providers are configured for this client.</p>
+            <p>Please contact your administrator to set up SSO authentication.</p>
+        </div>
+    </div>
+    
+    <!-- Back to Login -->
+    <div class="back-link">
+        <a href="/login" th:href="@{/login(client_id=${clientId}, redirect_uri=${redirectUri})}">
+            ← Back to Login
+        </a>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const clientId = /*[[${clientId}]]*/ 'default_client';
+    const redirectUri = /*[[${redirectUri}]]*/ null;
+    
+    function startSsoAuthentication(registrationId) {
+        let url = '/sso/authenticate/' + encodeURIComponent(registrationId);
+        
+        const params = new URLSearchParams();
+        if (clientId) {
+            params.append('clientId', clientId);
+        }
+        if (redirectUri) {
+            params.append('redirectUri', redirectUri);
+        }
+        
+        if (params.toString()) {
+            url += '?' + params.toString();
+        }
+        
+        window.location.href = url;
+    }
+    
+    // URL 파라미터에서 에러 확인
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    
+    if (error) {
+        alert('SSO Error: ' + error);
+    }
+</script>
+</body>
+</html>
