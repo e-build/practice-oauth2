@@ -155,18 +155,6 @@ class LoginHistoryController(
         return ResponseEntity.ok(stats)
     }
 
-    @Operation(
-        summary = "사용자의 로그인 위치 기록 조회",
-        description = "특정 사용자가 성공적으로 로그인한 모든 위치를 조회합니다."
-    )
-    @GetMapping("/users/{userId}/locations")
-    fun getUserLoginLocations(
-        @Parameter(description = "사용자 ID", required = true, example = "user004")
-        @PathVariable userId: String
-    ): ResponseEntity<List<String>> {
-        val locations = loginHistoryService.getUserLoginLocations(userId)
-        return ResponseEntity.ok(locations)
-    }
 
     @Operation(
         summary = "IP별 최근 로그인 시도 횟수 조회",

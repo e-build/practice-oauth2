@@ -88,16 +88,33 @@ CREATE TABLE io_idp_login_history
 - [x] 관리자용 전체 로그인 이력 조회 API
 - [x] 특정 기간 로그인 이력 조회 API
 
-### 7. 보안 및 프라이버시
-- [ ] 개인정보 해싱 및 마스킹 처리 확인
-- [ ] 로그인 이력 데이터 보관 정책 구현
-- [ ] 관리자 권한 확인 로직
-
 ### 8. 테스트
-- [ ] LoginHistoryService 단위 테스트
-- [ ] Repository 테스트
-- [ ] 인증 플로우 통합 테스트
-- [ ] API 엔드포인트 테스트
+#### 8-1. 유틸리티 클래스 단위 테스트
+- [x] PrincipalHashingUtil 단위 테스트
+- [x] PrincipalMaskingUtil 단위 테스트
+
+#### 8-2. Service 계층 테스트
+- [x] LoginHistoryService 통합 테스트
+
+#### 8-3. 인증 플로우 통합 테스트
+- [ ] CustomAuthenticationProvider 로그인 이력 기록 테스트
+  - 인증 성공 시 SUCCESS 이력 저장
+  - 인증 실패 시 FAIL 이력 저장 및 실패 원인 기록
+- [ ] SsoAuthenticationSuccessHandler SSO 로그인 이력 기록 테스트
+- [ ] OAuth2AuthenticationFailureHandler 실패 이력 기록 테스트
+
+#### 8-4. API 엔드포인트 테스트
+- [ ] LoginHistoryController WebMvcTest
+  - 사용자별 로그인 이력 조회 API
+  - 로그인 통계 API
+  - 관리자용 전체 이력 조회 API
+  - 기간별 이력 조회 API
+  - 페이징 및 정렬 기능
+
+#### 8-5. 통합 테스트 (전체 플로우)
+- [ ] 실제 로그인부터 이력 저장까지 End-to-End 테스트
+- [ ] 대용량 데이터에 대한 조회 성능 테스트
+- [ ] 동시성 테스트 (로그인 이력 저장)
 
 ### 9. 문서화
 - [ ] API 문서 업데이트 (Swagger)

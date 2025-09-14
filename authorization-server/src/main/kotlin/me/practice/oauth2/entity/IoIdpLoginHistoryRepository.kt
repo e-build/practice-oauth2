@@ -100,18 +100,4 @@ interface IoIdpLoginHistoryRepository : JpaRepository<IoIdpLoginHistory, Long> {
         @Param("since") since: LocalDateTime
     ): Long
 
-    /**
-     * 사용자의 다양한 위치에서의 로그인 기록 조회
-     */
-    @Query("""
-        SELECT DISTINCT h.location FROM IoIdpLoginHistory h 
-        WHERE h.shoplUserId = :shoplUserId 
-        AND h.result = :result 
-        AND h.location IS NOT NULL
-        ORDER BY h.loginTime DESC
-    """)
-    fun getDistinctLoginLocations(
-        @Param("shoplUserId") shoplUserId: String,
-        @Param("result") result: LoginResult
-    ): List<String>
 }

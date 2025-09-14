@@ -39,8 +39,7 @@ class LoginHistoryService(
             result = LoginResult.SUCCESS,
             sessionId = sessionId,
             ipAddress = extractIpAddress(request),
-            userAgent = extractUserAgent(request),
-            location = extractLocation(request)
+            userAgent = extractUserAgent(request)
         )
 
         val savedHistory = loginHistoryRepository.save(history)
@@ -73,8 +72,7 @@ class LoginHistoryService(
             failureReason = failureReason,
             sessionId = sessionId,
             ipAddress = extractIpAddress(request),
-            userAgent = extractUserAgent(request),
-            location = extractLocation(request)
+            userAgent = extractUserAgent(request)
         )
 
         val savedHistory = loginHistoryRepository.save(history)
@@ -215,13 +213,6 @@ class LoginHistoryService(
         return loginHistoryRepository.countLoginAttemptsByIp(ipAddress, since)
     }
 
-    /**
-     * 사용자의 로그인 위치 기록 조회
-     */
-    @Transactional(readOnly = true)
-    fun getUserLoginLocations(shoplUserId: String): List<String> {
-        return loginHistoryRepository.getDistinctLoginLocations(shoplUserId, LoginResult.SUCCESS)
-    }
 
     // Private helper methods
     private fun extractIpAddress(request: HttpServletRequest?): String? {
@@ -245,13 +236,6 @@ class LoginHistoryService(
 
     private fun extractUserAgent(request: HttpServletRequest?): String? {
         return request?.getHeader("User-Agent")
-    }
-
-    private fun extractLocation(request: HttpServletRequest?): String? {
-        // 실제 구현에서는 IP 기반 지리 정보 조회 서비스를 사용
-        // 예: MaxMind GeoIP, IP2Location 등
-        // 여기서는 간단히 null 반환
-        return null
     }
 }
 
