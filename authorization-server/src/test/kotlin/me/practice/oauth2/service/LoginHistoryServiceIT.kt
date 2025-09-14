@@ -7,8 +7,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.MethodOrderer
-import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.springframework.data.domain.PageRequest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestConstructor
@@ -19,15 +20,16 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDateTime
 import kotlin.test.*
 
-@SpringBootTest
+@DataJpaTest
+@Import(LoginHistoryService::class)
 @ActiveProfiles("test")
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @Testcontainers
 @Transactional
-class LoginHistoryServiceIntegrationTest(
+class LoginHistoryServiceIT(
     private val loginHistoryService: LoginHistoryService,
-    private val loginHistoryRepository: IoIdpLoginHistoryRepository
+    private val loginHistoryRepository: IoIdpLoginHistoryRepository,
 ) {
 
     companion object {
@@ -95,7 +97,7 @@ class LoginHistoryServiceIntegrationTest(
         val platform = IdpClient.Platform.APP
         val loginType = LoginType.SOCIAL
         val provider = "GOOGLE"
-        val failureReason = "잘못된 비밀번호"
+        val failureReason = FailureReasonType.INVALID_CREDENTIALS
         val sessionId = TEST_SESSION_ID
 
         // When
@@ -151,7 +153,7 @@ class LoginHistoryServiceIntegrationTest(
                 shoplUserId = userId,
                 platform = IdpClient.Platform.APP,
                 loginType = LoginType.SOCIAL,
-                failureReason = "테스트 실패 $i",
+                failureReason = FailureReasonType.SYSTEM_ERROR,
                 sessionId = "FAIL_SESSION_$i"
             )
         }
@@ -269,7 +271,7 @@ class LoginHistoryServiceIntegrationTest(
             shoplUserId = userId,
             platform = IdpClient.Platform.DASHBOARD,
             loginType = LoginType.BASIC,
-            failureReason = "첫 번째 실패",
+            failureReason = FailureReasonType.INVALID_CREDENTIALS,
             sessionId = "FAIL_SESSION"
         )
 
@@ -292,7 +294,7 @@ class LoginHistoryServiceIntegrationTest(
             shoplUserId = userId,
             platform = IdpClient.Platform.DASHBOARD,
             loginType = LoginType.BASIC,
-            failureReason = "두 번째 실패",
+            failureReason = FailureReasonType.TOO_MANY_ATTEMPTS,
             sessionId = "FAIL_SESSION_2"
         )
 
@@ -329,7 +331,7 @@ class LoginHistoryServiceIntegrationTest(
                 shoplUserId = userId,
                 platform = IdpClient.Platform.DASHBOARD,
                 loginType = LoginType.BASIC,
-                failureReason = "실패 $i",
+                failureReason = FailureReasonType.INVALID_CREDENTIALS,
                 sessionId = "FAIL_SESSION_$i"
             )
         }
@@ -366,7 +368,7 @@ class LoginHistoryServiceIntegrationTest(
                 shoplUserId = "${userId}_fail_$i",
                 platform = IdpClient.Platform.DASHBOARD,
                 loginType = LoginType.BASIC,
-                failureReason = "실패 $i",
+                failureReason = FailureReasonType.SYSTEM_ERROR,
                 sessionId = "FAIL_$i"
             )
         }
@@ -405,7 +407,7 @@ class LoginHistoryServiceIntegrationTest(
                 shoplUserId = "${userId}_basic_fail_$i",
                 platform = IdpClient.Platform.DASHBOARD,
                 loginType = LoginType.BASIC,
-                failureReason = "BASIC 실패 $i",
+                failureReason = FailureReasonType.INVALID_CREDENTIALS,
                 sessionId = "BASIC_FAIL_$i"
             )
         }
@@ -428,7 +430,7 @@ class LoginHistoryServiceIntegrationTest(
             platform = IdpClient.Platform.APP,
             loginType = LoginType.SOCIAL,
             provider = "GOOGLE",
-            failureReason = "SOCIAL 실패",
+            failureReason = FailureReasonType.SSO_ERROR,
             sessionId = "SOCIAL_FAIL"
         )
 

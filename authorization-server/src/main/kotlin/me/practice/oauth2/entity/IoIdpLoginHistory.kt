@@ -43,8 +43,9 @@ data class IoIdpLoginHistory(
     @Column(name = "result", nullable = false)
     val result: LoginResult,
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "failure_reason", length = 100)
-    val failureReason: String? = null,
+    val failureReason: FailureReasonType? = null,
 
     @Column(name = "ip_address", length = 45)
     val ipAddress: String? = null,

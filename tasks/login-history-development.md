@@ -70,9 +70,9 @@ CREATE TABLE io_idp_login_history
 - [x] 로그인 통계 테스트 (클라이언트별, 타입별)
 
 ### 4. 유틸리티 클래스
-- [ ] PrincipalHashingUtil 클래스 생성
-- [ ] PrincipalMaskingUtil 클래스 생성
-- [ ] ScopeJsonUtil 클래스 생성 (기존 JsonUtils 확장)
+- [x] PrincipalHashingUtil 클래스 생성
+- [x] PrincipalMaskingUtil 클래스 생성
+- [x] ScopeJsonUtil 클래스 생성 (기존 JsonUtils 확장)
 
 ### 5. 기존 인증 플로우 통합
 - [ ] CustomAuthenticationProvider에 로그인 이력 기록 추가

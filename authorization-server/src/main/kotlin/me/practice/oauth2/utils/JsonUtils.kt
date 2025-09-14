@@ -13,4 +13,8 @@ object JsonUtils {
 	fun <T> fromJson(json: String, clazz: Class<T>): T {
 		return mapper.readValue(json, clazz)
 	}
+
+	fun <T> fromJson(json: String, typeReference: java.lang.reflect.Type): T {
+		return mapper.readValue(json, mapper.constructType(typeReference))
+	}
 }

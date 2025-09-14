@@ -59,7 +59,7 @@ class LoginHistoryService(
         platform: IdpClient.Platform,
         loginType: LoginType,
         provider: String? = null,
-        failureReason: String,
+        failureReason: FailureReasonType,
         sessionId: String,
         request: HttpServletRequest? = null
     ): IoIdpLoginHistory {
