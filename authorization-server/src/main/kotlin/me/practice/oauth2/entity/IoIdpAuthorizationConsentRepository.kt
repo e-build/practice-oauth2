@@ -5,18 +5,18 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface IoIdpAuthorizationConsentRepository : JpaRepository<IoIdpAuthorizationConsent, Long> {
-    fun findByRegisteredClientIdAndPrincipalName(
+    fun findByIdpClientIdAndPrincipalName(
         registeredClientId: String, 
         principalName: String
     ): IoIdpAuthorizationConsent?
     
-    fun deleteByRegisteredClientIdAndPrincipalName(
+    fun deleteByIdpClientIdAndPrincipalName(
         registeredClientId: String, 
         principalName: String
     )
     
-    fun findByRegisteredClientId(registeredClientId: String): List<IoIdpAuthorizationConsent>
+    fun findByIdpClientId(registeredClientId: String): List<IoIdpAuthorizationConsent>
     fun findByPrincipalName(principalName: String): List<IoIdpAuthorizationConsent>
-    fun deleteByRegisteredClientId(registeredClientId: String)
+    fun deleteByIdpClientId(registeredClientId: String)
     fun deleteByPrincipalName(principalName: String)
 }

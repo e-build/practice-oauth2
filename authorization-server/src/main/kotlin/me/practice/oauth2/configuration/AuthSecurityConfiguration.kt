@@ -127,7 +127,7 @@ class AuthSecurityConfiguration(
 					.anyRequest().authenticated()
 			}.formLogin { form ->
 				form.loginPage("/login") // 커스텀 로그인 페이지 경로
-					.defaultSuccessUrl("http://localhost:9001/dashboard", true) // 로그인 성공 시 리다이렉트 URL 명시적 설정
+					.defaultSuccessUrl("http://localhost:9001/admin/auth-dashboard", true) // 로그인 성공 시 리다이렉트 URL 명시적 설정
 					.permitAll()
 			}
 			.oauth2Login { oauth2 ->
@@ -139,7 +139,7 @@ class AuthSecurityConfiguration(
 			.logout {
 				it
 					.logoutUrl("/logout")
-					.logoutSuccessUrl("http://localhost:9001/dashboard")
+					.logoutSuccessUrl("http://localhost:9001/admin/auth-dashboard")
 					.invalidateHttpSession(true)
 					.clearAuthentication(true)
 					.deleteCookies("JSESSIONID")

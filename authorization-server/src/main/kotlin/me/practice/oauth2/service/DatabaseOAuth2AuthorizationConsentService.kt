@@ -2,11 +2,9 @@ package me.practice.oauth2.service
 
 import me.practice.oauth2.entity.IoIdpAuthorizationConsent
 import me.practice.oauth2.entity.IoIdpAuthorizationConsentRepository
-import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -28,7 +26,7 @@ class DatabaseOAuth2AuthorizationConsentService(
 
     @Transactional
     override fun remove(authorizationConsent: OAuth2AuthorizationConsent) {
-        consentRepository.deleteByRegisteredClientIdAndPrincipalName(
+        consentRepository.deleteByIdpClientIdAndPrincipalName(
             authorizationConsent.registeredClientId,
             authorizationConsent.principalName
         )
@@ -36,28 +34,28 @@ class DatabaseOAuth2AuthorizationConsentService(
 
     @Transactional(readOnly = true)
     override fun findById(registeredClientId: String, principalName: String): OAuth2AuthorizationConsent? {
-        return consentRepository.findByRegisteredClientIdAndPrincipalName(registeredClientId, principalName)
+        return consentRepository.findByIdpClientIdAndPrincipalName(registeredClientId, principalName)
             ?.let { convertToOAuth2AuthorizationConsent(it) }
     }
 
     private fun convertToIoIdpAuthorizationConsent(consent: OAuth2AuthorizationConsent): IoIdpAuthorizationConsent {
         return IoIdpAuthorizationConsent(
             id = null, // Auto increment
-            registeredClientId = consent.registeredClientId,
+            idpClientId = consent.registeredClientId,
             principalName = consent.principalName,
             authorities = consent.authorities.joinToString(",") { it.authority }
         )
     }
 
     private fun convertToOAuth2AuthorizationConsent(consent: IoIdpAuthorizationConsent): OAuth2AuthorizationConsent {
-        val registeredClient = registeredClientRepository.findById(consent.registeredClientId)
-            ?: throw IllegalArgumentException("Registered client not found: ${consent.registeredClientId}")
+        val registeredClient = registeredClientRepository.findById(consent.idpClientId)
+            ?: throw IllegalArgumentException("Registered client not found: ${consent.idpClientId}")
 
         val authorities = consent.authorities.split(",")
             .map { SimpleGrantedAuthority(it.trim()) }
             .toSet()
 
-        return OAuth2AuthorizationConsent.withId(consent.registeredClientId, consent.principalName)
+        return OAuth2AuthorizationConsent.withId(consent.idpClientId, consent.principalName)
             .authorities { it.addAll(authorities) }
             .build()
     }

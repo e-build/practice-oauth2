@@ -12,8 +12,8 @@ data class IoIdpAuthorizationConsent(
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	val id: Long? = null,
 
-	@Column(name = "registered_client_id")
-	val registeredClientId: String,
+	@Column(name = "idp_client_id")
+	val idpClientId: String,
 
 	@Column(name = "principal_name")
 	val principalName: String,

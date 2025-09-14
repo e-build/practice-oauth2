@@ -34,7 +34,16 @@ class DatabaseRegisteredClientRepository(
 
 	@Transactional(readOnly = true)
 	override fun findByClientId(clientId: String): IdpClient? {
-		return ioIdpClientRepository.findByIdpClientId(clientId)?.convertToRegisteredClient()
+		val entity = ioIdpClientRepository.findByIdpClientId(clientId)
+		if (entity != null) {
+			println("DEBUG: Found client for clientId=$clientId")
+			println("DEBUG: redirect_uris from DB: ${entity.redirectUris}")
+			val client = entity.convertToRegisteredClient()
+			println("DEBUG: parsed redirect_uris: ${client.redirectUris}")
+			return client
+		}
+		println("DEBUG: No client found for clientId=$clientId")
+		return null
 	}
 
 	@Transactional

@@ -34,6 +34,9 @@ data class IoIdpAccount(
 	@Column(name = "status", length = 20)
     val status: String = "ACTIVE",
 
+	@Column(name = "role", length = 20, nullable = false)
+    val role: String = "STAFF",
+
 	@Column(name = "is_cert_email", nullable = false)
     val isCertEmail: Boolean = false,
 
