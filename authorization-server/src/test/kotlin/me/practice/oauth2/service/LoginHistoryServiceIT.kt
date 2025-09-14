@@ -2,52 +2,27 @@ package me.practice.oauth2.service
 
 import me.practice.oauth2.entity.*
 import me.practice.oauth2.domain.IdpClient
+import me.practice.oauth2.testbase.IntegrationTestBase
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.MethodOrderer
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Import
 import org.springframework.data.domain.PageRequest
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.TestConstructor
-import org.springframework.transaction.annotation.Transactional
-import org.testcontainers.containers.MySQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDateTime
 import kotlin.test.*
 
-@DataJpaTest
 @Import(LoginHistoryService::class)
-@ActiveProfiles("test")
-@TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-@Testcontainers
-@Transactional
 class LoginHistoryServiceIT(
     private val sut: LoginHistoryService,
     private val loginHistoryRepository: IoIdpLoginHistoryRepository,
-) {
-
-    companion object {
-        const val TEST_CLIENT_ID = "CLIENT001"
-        const val TEST_USER_ID = "USER001"
-        const val TEST_SESSION_ID = "SESSION001"
-        
-        @Container
-        @ServiceConnection
-        @JvmStatic
-        val mysql = MySQLContainer("mysql:8.0")
-            .withDatabaseName("shopl_authorization")
-            .withUsername("test")
-            .withPassword("test")
-    }
+) : IntegrationTestBase() {
 
     @BeforeEach
-    fun setUp() {
+    override fun setUp() {
+        super.setUp()
         // 각 테스트 전에 기존 데이터 정리
         loginHistoryRepository.deleteAll()
     }

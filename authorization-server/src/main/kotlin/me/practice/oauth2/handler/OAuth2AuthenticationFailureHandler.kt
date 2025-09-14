@@ -63,11 +63,19 @@ class OAuth2AuthenticationFailureHandler(
             
             val failureReason = when (exception) {
                 is OAuth2AuthenticationException -> {
-                    when {
-                        exception.error?.description?.contains("invalid_client") == true -> FailureReasonType.INVALID_CLIENT
-                        exception.error?.description?.contains("invalid_scope") == true -> FailureReasonType.INVALID_SCOPE
-                        exception.error?.description?.contains("network") == true -> FailureReasonType.NETWORK_ERROR
-                        else -> FailureReasonType.SSO_ERROR
+                    when (exception.error?.errorCode) {
+                        "invalid_client" -> FailureReasonType.INVALID_CLIENT
+                        "invalid_scope" -> FailureReasonType.INVALID_SCOPE
+                        "network_error" -> FailureReasonType.NETWORK_ERROR
+                        else -> {
+                            // description에서도 확인
+                            when {
+                                exception.error?.description?.contains("invalid_client") == true -> FailureReasonType.INVALID_CLIENT
+                                exception.error?.description?.contains("invalid_scope") == true -> FailureReasonType.INVALID_SCOPE
+                                exception.error?.description?.contains("network") == true -> FailureReasonType.NETWORK_ERROR
+                                else -> FailureReasonType.SSO_ERROR
+                            }
+                        }
                     }
                 }
                 else -> FailureReasonType.SSO_ERROR

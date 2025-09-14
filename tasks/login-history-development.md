@@ -97,11 +97,22 @@ CREATE TABLE io_idp_login_history
 - [x] LoginHistoryService 통합 테스트
 
 #### 8-3. 인증 플로우 통합 테스트
-- [ ] CustomAuthenticationProvider 로그인 이력 기록 테스트
-  - 인증 성공 시 SUCCESS 이력 저장
-  - 인증 실패 시 FAIL 이력 저장 및 실패 원인 기록
-- [ ] SsoAuthenticationSuccessHandler SSO 로그인 이력 기록 테스트
-- [ ] OAuth2AuthenticationFailureHandler 실패 이력 기록 테스트
+- [x] CustomAuthenticationProvider 로그인 이력 기록 테스트
+  - [x] 인증 성공 시 SUCCESS 이력 저장
+  - [x] 인증 실패 시 FAIL 이력 저장 및 실패 원인 기록
+  - [x] 계정 비활성화 처리 테스트
+  - [x] 다양한 실패 케이스별 실패 원인 매핑 테스트
+- [x] SsoAuthenticationSuccessHandler SSO 로그인 이력 기록 테스트
+  - [x] OAuth2 소셜 로그인 성공 시 SOCIAL 타입 이력 기록
+  - [x] OIDC SSO 로그인 성공 시 SSO 타입 이력 기록
+  - [x] 세션에서 클라이언트 ID 추출 테스트
+  - [x] 다양한 소셜 제공자별 제공자 타입 결정 테스트
+- [x] OAuth2AuthenticationFailureHandler 실패 이력 기록 테스트
+  - [x] OAuth2 인증 실패 시 실패 이력 기록
+  - [x] 다양한 OAuth2 에러 코드별 실패 원인 매핑
+  - [x] 제공자 타입 추출 및 로그인 타입 결정
+  - [x] 클라이언트 ID 및 등록 ID 추출 로직 검증
+  - [x] 이력 기록 실패 시 예외 처리 테스트
 
 #### 8-4. API 엔드포인트 테스트
 - [ ] LoginHistoryController WebMvcTest
