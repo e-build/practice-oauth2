@@ -15,7 +15,9 @@
       "WebFetch(domain:localhost)",
       "Bash(curl:*)",
       "Bash(pkill:*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(git config:*)",
+      "Bash(git rebase:*)"
     ],
     "deny": [],
     "ask": []
