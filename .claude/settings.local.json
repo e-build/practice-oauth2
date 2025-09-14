@@ -7,7 +7,15 @@
       "Bash(docker exec:*)",
       "Bash(sed:*)",
       "Bash(perl:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(docker run:*)",
+      "Bash(mysql:*)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(xargs kill:*)"
     ],
     "deny": [],
     "ask": []

@@ -53,7 +53,7 @@ class CustomUserDetailsService(
 		idpClientId: String,
 	): UserDetails {
 		// OAuth Client가 속한 Shopl Client 확인
-		val idpClient: IoIdpClient = ioIdpClientRepository.findByClientId(idpClientId)
+		val idpClient: IoIdpClient = ioIdpClientRepository.findByIdpClientId(idpClientId)
 			?: throw IllegalArgumentException("IDP Client not found $idpClientId: $username")
 		// 해당 Shopl Client의 사용자만 조회
 		val account = findAccountByShoplClientAndIdentifier(idpClient.shoplClientId, username)

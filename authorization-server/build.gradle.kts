@@ -26,6 +26,9 @@ dependencies {
 	
 	// 프론트엔드 페이지를 위한 Thymeleaf 추가
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+	
+	// SpringDoc OpenAPI (Swagger)
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")

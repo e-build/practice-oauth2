@@ -11,6 +11,9 @@ enum class FailureReasonType {
     UNSUPPORTED_GRANT_TYPE,    // 지원하지 않는 Grant Type
     INVALID_SCOPE,             // 잘못된 Scope
     SSO_ERROR,                 // SSO 연동 오류
+    EXTERNAL_PROVIDER_ERROR,   // 외부 제공자 오류
+    SUSPICIOUS_LOCATION,       // 의심스러운 위치에서의 접근
+    BRUTE_FORCE_DETECTED,      // 무차별 대입 공격 탐지
     NETWORK_ERROR,             // 네트워크 오류
     SYSTEM_ERROR,              // 시스템 오류
     UNKNOWN                    // 알 수 없는 오류

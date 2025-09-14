@@ -34,7 +34,7 @@ class DatabaseRegisteredClientRepository(
 
 	@Transactional(readOnly = true)
 	override fun findByClientId(clientId: String): IdpClient? {
-		return ioIdpClientRepository.findByClientId(clientId)?.convertToRegisteredClient()
+		return ioIdpClientRepository.findByIdpClientId(clientId)?.convertToRegisteredClient()
 	}
 
 	@Transactional
@@ -54,7 +54,7 @@ class DatabaseRegisteredClientRepository(
 	private fun IoIdpClient.toDomain(): IdpClient {
 		return IdpClient(
 			doId = this.id,
-			doClientId = this.clientId,
+			doClientId = this.idpClientId,
 			doShoplClientId = this.shoplClientId,
 			doPlatform = this.platform,
 			doClientIdIssuedAt = this.clientIdIssuedAt,
@@ -80,7 +80,7 @@ class DatabaseRegisteredClientRepository(
 
 		return IoIdpClient(
 			id = this.id,
-			clientId = this.clientId,
+			idpClientId = this.clientId,
 			clientIdIssuedAt = this.clientIdIssuedAt
 				?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
 				?: LocalDateTime.now(),

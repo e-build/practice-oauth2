@@ -115,7 +115,11 @@ class AuthSecurityConfiguration(
 				it.requestMatchers("/favicon.ico").permitAll()
 					.requestMatchers("/error").permitAll()
 					.requestMatchers("/.well-known/**").permitAll()
-					.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+					// Swagger UI 관련 모든 경로 허용
+					.requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
+					.requestMatchers("/v3/api-docs/**", "/api-docs/**").permitAll()
+					.requestMatchers("/swagger-resources/**").permitAll()
+					.requestMatchers("/webjars/**").permitAll()
 					.requestMatchers("/login").permitAll()
 					.requestMatchers("/sso/**").permitAll() // SSO 관련 엔드포인트 허용
 					.requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()

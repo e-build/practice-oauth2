@@ -82,11 +82,11 @@ CREATE TABLE io_idp_login_history
 - [x] OAuth2 인증 실패 핸들러에 이력 기록 추가
 
 ### 6. API 엔드포인트
-- [ ] LoginHistoryController 생성
-- [ ] 사용자별 로그인 이력 조회 API
-- [ ] 로그인 통계 API (성공률, 실패 원인 분석 등)
-- [ ] 관리자용 전체 로그인 이력 조회 API
-- [ ] 특정 기간 로그인 이력 조회 API
+- [x] LoginHistoryController 생성
+- [x] 사용자별 로그인 이력 조회 API
+- [x] 로그인 통계 API (성공률, 실패 원인 분석 등)
+- [x] 관리자용 전체 로그인 이력 조회 API
+- [x] 특정 기간 로그인 이력 조회 API
 
 ### 7. 보안 및 프라이버시
 - [ ] 개인정보 해싱 및 마스킹 처리 확인

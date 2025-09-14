@@ -18,8 +18,8 @@ data class IoIdpClient(
 	@Id
 	val id: String,
 
-	@Column(name = "client_id", nullable = false)
-	val clientId: String,
+	@Column(name = "idp_client_id", nullable = false)
+	val idpClientId: String,
 
 	@Column(name = "shopl_client_id", nullable = false)
 	val shoplClientId: String,

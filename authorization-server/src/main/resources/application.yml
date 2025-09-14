@@ -6,7 +6,7 @@ spring:
     name: oauth2-authorization-server
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/shopl_authorization?useSSL=false&verifyServerCertificate=false&characterEncoding=UTF-8&serverTimezone=UTC&autoReconnect=true
+    url: jdbc:mysql://127.0.0.1:3306/shopl_authorization?useSSL=false&verifyServerCertificate=false&characterEncoding=UTF-8&serverTimezone=UTC&autoReconnect=true&allowPublicKeyRetrieval=true
     username: root
     password: 1234qwer!
   security:
@@ -40,8 +40,28 @@ logging:
     console: "%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level [rId=%X{rId:-}] %logger{36} - %msg%n"
 
 springdoc:
-  show-oauth2-endpoints: true
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    filter: true
+    oauth:
+      client-id: dashboard-client-1
+      client-secret: secret
+      realm: oauth2-realm
+      app-name: OAuth2 Authorization Server
+      scopes:
+        - read
+        - write
+      use-pkce-with-authorization-code-grant: true
+  show-oauth2-endpoints: false
   trim-kotlin-indent: true
+  swagger-ui-config:
+    oauth2-redirect-url: http://localhost:9000/swagger-ui/oauth2-redirect.html
 
 app:
   auth:

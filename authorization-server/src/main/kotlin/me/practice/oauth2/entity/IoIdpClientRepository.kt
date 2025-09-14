@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface IoIdpClientRepository : JpaRepository<IoIdpClient, String> {
-	fun findByClientId(clientId: String): IoIdpClient?
-	fun existsByClientId(clientId: String): Boolean
+	fun findByIdpClientId(clientId: String): IoIdpClient?
+	fun existsByIdpClientId(clientId: String): Boolean
 }
