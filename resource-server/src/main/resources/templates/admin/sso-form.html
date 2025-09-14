@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>SSO 설정 - Shopl B2B SaaS</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
+        .header h1 { color: #007bff; margin: 0; }
+        .header .breadcrumb { color: #6c757d; font-size: 14px; margin-top: 5px; }
+        .header .breadcrumb a { color: #007bff; text-decoration: none; }
+        .header .breadcrumb a:hover { text-decoration: underline; }
+        .user-info { background: #e9f4ff; padding: 15px; border-radius: 6px; border-left: 4px solid #007bff; margin-bottom: 20px; }
+        .user-info .label { font-weight: bold; color: #495057; }
+        .user-info .value { color: #6c757d; font-family: monospace; }
+        .form-section { margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #007bff; }
+        .form-section h3 { margin-top: 0; color: #495057; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #495057; }
+        .form-group .required { color: #dc3545; }
+        .form-group .help-text { font-size: 12px; color: #6c757d; margin-top: 5px; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .form-control:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 2px rgba(0,123,255,0.25); }
+        .form-control.is-invalid { border-color: #dc3545; }
+        .form-control.is-valid { border-color: #28a745; }
+        .invalid-feedback { color: #dc3545; font-size: 12px; margin-top: 5px; }
+        .valid-feedback { color: #28a745; font-size: 12px; margin-top: 5px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 14px; transition: all 0.3s ease; margin-right: 10px; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #545b62; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-success:hover { background-color: #1e7e34; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-warning:hover { background-color: #e0a800; }
+        .provider-fields { display: none; margin-top: 20px; padding: 20px; background: white; border-radius: 4px; border: 1px solid #dee2e6; }
+        .provider-fields.active { display: block; }
+        .provider-badge { display: inline-block; padding: 6px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-right: 10px; }
+        .badge-saml { background-color: #e1f5fe; color: #01579b; }
+        .badge-oidc { background-color: #f3e5f5; color: #4a148c; }
+        .badge-oauth2 { background-color: #e8f5e8; color: #1b5e20; }
+        .test-result { margin-top: 20px; padding: 15px; border-radius: 4px; display: none; }
+        .test-result.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .test-result.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .loading { text-align: center; padding: 20px; color: #6c757d; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; }
+        .checkbox-group input[type="checkbox"] { margin: 0; }
+        .attribute-mapping { background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 10px; }
+        .mapping-row { display: grid; grid-template-columns: 1fr 1fr 100px; gap: 10px; margin-bottom: 10px; align-items: center; }
+        .mapping-row:last-child { margin-bottom: 0; }
+        .add-mapping { color: #007bff; cursor: pointer; font-size: 12px; }
+        .add-mapping:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="pageTitle">➕ 새 SSO 설정 추가</h1>
+            <div class="breadcrumb">
+                <a href="/admin/auth-dashboard">Shopl B2B SaaS > 관리자 > 인증 관리</a> >
+                <a href="/admin/sso/configurations">SSO 설정 목록</a> >
+                <span id="breadcrumbAction">새 설정</span>
+            </div>
+        </div>
+
+        <div class="user-info">
+            <p><span class="label">관리자:</span> <span class="value" th:text="${username}">admin</span></p>
+            <p><span class="label">회사 ID:</span> <span class="value" th:text="${companyId}">company-001</span></p>
+        </div>
+
+        <form id="ssoConfigForm">
+            <!-- 기본 설정 섹션 -->
+            <div class="form-section">
+                <h3>📋 기본 설정</h3>
+
+                <div class="form-group">
+                    <label for="configName">설정 이름 <span class="required">*</span></label>
+                    <input type="text" id="configName" name="configName" class="form-control" placeholder="예: Google Workspace SSO" required>
+                    <div class="help-text">사용자가 식별할 수 있는 SSO 설정의 이름을 입력하세요.</div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="companyDomain">회사 도메인 <span class="required">*</span></label>
+                    <input type="text" id="companyDomain" name="companyDomain" class="form-control" placeholder="예: company.com" required>
+                    <div class="help-text">이 SSO 설정을 사용할 회사의 이메일 도메인을 입력하세요.</div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="providerType">SSO 제공자 유형 <span class="required">*</span></label>
+                    <select id="providerType" name="providerType" class="form-control" required>
+                        <option value="">-- 제공자 유형을 선택하세요 --</option>
+                        <option value="SAML">SAML 2.0</option>
+                        <option value="OIDC">OpenID Connect (OIDC)</option>
+                        <option value="OAUTH2">OAuth 2.0</option>
+                    </select>
+                    <div class="help-text">사용하려는 SSO 프로토콜을 선택하세요.</div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="isEnabled" name="isEnabled" checked>
+                        <label for="isEnabled">이 SSO 설정을 활성화</label>
+                    </div>
+                    <div class="help-text">체크를 해제하면 이 SSO 설정이 비활성화됩니다.</div>
+                </div>
+            </div>
+
+            <!-- SAML 설정 -->
+            <div id="samlFields" class="provider-fields">
+                <h3><span class="provider-badge badge-saml">SAML</span> SAML 2.0 설정</h3>
+
+                <div class="form-group">
+                    <label for="samlMetadataUrl">메타데이터 URL <span class="required">*</span></label>
+                    <input type="url" id="samlMetadataUrl" name="samlMetadataUrl" class="form-control" placeholder="https://your-idp.com/metadata">
+                    <div class="help-text">SAML IdP의 메타데이터 XML을 제공하는 URL을 입력하세요.</div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="samlEntityId">엔티티 ID</label>
+                    <input type="text" id="samlEntityId" name="samlEntityId" class="form-control" placeholder="shopl-saml-sp">
+                    <div class="help-text">SAML Service Provider 엔티티 ID (비워두면 자동 생성)</div>
+                </div>
+
+                <div class="form-group">
+                    <label>사용자 속성 매핑</label>
+                    <div class="attribute-mapping">
+                        <div class="mapping-row">
+                            <input type="text" placeholder="SAML 속성명" class="form-control" value="email">
+                            <input type="text" placeholder="내부 필드명" class="form-control" value="email" readonly>
+                            <button type="button" class="btn btn-sm btn-secondary">삭제</button>
+                        </div>
+                        <div class="mapping-row">
+                            <input type="text" placeholder="SAML 속성명" class="form-control" value="displayName">
+                            <input type="text" placeholder="내부 필드명" class="form-control" value="name" readonly>
+                            <button type="button" class="btn btn-sm btn-secondary">삭제</button>
+                        </div>
+                        <div class="add-mapping" onclick="addAttributeMapping()">+ 속성 매핑 추가</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OIDC 설정 -->
+            <div id="oidcFields" class="provider-fields">
+                <h3><span class="provider-badge badge-oidc">OIDC</span> OpenID Connect 설정</h3>
+
+                <div class="form-group">
+                    <label for="oidcClientId">클라이언트 ID <span class="required">*</span></label>
+                    <input type="text" id="oidcClientId" name="oidcClientId" class="form-control" placeholder="your-client-id">
+                    <div class="help-text">OIDC 제공자에서 발급받은 클라이언트 ID를 입력하세요.</div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="oidcClientSecret">클라이언트 Secret <span class="required">*</span></label>
+                    <input type="password" id="oidcClientSecret" name="oidcClientSecret" class="form-control" placeholder="your-client-secret">
+                    <div class="help-text">OIDC 제공자에서 발급받은 클라이언트 시크릿을 입력하세요.</div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="oidcDiscoveryUrl">Discovery URL <span class="required">*</span></label>
+                    <input type="url" id="oidcDiscoveryUrl" name="oidcDiscoveryUrl" class="form-control" placeholder="https://your-provider.com/.well-known/openid_configuration">
+                    <div class="help-text">OIDC 제공자의 Well-Known 구성 엔드포인트 URL을 입력하세요.</div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="oidcScope">스코프</label>
+                    <input type="text" id="oidcScope" name="oidcScope" class="form-control" value="openid profile email" placeholder="openid profile email">
+                    <div class="help-text">요청할 OIDC 스코프를 공백으로 구분하여 입력하세요.</div>
+                </div>
+
+                <div class="form-group">
+                    <label>클레임 매핑</label>
+                    <div class="attribute-mapping">
+                        <div class="mapping-row">
+                            <input type="text" placeholder="OIDC 클레임명" class="form-control" value="email">
+                            <input type="text" placeholder="내부 필드명" class="form-control" value="email" readonly>
+                            <button type="button" class="btn btn-sm btn-secondary">삭제</button>
+                        </div>
+                        <div class="mapping-row">
+                            <input type="text" placeholder="OIDC 클레임명" class="form-control" value="name">
+                            <input type="text" placeholder="내부 필드명" class="form-control" value="name" readonly>
+                            <button type="button" class="btn btn-sm btn-secondary">삭제</button>
+                        </div>
+                        <div class="add-mapping" onclick="addClaimMapping()">+ 클레임 매핑 추가</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OAuth2 설정 -->
+            <div id="oauth2Fields" class="provider-fields">
+                <h3><span class="provider-badge badge-oauth2">OAuth2</span> OAuth 2.0 설정</h3>
+
+                <div class="form-group">
+                    <label for="oauth2ClientId">클라이언트 ID <span class="required">*</span></label>
+                    <input type="text" id="oauth2ClientId" name="oauth2ClientId" class="form-control" placeholder="your-oauth2-client-id">
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="oauth2ClientSecret">클라이언트 Secret <span class="required">*</span></label>
+                    <input type="password" id="oauth2ClientSecret" name="oauth2ClientSecret" class="form-control" placeholder="your-oauth2-client-secret">
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="oauth2AuthUrl">인증 URL <span class="required">*</span></label>
+                    <input type="url" id="oauth2AuthUrl" name="oauth2AuthUrl" class="form-control" placeholder="https://provider.com/oauth/authorize">
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="oauth2TokenUrl">토큰 URL <span class="required">*</span></label>
+                    <input type="url" id="oauth2TokenUrl" name="oauth2TokenUrl" class="form-control" placeholder="https://provider.com/oauth/token">
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="oauth2UserInfoUrl">사용자 정보 URL</label>
+                    <input type="url" id="oauth2UserInfoUrl" name="oauth2UserInfoUrl" class="form-control" placeholder="https://provider.com/userinfo">
+                </div>
+            </div>
+
+            <!-- 테스트 결과 -->
+            <div id="testResult" class="test-result">
+                <div id="testResultMessage"></div>
+            </div>
+
+            <!-- 폼 액션 -->
+            <div class="form-section">
+                <h3>⚡ 액션</h3>
+                <button type="button" id="testConnectionBtn" class="btn btn-warning">🔧 연결 테스트</button>
+                <button type="submit" class="btn btn-primary">💾 설정 저장</button>
+                <a href="/admin/sso/configurations" class="btn btn-secondary">❌ 취소</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // 제공자 유형에 따른 필드 표시/숨김
+        document.getElementById('providerType').addEventListener('change', function() {
+            const providerType = this.value;
+            const allFields = document.querySelectorAll('.provider-fields');
+
+            // 모든 필드 숨기기
+            allFields.forEach(field => {
+                field.classList.remove('active');
+            });
+
+            // 선택된 제공자 필드 표시
+            if (providerType) {
+                const targetField = document.getElementById(providerType.toLowerCase() + 'Fields');
+                if (targetField) {
+                    targetField.classList.add('active');
+                }
+            }
+        });
+
+        // 속성 매핑 추가 함수
+        function addAttributeMapping() {
+            // TODO: 동적으로 매핑 행 추가
+            alert('속성 매핑 추가 기능은 개발 예정입니다.');
+        }
+
+        function addClaimMapping() {
+            // TODO: 동적으로 클레임 매핑 행 추가
+            alert('클레임 매핑 추가 기능은 개발 예정입니다.');
+        }
+
+        // 연결 테스트
+        document.getElementById('testConnectionBtn').addEventListener('click', async function() {
+            const formData = new FormData(document.getElementById('ssoConfigForm'));
+            const testResult = document.getElementById('testResult');
+            const testResultMessage = document.getElementById('testResultMessage');
+
+            this.disabled = true;
+            this.textContent = '🔄 테스트 중...';
+
+            try {
+                // TODO: 실제 테스트 API 호출
+                await new Promise(resolve => setTimeout(resolve, 2000)); // 시뮬레이션
+
+                // 성공 시뮬레이션
+                testResult.className = 'test-result success';
+                testResultMessage.innerHTML = '✅ <strong>연결 테스트 성공!</strong><br>SSO 제공자와 성공적으로 연결되었습니다.';
+                testResult.style.display = 'block';
+
+            } catch (error) {
+                testResult.className = 'test-result error';
+                testResultMessage.innerHTML = `❌ <strong>연결 테스트 실패</strong><br>${error.message}`;
+                testResult.style.display = 'block';
+            } finally {
+                this.disabled = false;
+                this.textContent = '🔧 연결 테스트';
+            }
+        });
+
+        // 폼 제출
+        document.getElementById('ssoConfigForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '💾 저장 중...';
+
+            try {
+                // TODO: 실제 저장 API 호출
+                await new Promise(resolve => setTimeout(resolve, 1500)); // 시뮬레이션
+
+                alert('✅ SSO 설정이 성공적으로 저장되었습니다!');
+                window.location.href = '/admin/sso/configurations';
+
+            } catch (error) {
+                alert('❌ 저장 중 오류가 발생했습니다: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💾 설정 저장';
+            }
+        });
+
+        // URL 파라미터 처리
+        const urlParams = new URLSearchParams(window.location.search);
+        const configId = urlParams.get('id');
+        const providerType = urlParams.get('type');
+        const isQuickMode = urlParams.get('quick') === 'true';
+
+        if (configId) {
+            // 편집 모드
+            document.getElementById('pageTitle').textContent = '✏️ SSO 설정 편집';
+            document.getElementById('breadcrumbAction').textContent = '설정 편집';
+
+            // TODO: 기존 설정 데이터 로드
+            console.log('편집 모드: 설정 ID', configId);
+        } else if (isQuickMode && providerType) {
+            // 빠른 설정 모드
+            document.getElementById('pageTitle').textContent = `🚀 ${providerType} 빠른 설정`;
+            document.getElementById('breadcrumbAction').textContent = `${providerType} 빠른 설정`;
+
+            // 제공자 타입 자동 선택
+            document.getElementById('providerType').value = providerType;
+            document.getElementById('providerType').dispatchEvent(new Event('change'));
+
+            // 빠른 설정 도움말 표시
+            showQuickSetupHelp(providerType);
+
+            console.log('빠른 설정 모드:', providerType);
+        }
+
+        function showQuickSetupHelp(type) {
+            let helpMessage = '';
+
+            switch (type) {
+                case 'SAML':
+                    helpMessage = `🚀 SAML 빠른 설정 모드
+
+필수 정보를 준비해주세요:
+• 메타데이터 URL
+• 회사 도메인 (예: company.com)
+• 설정 이름 (예: "회사명 SAML")
+
+메타데이터 URL은 SAML 제공자(IdP)에서 제공하는 XML 문서 주소입니다.`;
+                    break;
+
+                case 'OIDC':
+                    helpMessage = `🚀 OIDC 빠른 설정 모드
+
+필수 정보를 준비해주세요:
+• 클라이언트 ID
+• 클라이언트 Secret
+• Discovery URL (일반적으로 /.well-known/openid_configuration 으로 끝남)
+• 회사 도메인 (예: company.com)
+• 설정 이름 (예: "회사명 OIDC")`;
+                    break;
+
+                case 'OAUTH2':
+                    helpMessage = `🚀 OAuth2 빠른 설정 모드
+
+필수 정보를 준비해주세요:
+• 클라이언트 ID
+• 클라이언트 Secret
+• 인증 URL (Authorization Endpoint)
+• 토큰 URL (Token Endpoint)
+• 사용자 정보 URL (UserInfo Endpoint)
+• 회사 도메인 (예: company.com)
+• 설정 이름 (예: "회사명 OAuth2")`;
+                    break;
+            }
+
+            if (helpMessage) {
+                alert(helpMessage);
+            }
+        }
+
+        // 권한 확인
+        async function checkPermission() {
+            try {
+                const token = localStorage.getItem("access_token");
+                if (!token) {
+                    window.location.href = '/dashboard?error=no_token';
+                    return;
+                }
+
+                const response = await fetch('/admin/sso/api/check-permission', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                const data = await response.json();
+                if (!data.hasPermission) {
+                    alert('❌ SSO 관리 권한이 없습니다. 관리자에게 문의하세요.');
+                    window.location.href = '/dashboard';
+                }
+            } catch (error) {
+                console.error('권한 확인 중 오류:', error);
+                window.location.href = '/dashboard?error=permission_check_failed';
+            }
+        }
+
+        // 페이지 로드 시 권한 확인
+        document.addEventListener('DOMContentLoaded', checkPermission);
+    </script>
+</body>
+</html>

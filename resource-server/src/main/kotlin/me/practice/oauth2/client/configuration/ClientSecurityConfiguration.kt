@@ -25,21 +25,32 @@ class ResourceServerSecurityConfiguration(
 	@Bean
 	fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
 		http
-			// Stateless 유지 (JWT 토큰 기반)
-			.sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+			// 브라우저 기반 접근을 위한 세션 관리 (API는 stateless, 웹은 session 사용)
+			.sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) }
 			.authorizeHttpRequests { authorize ->
 				authorize
-					// 공개 엔드포인트 (OAuth2 로그인 관련 제거)
+					// 공개 엔드포인트
 					.requestMatchers("/public/**").permitAll()
 					.requestMatchers("/health", "/actuator/health").permitAll()
 					.requestMatchers("/favicon.ico").permitAll()
 					.requestMatchers("/error").permitAll()
-					.requestMatchers("/dashboard").permitAll()
-					.requestMatchers("/error").permitAll()
+					// 관리자 페이지 - 관리자 권한 필요
+					.requestMatchers("/admin/**").hasRole("ADMIN")
+					.requestMatchers("/api/admin/**").hasRole("ADMIN")
 					// 나머지는 인증 필요
 					.anyRequest().authenticated()
 			}
-			// Resource Server 설정만 유지하고 개선
+			// OAuth2 Login 설정 (브라우저 접근용)
+			.oauth2Login { oauth2 ->
+				oauth2.defaultSuccessUrl("/admin/auth-dashboard", true)
+			}
+			// 인증되지 않은 사용자를 OAuth2 로그인으로 리다이렉트
+			.exceptionHandling { exceptions ->
+				exceptions.authenticationEntryPoint { request, response, authException ->
+					response.sendRedirect("/oauth2/authorization/oauth2-client")
+				}
+			}
+			// Resource Server 설정 (API 접근용)
 			.oauth2ResourceServer { oauth2 ->
 				oauth2.jwt { jwt ->
 					// JWK Set URI 포트 수정

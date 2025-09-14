@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>SSO 설정 목록 - Shopl B2B SaaS</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
+        .header h1 { color: #007bff; margin: 0; }
+        .header .breadcrumb { color: #6c757d; font-size: 14px; margin-top: 5px; }
+        .header .breadcrumb a { color: #007bff; text-decoration: none; }
+        .header .breadcrumb a:hover { text-decoration: underline; }
+        .user-info { background: #e9f4ff; padding: 15px; border-radius: 6px; border-left: 4px solid #007bff; margin-bottom: 20px; }
+        .user-info .label { font-weight: bold; color: #495057; }
+        .user-info .value { color: #6c757d; font-family: monospace; }
+        .toolbar { display: flex; justify-content: between; align-items: center; margin-bottom: 20px; gap: 20px; }
+        .toolbar .left { flex: 1; }
+        .toolbar .right { flex-shrink: 0; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 14px; transition: all 0.3s ease; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #545b62; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-success:hover { background-color: #1e7e34; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-warning:hover { background-color: #e0a800; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-danger:hover { background-color: #c82333; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .search-box { width: 300px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .table-container { background: white; border-radius: 6px; overflow: hidden; border: 1px solid #dee2e6; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table thead th { background-color: #f8f9fa; padding: 12px; border-bottom: 2px solid #dee2e6; font-weight: bold; color: #495057; text-align: left; }
+        .table tbody td { padding: 12px; border-bottom: 1px solid #dee2e6; }
+        .table tbody tr:hover { background-color: #f8f9fa; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .status-active { background-color: #d4edda; color: #155724; }
+        .status-inactive { background-color: #f8d7da; color: #721c24; }
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .provider-type { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .provider-saml { background-color: #e1f5fe; color: #01579b; }
+        .provider-oidc { background-color: #f3e5f5; color: #4a148c; }
+        .provider-oauth2 { background-color: #e8f5e8; color: #1b5e20; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #6c757d; }
+        .empty-state .icon { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
+        .loading { text-align: center; padding: 40px; color: #6c757d; }
+        .error-message { background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 SSO 설정 목록</h1>
+            <div class="breadcrumb">
+                <a href="/admin/auth-dashboard">Shopl B2B SaaS > 관리자 > 인증 관리</a> > SSO 설정 목록
+            </div>
+        </div>
+
+        <div class="user-info">
+            <p><span class="label">관리자:</span> <span class="value" th:text="${username}">admin</span></p>
+            <p><span class="label">회사 ID:</span> <span class="value" th:text="${companyId}">company-001</span></p>
+        </div>
+
+        <div class="toolbar">
+            <div class="left">
+                <input type="text" id="searchBox" class="search-box" placeholder="🔍 SSO 설정 검색 (이름, 도메인, 제공자...)">
+            </div>
+            <div class="right">
+                <button onclick="refreshList()" class="btn btn-secondary">🔄 새로고침</button>
+                <a href="/admin/sso/configurations/form" class="btn btn-primary">➕ 새 SSO 추가</a>
+            </div>
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <div id="loadingMessage" class="loading">
+            🔄 SSO 설정 목록을 불러오는 중...
+        </div>
+
+        <div id="tableContainer" class="table-container" style="display: none;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>설정 이름</th>
+                        <th>제공자 유형</th>
+                        <th>회사/도메인</th>
+                        <th>상태</th>
+                        <th>생성일</th>
+                        <th>마지막 수정</th>
+                        <th>작업</th>
+                    </tr>
+                </thead>
+                <tbody id="ssoTableBody">
+                    <!-- 동적으로 생성 -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="icon">📋</div>
+            <h3>등록된 SSO 설정이 없습니다</h3>
+            <p>새로운 SSO 제공자를 추가해보세요.</p>
+            <a href="/admin/sso/configurations/form" class="btn btn-primary">➕ 첫 번째 SSO 추가</a>
+        </div>
+
+        <div class="toolbar">
+            <div class="left">
+                <a href="/admin/auth-dashboard" class="btn btn-secondary">🏠 관리자 홈</a>
+                <a href="/dashboard" class="btn btn-secondary">📊 일반 대시보드</a>
+                <button onclick="quickAddSAML()" class="btn btn-success">🔐 SAML 빠른 추가</button>
+                <button onclick="quickAddOIDC()" class="btn btn-success">🆔 OIDC 빠른 추가</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 현재는 모의 데이터 사용, 나중에 실제 API로 교체
+        const mockSsoConfigurations = [
+            {
+                id: 1,
+                name: "Google Workspace SSO",
+                providerType: "OIDC",
+                companyDomain: "example.com",
+                status: "ACTIVE",
+                createdAt: "2024-01-15T10:30:00Z",
+                updatedAt: "2024-01-20T14:45:00Z"
+            },
+            {
+                id: 2,
+                name: "Microsoft Azure AD",
+                providerType: "SAML",
+                companyDomain: "corp.example.com",
+                status: "ACTIVE",
+                createdAt: "2024-01-10T09:15:00Z",
+                updatedAt: "2024-01-18T16:20:00Z"
+            },
+            {
+                id: 3,
+                name: "Okta SSO",
+                providerType: "SAML",
+                companyDomain: "startup.com",
+                status: "PENDING",
+                createdAt: "2024-01-25T11:00:00Z",
+                updatedAt: "2024-01-25T11:00:00Z"
+            }
+        ];
+
+        async function loadSsoConfigurations() {
+            try {
+                // TODO: 실제 API 호출로 교체
+                // const response = await fetch('/api/admin/sso/configurations', {
+                //     headers: {
+                //         'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+                //     }
+                // });
+                // const configurations = await response.json();
+
+                // 현재는 모의 데이터 사용
+                await new Promise(resolve => setTimeout(resolve, 500)); // 로딩 시뮬레이션
+                displaySsoConfigurations(mockSsoConfigurations);
+
+            } catch (error) {
+                showError('SSO 설정 목록을 불러오는 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        function displaySsoConfigurations(configurations) {
+            const loadingEl = document.getElementById('loadingMessage');
+            const tableEl = document.getElementById('tableContainer');
+            const emptyEl = document.getElementById('emptyState');
+            const tbody = document.getElementById('ssoTableBody');
+
+            loadingEl.style.display = 'none';
+
+            if (configurations.length === 0) {
+                emptyEl.style.display = 'block';
+                tableEl.style.display = 'none';
+                return;
+            }
+
+            emptyEl.style.display = 'none';
+            tableEl.style.display = 'block';
+
+            tbody.innerHTML = configurations.map(config => `
+                <tr>
+                    <td><strong>${config.name}</strong></td>
+                    <td><span class="provider-type provider-${config.providerType.toLowerCase()}">${config.providerType}</span></td>
+                    <td>${config.companyDomain}</td>
+                    <td><span class="status-badge status-${config.status.toLowerCase()}">${getStatusText(config.status)}</span></td>
+                    <td>${formatDate(config.createdAt)}</td>
+                    <td>${formatDate(config.updatedAt)}</td>
+                    <td>
+                        <button onclick="editConfiguration(${config.id})" class="btn btn-sm btn-primary">✏️ 편집</button>
+                        <button onclick="testConfiguration(${config.id})" class="btn btn-sm btn-success">🔧 테스트</button>
+                        <button onclick="deleteConfiguration(${config.id})" class="btn btn-sm btn-danger">🗑️ 삭제</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'ACTIVE': '활성',
+                'INACTIVE': '비활성',
+                'PENDING': '대기중'
+            };
+            return statusMap[status] || status;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR') + ' ' + date.toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'});
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            const loadingEl = document.getElementById('loadingMessage');
+
+            loadingEl.style.display = 'none';
+            errorEl.textContent = '❌ ' + message;
+            errorEl.style.display = 'block';
+        }
+
+        function refreshList() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('loadingMessage').style.display = 'block';
+            document.getElementById('tableContainer').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
+            loadSsoConfigurations();
+        }
+
+        function editConfiguration(id) {
+            window.location.href = `/admin/sso/configurations/form?id=${id}`;
+        }
+
+        function testConfiguration(id) {
+            alert(`🔧 SSO 설정 ${id} 테스트 기능은 개발 예정입니다.`);
+        }
+
+        function deleteConfiguration(id) {
+            if (confirm('정말로 이 SSO 설정을 삭제하시겠습니까?')) {
+                alert(`🗑️ SSO 설정 ${id} 삭제 기능은 개발 예정입니다.`);
+            }
+        }
+
+        // 검색 기능
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#ssoTableBody tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // 권한 확인 후 데이터 로드
+        async function checkPermissionAndLoad() {
+            try {
+                const token = localStorage.getItem("access_token");
+                if (!token) {
+                    window.location.href = '/dashboard?error=no_token';
+                    return;
+                }
+
+                const response = await fetch('/admin/sso/api/check-permission', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                const data = await response.json();
+                if (!data.hasPermission) {
+                    alert('❌ SSO 관리 권한이 없습니다. 관리자에게 문의하세요.');
+                    window.location.href = '/dashboard';
+                    return;
+                }
+
+                await loadSsoConfigurations();
+
+            } catch (error) {
+                console.error('권한 확인 중 오류:', error);
+                showError('권한 확인 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 빠른 설정 함수들
+        function quickAddSAML() {
+            const url = '/admin/sso/configurations/form?type=SAML&quick=true';
+            window.location.href = url;
+        }
+
+        function quickAddOIDC() {
+            const url = '/admin/sso/configurations/form?type=OIDC&quick=true';
+            window.location.href = url;
+        }
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', checkPermissionAndLoad);
+    </script>
+</body>
+</html>
