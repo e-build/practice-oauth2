@@ -75,11 +75,11 @@ CREATE TABLE io_idp_login_history
 - [x] ScopeJsonUtil 클래스 생성 (기존 JsonUtils 확장)
 
 ### 5. 기존 인증 플로우 통합
-- [ ] CustomAuthenticationProvider에 로그인 이력 기록 추가
-  - [ ] 인증 성공 시 이력 저장
-  - [ ] 인증 실패 시 이력 저장 (실패 원인 포함)
-- [ ] SsoAuthenticationSuccessHandler에 SSO 로그인 이력 기록 추가
-- [ ] OAuth2 인증 실패 핸들러에 이력 기록 추가
+- [x] CustomAuthenticationProvider에 로그인 이력 기록 추가
+  - [x] 인증 성공 시 이력 저장
+  - [x] 인증 실패 시 이력 저장 (실패 원인 포함)
+- [x] SsoAuthenticationSuccessHandler에 SSO 로그인 이력 기록 추가
+- [x] OAuth2 인증 실패 핸들러에 이력 기록 추가
 
 ### 6. API 엔드포인트
 - [ ] LoginHistoryController 생성

@@ -3,7 +3,10 @@ package me.practice.oauth2.handler
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import me.practice.oauth2.entity.ProviderType
+import me.practice.oauth2.entity.LoginType
 import me.practice.oauth2.service.UserProvisioningService
+import me.practice.oauth2.service.LoginHistoryService
+import me.practice.oauth2.domain.IdpClient
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
@@ -20,7 +23,8 @@ import org.springframework.stereotype.Component
  */
 @Component
 class SsoAuthenticationSuccessHandler(
-    private val userProvisioningService: UserProvisioningService
+    private val userProvisioningService: UserProvisioningService,
+    private val loginHistoryService: LoginHistoryService
 ) : SimpleUrlAuthenticationSuccessHandler() {
 
     private val logger = LoggerFactory.getLogger(SsoAuthenticationSuccessHandler::class.java)
@@ -80,6 +84,9 @@ class SsoAuthenticationSuccessHandler(
         request.session.setAttribute("authenticated_account", account)
         request.session.setAttribute("sso_provider", providerType.name)
         request.session.setAttribute("registration_id", registrationId)
+
+        // SSO 로그인 이력 기록
+        recordSsoLoginHistory(account, providerType, registrationId, request)
 
         logger.info("Successfully provisioned user: ${account.id} via provider: $providerType")
     }
@@ -204,5 +211,40 @@ class SsoAuthenticationSuccessHandler(
         // 4. 기본 대시보드로
         logger.debug("No OAuth2 parameters found, redirecting to dashboard")
         return "http://localhost:9001/dashboard"
+    }
+
+    /**
+     * SSO 로그인 이력 기록
+     */
+    private fun recordSsoLoginHistory(
+        account: me.practice.oauth2.entity.IoIdpAccount,
+        providerType: ProviderType,
+        registrationId: String,
+        request: HttpServletRequest
+    ) {
+        try {
+            val sessionId = request.session.id
+            val loginType = when (providerType) {
+                ProviderType.GOOGLE, ProviderType.KAKAO, ProviderType.NAVER, 
+                ProviderType.APPLE, ProviderType.MICROSOFT, ProviderType.GITHUB -> LoginType.SOCIAL
+                ProviderType.SAML, ProviderType.OIDC -> LoginType.SSO
+                else -> LoginType.SSO
+            }
+            
+            loginHistoryService.recordSuccessfulLogin(
+                shoplClientId = account.shoplClientId,
+                shoplUserId = account.shoplUserId,
+                platform = IdpClient.Platform.DASHBOARD, // SSO는 주로 DASHBOARD 플랫폼에서 사용
+                loginType = loginType,
+                provider = providerType.name,
+                sessionId = sessionId,
+                request = request
+            )
+            
+            logger.debug("Recorded SSO login history for user: ${account.shoplUserId}, provider: $providerType")
+        } catch (e: Exception) {
+            // 로그인 이력 기록 실패가 SSO 인증 자체를 방해하지 않도록 예외 처리
+            logger.warn("Failed to record SSO login history for user: ${account.shoplUserId}, provider: $providerType", e)
+        }
     }
 }

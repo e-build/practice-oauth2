@@ -28,7 +28,7 @@ import kotlin.test.*
 @Testcontainers
 @Transactional
 class LoginHistoryServiceIT(
-    private val loginHistoryService: LoginHistoryService,
+    private val sut: LoginHistoryService,
     private val loginHistoryRepository: IoIdpLoginHistoryRepository,
 ) {
 
@@ -63,7 +63,7 @@ class LoginHistoryServiceIT(
         val sessionId = TEST_SESSION_ID
 
         // When
-        val savedHistory = loginHistoryService.recordSuccessfulLogin(
+        val savedHistory = sut.recordSuccessfulLogin(
             shoplClientId = shoplClientId,
             shoplUserId = shoplUserId,
             platform = platform,
@@ -101,7 +101,7 @@ class LoginHistoryServiceIT(
         val sessionId = TEST_SESSION_ID
 
         // When
-        val savedHistory = loginHistoryService.recordFailedLogin(
+        val savedHistory = sut.recordFailedLogin(
             shoplClientId = shoplClientId,
             shoplUserId = shoplUserId,
             platform = platform,
@@ -138,7 +138,7 @@ class LoginHistoryServiceIT(
         
         // 테스트 데이터 생성
         repeat(5) { i ->
-            loginHistoryService.recordSuccessfulLogin(
+            sut.recordSuccessfulLogin(
                 shoplClientId = clientId,
                 shoplUserId = userId,
                 platform = IdpClient.Platform.DASHBOARD,
@@ -148,7 +148,7 @@ class LoginHistoryServiceIT(
         }
         
         repeat(3) { i ->
-            loginHistoryService.recordFailedLogin(
+            sut.recordFailedLogin(
                 shoplClientId = clientId,
                 shoplUserId = userId,
                 platform = IdpClient.Platform.APP,
@@ -160,7 +160,7 @@ class LoginHistoryServiceIT(
 
         // When
         val pageable = PageRequest.of(0, 10)
-        val result = loginHistoryService.getUserLoginHistory(userId, pageable)
+        val result = sut.getUserLoginHistory(userId, pageable)
 
         // Then
         assertEquals(8, result.totalElements)
@@ -185,7 +185,7 @@ class LoginHistoryServiceIT(
         
         // 클라이언트 1의 이력
         repeat(3) { i ->
-            loginHistoryService.recordSuccessfulLogin(
+            sut.recordSuccessfulLogin(
                 shoplClientId = clientId1,
                 shoplUserId = userId,
                 platform = IdpClient.Platform.DASHBOARD,
@@ -196,7 +196,7 @@ class LoginHistoryServiceIT(
         
         // 클라이언트 2의 이력
         repeat(2) { i ->
-            loginHistoryService.recordSuccessfulLogin(
+            sut.recordSuccessfulLogin(
                 shoplClientId = clientId2,
                 shoplUserId = userId,
                 platform = IdpClient.Platform.APP,
@@ -207,8 +207,8 @@ class LoginHistoryServiceIT(
 
         // When
         val pageable = PageRequest.of(0, 10)
-        val result1 = loginHistoryService.getUserLoginHistory(userId, clientId1, pageable)
-        val result2 = loginHistoryService.getUserLoginHistory(userId, clientId2, pageable)
+        val result1 = sut.getUserLoginHistory(userId, clientId1, pageable)
+        val result2 = sut.getUserLoginHistory(userId, clientId2, pageable)
 
         // Then
         assertEquals(3, result1.totalElements)
@@ -237,7 +237,7 @@ class LoginHistoryServiceIT(
 
         // 기간 내 이력 생성
         repeat(3) { i ->
-            loginHistoryService.recordSuccessfulLogin(
+            sut.recordSuccessfulLogin(
                 shoplClientId = clientId,
                 shoplUserId = userId,
                 platform = IdpClient.Platform.DASHBOARD,
@@ -248,7 +248,7 @@ class LoginHistoryServiceIT(
 
         // When
         val pageable = PageRequest.of(0, 10)
-        val result = loginHistoryService.getUserLoginHistory(userId, startTime, endTime, pageable)
+        val result = sut.getUserLoginHistory(userId, startTime, endTime, pageable)
 
         // Then
         assertEquals(3, result.totalElements)
@@ -266,7 +266,7 @@ class LoginHistoryServiceIT(
         val clientId = TEST_CLIENT_ID
 
         // 실패 로그인
-        loginHistoryService.recordFailedLogin(
+        sut.recordFailedLogin(
             shoplClientId = clientId,
             shoplUserId = userId,
             platform = IdpClient.Platform.DASHBOARD,
@@ -278,7 +278,7 @@ class LoginHistoryServiceIT(
         Thread.sleep(10) // 시간 차이를 위해 잠시 대기
 
         // 성공 로그인
-        val successfulLogin = loginHistoryService.recordSuccessfulLogin(
+        val successfulLogin = sut.recordSuccessfulLogin(
             shoplClientId = clientId,
             shoplUserId = userId,
             platform = IdpClient.Platform.DASHBOARD,
@@ -289,7 +289,7 @@ class LoginHistoryServiceIT(
         Thread.sleep(10) // 시간 차이를 위해 잠시 대기
 
         // 또 다른 실패 로그인
-        loginHistoryService.recordFailedLogin(
+        sut.recordFailedLogin(
             shoplClientId = clientId,
             shoplUserId = userId,
             platform = IdpClient.Platform.DASHBOARD,
@@ -299,7 +299,7 @@ class LoginHistoryServiceIT(
         )
 
         // When
-        val lastSuccessful = loginHistoryService.getLastSuccessfulLogin(userId)
+        val lastSuccessful = sut.getLastSuccessfulLogin(userId)
 
         // Then
         assertNotNull(lastSuccessful)
@@ -316,7 +316,7 @@ class LoginHistoryServiceIT(
         val clientId = TEST_CLIENT_ID
 
         // 성공 로그인 (카운트에 포함되지 않아야 함)
-        loginHistoryService.recordSuccessfulLogin(
+        sut.recordSuccessfulLogin(
             shoplClientId = clientId,
             shoplUserId = userId,
             platform = IdpClient.Platform.DASHBOARD,
@@ -326,7 +326,7 @@ class LoginHistoryServiceIT(
 
         // 실패 로그인들
         repeat(4) { i ->
-            loginHistoryService.recordFailedLogin(
+            sut.recordFailedLogin(
                 shoplClientId = clientId,
                 shoplUserId = userId,
                 platform = IdpClient.Platform.DASHBOARD,
@@ -337,7 +337,7 @@ class LoginHistoryServiceIT(
         }
 
         // When
-        val failCount = loginHistoryService.getRecentFailedLoginAttempts(userId, 24)
+        val failCount = sut.getRecentFailedLoginAttempts(userId, 24)
 
         // Then
         assertEquals(4, failCount)
@@ -352,7 +352,7 @@ class LoginHistoryServiceIT(
 
         // 성공 로그인 7개
         repeat(7) { i ->
-            loginHistoryService.recordSuccessfulLogin(
+            sut.recordSuccessfulLogin(
                 shoplClientId = clientId,
                 shoplUserId = "${userId}_$i",
                 platform = IdpClient.Platform.DASHBOARD,
@@ -363,7 +363,7 @@ class LoginHistoryServiceIT(
 
         // 실패 로그인 3개
         repeat(3) { i ->
-            loginHistoryService.recordFailedLogin(
+            sut.recordFailedLogin(
                 shoplClientId = clientId,
                 shoplUserId = "${userId}_fail_$i",
                 platform = IdpClient.Platform.DASHBOARD,
@@ -374,7 +374,7 @@ class LoginHistoryServiceIT(
         }
 
         // When
-        val stats = loginHistoryService.getClientLoginStats(clientId, 30)
+        val stats = sut.getClientLoginStats(clientId, 30)
 
         // Then
         assertEquals(7, stats.successCount)
@@ -392,7 +392,7 @@ class LoginHistoryServiceIT(
 
         // BASIC 로그인 - 성공 5개, 실패 2개
         repeat(5) { i ->
-            loginHistoryService.recordSuccessfulLogin(
+            sut.recordSuccessfulLogin(
                 shoplClientId = clientId,
                 shoplUserId = "${userId}_basic_$i",
                 platform = IdpClient.Platform.DASHBOARD,
@@ -402,7 +402,7 @@ class LoginHistoryServiceIT(
         }
         
         repeat(2) { i ->
-            loginHistoryService.recordFailedLogin(
+            sut.recordFailedLogin(
                 shoplClientId = clientId,
                 shoplUserId = "${userId}_basic_fail_$i",
                 platform = IdpClient.Platform.DASHBOARD,
@@ -414,7 +414,7 @@ class LoginHistoryServiceIT(
 
         // SOCIAL 로그인 - 성공 3개, 실패 1개
         repeat(3) { i ->
-            loginHistoryService.recordSuccessfulLogin(
+            sut.recordSuccessfulLogin(
                 shoplClientId = clientId,
                 shoplUserId = "${userId}_social_$i",
                 platform = IdpClient.Platform.APP,
@@ -424,7 +424,7 @@ class LoginHistoryServiceIT(
             )
         }
         
-        loginHistoryService.recordFailedLogin(
+        sut.recordFailedLogin(
             shoplClientId = clientId,
             shoplUserId = "${userId}_social_fail",
             platform = IdpClient.Platform.APP,
@@ -435,7 +435,7 @@ class LoginHistoryServiceIT(
         )
 
         // When
-        val stats = loginHistoryService.getLoginTypeStats(clientId, 30)
+        val stats = sut.getLoginTypeStats(clientId, 30)
 
         // Then
         assertEquals(2, stats.size)

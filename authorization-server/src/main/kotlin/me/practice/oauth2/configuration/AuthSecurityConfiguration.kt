@@ -10,6 +10,7 @@ import me.practice.oauth2.infrastructure.redis.RedisAuthorizationProperties
 import me.practice.oauth2.infrastructure.redis.RedisOAuth2AuthorizationService
 import me.practice.oauth2.service.CompositeClientRegistrationRepository
 import me.practice.oauth2.handler.SsoAuthenticationSuccessHandler
+import me.practice.oauth2.handler.OAuth2AuthenticationFailureHandler
 import org.springframework.boot.autoconfigure.security.oauth2.server.servlet.OAuth2AuthorizationServerProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -54,6 +55,7 @@ class AuthSecurityConfiguration(
 	private val redisAuthorizationProperties: RedisAuthorizationProperties,
 	private val compositeClientRegistrationRepository: CompositeClientRegistrationRepository,
 	private val ssoAuthenticationSuccessHandler: SsoAuthenticationSuccessHandler,
+	private val oAuth2AuthenticationFailureHandler: OAuth2AuthenticationFailureHandler,
 ) {
 
 	/**
@@ -128,7 +130,7 @@ class AuthSecurityConfiguration(
 				oauth2.clientRegistrationRepository(compositeClientRegistrationRepository)
 					.loginPage("/login") // 기본 로그인 페이지 사용
 					.successHandler(ssoAuthenticationSuccessHandler)
-					.failureUrl("/login?error=sso_failed")
+					.failureHandler(oAuth2AuthenticationFailureHandler)
 			}
 			.logout {
 				it

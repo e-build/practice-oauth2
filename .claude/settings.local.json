@@ -4,7 +4,10 @@
       "Bash(./gradlew:*)",
       "Bash(find:*)",
       "Bash(redis-cli:*)",
-      "Bash(docker exec:*)"
+      "Bash(docker exec:*)",
+      "Bash(sed:*)",
+      "Bash(perl:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
