@@ -21,7 +21,14 @@
       "Bash(git commit:*)",
       "Bash(git filter-branch:*)",
       "Bash(git log:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "WebSearch",
+      "Bash(docker inspect:*)",
+      "Read(//Users/donggeollee/**)",
+      "Bash(chmod:*)",
+      "Bash(env)"
     ],
     "deny": [],
     "ask": []
