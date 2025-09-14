@@ -17,7 +17,11 @@
       "Bash(pkill:*)",
       "Bash(xargs kill:*)",
       "Bash(git config:*)",
-      "Bash(git rebase:*)"
+      "Bash(git rebase:*)",
+      "Bash(git commit:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(git log:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
