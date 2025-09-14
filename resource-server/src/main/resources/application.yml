@@ -4,18 +4,31 @@ server:
 spring:
   application:
     name: my-resource-server  # 이름 변경
+  # 개발 중 임시로 데이터소스 비활성화
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/mydb?useSSL=false&verifyServerCertificate=false&characterEncoding=UTF-8&serverTimezone=UTC&autoReconnect=true
+    url: jdbc:mysql://127.0.0.1:3306/shopl?useSSL=false&verifyServerCertificate=false&characterEncoding=UTF-8&serverTimezone=UTC&autoReconnect=true
     username: root
     password: 1234qwer!
+  jpa:
+    hibernate:
+      ddl-auto: none  # 임시로 none 설정
   security:
     oauth2:
+      client:
+        registration:
+          oauth2-client:
+            client-id: oauth2-client
+            client-secret: secret
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: openid, profile, read, write
+        provider:
+          oauth2-client:
+            issuer-uri: http://localhost:9000
       resourceserver:
         jwt:
-          # Authorization Server URI (포트 8080으로 수정)
           issuer-uri: http://localhost:9000
-          # JWK Set URI (포트 8080으로 수정)
           jwk-set-uri: http://localhost:9000/oauth2/jwks
 
 logging:

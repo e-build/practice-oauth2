@@ -59,9 +59,9 @@ springdoc:
         - write
       use-pkce-with-authorization-code-grant: true
   show-oauth2-endpoints: false
-  trim-kotlin-indent: true
   swagger-ui-config:
-    oauth2-redirect-url: http://localhost:9000/swagger-ui/oauth2-redirect.html
+    otauth2-redirect-url: http://localhost:9000/swagger-ui/oauth2-redirect.html
+  trim-kotlin-indent: true
 
 app:
   auth:

@@ -6,7 +6,8 @@ plugins {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
-	// OAuth2 Client 제거 -> Resource Server로 변경
+	// OAuth2 Client 및 Resource Server 모두 지원
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
 	// DB
