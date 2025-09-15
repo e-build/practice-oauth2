@@ -41,7 +41,10 @@
       "Bash(git merge:*)",
       "Bash(git push:*)",
       "Bash(git pull:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(git worktree:*)"
     ],
     "deny": [],
     "ask": []
