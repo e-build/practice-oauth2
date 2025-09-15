@@ -39,7 +39,10 @@
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_close",
       "mcp__playwright__browser_take_screenshot",
-      "Bash(git worktree:*)"
+      "Bash(git worktree:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []
