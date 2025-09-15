@@ -116,7 +116,7 @@
 
                 <div class="form-group">
                     <label for="samlMetadataUrl">메타데이터 URL <span class="required">*</span></label>
-                    <input type="url" id="samlMetadataUrl" name="samlMetadataUrl" class="form-control" placeholder="https://your-idp.com/metadata">
+                    <input type="url" id="samlMetadataUrl" name="samlMetadataUrl" class="form-control" placeholder="https://your-idp.com/metadata" required>
                     <div class="help-text">SAML IdP의 메타데이터 XML을 제공하는 URL을 입력하세요.</div>
                     <div class="invalid-feedback"></div>
                 </div>
@@ -131,14 +131,14 @@
                     <label>사용자 속성 매핑</label>
                     <div class="attribute-mapping">
                         <div class="mapping-row">
-                            <input type="text" placeholder="SAML 속성명" class="form-control" value="email">
-                            <input type="text" placeholder="내부 필드명" class="form-control" value="email" readonly>
-                            <button type="button" class="btn btn-sm btn-secondary">삭제</button>
+                            <input type="text" placeholder="SAML 속성명" class="form-control" value="email" name="samlAttributes[]">
+                            <input type="text" placeholder="내부 필드명" class="form-control" value="email" name="internalFields[]" readonly>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="removeMapping(this)">삭제</button>
                         </div>
                         <div class="mapping-row">
-                            <input type="text" placeholder="SAML 속성명" class="form-control" value="displayName">
-                            <input type="text" placeholder="내부 필드명" class="form-control" value="name" readonly>
-                            <button type="button" class="btn btn-sm btn-secondary">삭제</button>
+                            <input type="text" placeholder="SAML 속성명" class="form-control" value="displayName" name="samlAttributes[]">
+                            <input type="text" placeholder="내부 필드명" class="form-control" value="name" name="internalFields[]" readonly>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="removeMapping(this)">삭제</button>
                         </div>
                         <div class="add-mapping" onclick="addAttributeMapping()">+ 속성 매핑 추가</div>
                     </div>
@@ -151,21 +151,21 @@
 
                 <div class="form-group">
                     <label for="oidcClientId">클라이언트 ID <span class="required">*</span></label>
-                    <input type="text" id="oidcClientId" name="oidcClientId" class="form-control" placeholder="your-client-id">
+                    <input type="text" id="oidcClientId" name="oidcClientId" class="form-control" placeholder="your-client-id" required>
                     <div class="help-text">OIDC 제공자에서 발급받은 클라이언트 ID를 입력하세요.</div>
                     <div class="invalid-feedback"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="oidcClientSecret">클라이언트 Secret <span class="required">*</span></label>
-                    <input type="password" id="oidcClientSecret" name="oidcClientSecret" class="form-control" placeholder="your-client-secret">
+                    <input type="password" id="oidcClientSecret" name="oidcClientSecret" class="form-control" placeholder="your-client-secret" required>
                     <div class="help-text">OIDC 제공자에서 발급받은 클라이언트 시크릿을 입력하세요.</div>
                     <div class="invalid-feedback"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="oidcDiscoveryUrl">Discovery URL <span class="required">*</span></label>
-                    <input type="url" id="oidcDiscoveryUrl" name="oidcDiscoveryUrl" class="form-control" placeholder="https://your-provider.com/.well-known/openid_configuration">
+                    <input type="url" id="oidcDiscoveryUrl" name="oidcDiscoveryUrl" class="form-control" placeholder="https://your-provider.com/.well-known/openid_configuration" required>
                     <div class="help-text">OIDC 제공자의 Well-Known 구성 엔드포인트 URL을 입력하세요.</div>
                     <div class="invalid-feedback"></div>
                 </div>
@@ -180,14 +180,14 @@
                     <label>클레임 매핑</label>
                     <div class="attribute-mapping">
                         <div class="mapping-row">
-                            <input type="text" placeholder="OIDC 클레임명" class="form-control" value="email">
-                            <input type="text" placeholder="내부 필드명" class="form-control" value="email" readonly>
-                            <button type="button" class="btn btn-sm btn-secondary">삭제</button>
+                            <input type="text" placeholder="OIDC 클레임명" class="form-control" value="email" name="oidcClaims[]">
+                            <input type="text" placeholder="내부 필드명" class="form-control" value="email" name="internalFields[]" readonly>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="removeMapping(this)">삭제</button>
                         </div>
                         <div class="mapping-row">
-                            <input type="text" placeholder="OIDC 클레임명" class="form-control" value="name">
-                            <input type="text" placeholder="내부 필드명" class="form-control" value="name" readonly>
-                            <button type="button" class="btn btn-sm btn-secondary">삭제</button>
+                            <input type="text" placeholder="OIDC 클레임명" class="form-control" value="name" name="oidcClaims[]">
+                            <input type="text" placeholder="내부 필드명" class="form-control" value="name" name="internalFields[]" readonly>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="removeMapping(this)">삭제</button>
                         </div>
                         <div class="add-mapping" onclick="addClaimMapping()">+ 클레임 매핑 추가</div>
                     </div>
@@ -200,25 +200,25 @@
 
                 <div class="form-group">
                     <label for="oauth2ClientId">클라이언트 ID <span class="required">*</span></label>
-                    <input type="text" id="oauth2ClientId" name="oauth2ClientId" class="form-control" placeholder="your-oauth2-client-id">
+                    <input type="text" id="oauth2ClientId" name="oauth2ClientId" class="form-control" placeholder="your-oauth2-client-id" required>
                     <div class="invalid-feedback"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="oauth2ClientSecret">클라이언트 Secret <span class="required">*</span></label>
-                    <input type="password" id="oauth2ClientSecret" name="oauth2ClientSecret" class="form-control" placeholder="your-oauth2-client-secret">
+                    <input type="password" id="oauth2ClientSecret" name="oauth2ClientSecret" class="form-control" placeholder="your-oauth2-client-secret" required>
                     <div class="invalid-feedback"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="oauth2AuthUrl">인증 URL <span class="required">*</span></label>
-                    <input type="url" id="oauth2AuthUrl" name="oauth2AuthUrl" class="form-control" placeholder="https://provider.com/oauth/authorize">
+                    <input type="url" id="oauth2AuthUrl" name="oauth2AuthUrl" class="form-control" placeholder="https://provider.com/oauth/authorize" required>
                     <div class="invalid-feedback"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="oauth2TokenUrl">토큰 URL <span class="required">*</span></label>
-                    <input type="url" id="oauth2TokenUrl" name="oauth2TokenUrl" class="form-control" placeholder="https://provider.com/oauth/token">
+                    <input type="url" id="oauth2TokenUrl" name="oauth2TokenUrl" class="form-control" placeholder="https://provider.com/oauth/token" required>
                     <div class="invalid-feedback"></div>
                 </div>
 
@@ -265,13 +265,31 @@
 
         // 속성 매핑 추가 함수
         function addAttributeMapping() {
-            // TODO: 동적으로 매핑 행 추가
-            alert('속성 매핑 추가 기능은 개발 예정입니다.');
+            const container = document.querySelector('#samlFields .attribute-mapping');
+            const newRow = document.createElement('div');
+            newRow.className = 'mapping-row';
+            newRow.innerHTML = `
+                <input type="text" placeholder="SAML 속성명" class="form-control" name="samlAttributes[]">
+                <input type="text" placeholder="내부 필드명" class="form-control" name="internalFields[]">
+                <button type="button" class="btn btn-sm btn-secondary" onclick="removeMapping(this)">삭제</button>
+            `;
+            container.insertBefore(newRow, container.lastElementChild);
         }
 
         function addClaimMapping() {
-            // TODO: 동적으로 클레임 매핑 행 추가
-            alert('클레임 매핑 추가 기능은 개발 예정입니다.');
+            const container = document.querySelector('#oidcFields .attribute-mapping');
+            const newRow = document.createElement('div');
+            newRow.className = 'mapping-row';
+            newRow.innerHTML = `
+                <input type="text" placeholder="OIDC 클레임명" class="form-control" name="oidcClaims[]">
+                <input type="text" placeholder="내부 필드명" class="form-control" name="internalFields[]">
+                <button type="button" class="btn btn-sm btn-secondary" onclick="removeMapping(this)">삭제</button>
+            `;
+            container.insertBefore(newRow, container.lastElementChild);
+        }
+
+        function removeMapping(button) {
+            button.parentElement.remove();
         }
 
         // 연결 테스트
@@ -305,6 +323,12 @@
         // 폼 제출
         document.getElementById('ssoConfigForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            // 유효성 검증
+            if (!validateForm()) {
+                alert('❌ 입력한 정보를 다시 확인해주세요.');
+                return;
+            }
 
             const formData = new FormData(this);
             const submitBtn = this.querySelector('button[type="submit"]');
@@ -428,8 +452,182 @@
             }
         }
 
+        // 실시간 유효성 검증
+        function setupValidation() {
+            // 필수 필드 검증
+            const requiredFields = ['configName', 'companyDomain', 'providerType'];
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('blur', () => validateField(field));
+                    field.addEventListener('input', () => clearValidation(field));
+                }
+            });
+
+            // URL 필드 검증
+            const urlFields = ['samlMetadataUrl', 'oidcDiscoveryUrl', 'oauth2AuthUrl', 'oauth2TokenUrl', 'oauth2UserInfoUrl'];
+            urlFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('blur', () => validateUrl(field));
+                    field.addEventListener('input', () => clearValidation(field));
+                }
+            });
+
+            // 도메인 필드 검증
+            const domainField = document.getElementById('companyDomain');
+            if (domainField) {
+                domainField.addEventListener('blur', () => validateDomain(domainField));
+                domainField.addEventListener('input', () => clearValidation(domainField));
+            }
+
+            // 제공자별 필수 필드 검증
+            const providerTypeField = document.getElementById('providerType');
+            if (providerTypeField) {
+                providerTypeField.addEventListener('change', () => {
+                    validateProviderFields();
+                });
+            }
+        }
+
+        function validateField(field) {
+            const value = field.value.trim();
+            if (!value) {
+                setFieldError(field, '이 필드는 필수입니다.');
+                return false;
+            }
+            setFieldValid(field);
+            return true;
+        }
+
+        function validateUrl(field) {
+            const value = field.value.trim();
+            if (field.hasAttribute('required') && !value) {
+                setFieldError(field, '이 필드는 필수입니다.');
+                return false;
+            }
+            if (value && !isValidUrl(value)) {
+                setFieldError(field, '올바른 URL 형식이 아닙니다.');
+                return false;
+            }
+            if (value) {
+                setFieldValid(field);
+            }
+            return true;
+        }
+
+        function validateDomain(field) {
+            const value = field.value.trim();
+            if (!value) {
+                setFieldError(field, '회사 도메인은 필수입니다.');
+                return false;
+            }
+            if (!isValidDomain(value)) {
+                setFieldError(field, '올바른 도메인 형식이 아닙니다. (예: company.com)');
+                return false;
+            }
+            setFieldValid(field);
+            return true;
+        }
+
+        function validateProviderFields() {
+            const providerType = document.getElementById('providerType').value;
+            let isValid = true;
+
+            if (providerType === 'SAML') {
+                const metadataUrl = document.getElementById('samlMetadataUrl');
+                if (metadataUrl && !validateUrl(metadataUrl)) {
+                    isValid = false;
+                }
+            } else if (providerType === 'OIDC') {
+                const clientId = document.getElementById('oidcClientId');
+                const clientSecret = document.getElementById('oidcClientSecret');
+                const discoveryUrl = document.getElementById('oidcDiscoveryUrl');
+
+                if (clientId && !validateField(clientId)) isValid = false;
+                if (clientSecret && !validateField(clientSecret)) isValid = false;
+                if (discoveryUrl && !validateUrl(discoveryUrl)) isValid = false;
+            } else if (providerType === 'OAUTH2') {
+                const clientId = document.getElementById('oauth2ClientId');
+                const clientSecret = document.getElementById('oauth2ClientSecret');
+                const authUrl = document.getElementById('oauth2AuthUrl');
+                const tokenUrl = document.getElementById('oauth2TokenUrl');
+
+                if (clientId && !validateField(clientId)) isValid = false;
+                if (clientSecret && !validateField(clientSecret)) isValid = false;
+                if (authUrl && !validateUrl(authUrl)) isValid = false;
+                if (tokenUrl && !validateUrl(tokenUrl)) isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function setFieldError(field, message) {
+            field.classList.add('is-invalid');
+            field.classList.remove('is-valid');
+
+            let feedback = field.parentElement.querySelector('.invalid-feedback');
+            if (feedback) {
+                feedback.textContent = message;
+            }
+        }
+
+        function setFieldValid(field) {
+            field.classList.add('is-valid');
+            field.classList.remove('is-invalid');
+
+            let feedback = field.parentElement.querySelector('.invalid-feedback');
+            if (feedback) {
+                feedback.textContent = '';
+            }
+        }
+
+        function clearValidation(field) {
+            field.classList.remove('is-valid', 'is-invalid');
+
+            let feedback = field.parentElement.querySelector('.invalid-feedback');
+            if (feedback) {
+                feedback.textContent = '';
+            }
+        }
+
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function isValidDomain(domain) {
+            const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?)*$/;
+            return domainRegex.test(domain);
+        }
+
+        function validateForm() {
+            let isValid = true;
+
+            // 기본 필드 검증
+            const configName = document.getElementById('configName');
+            const companyDomain = document.getElementById('companyDomain');
+            const providerType = document.getElementById('providerType');
+
+            if (!validateField(configName)) isValid = false;
+            if (!validateDomain(companyDomain)) isValid = false;
+            if (!validateField(providerType)) isValid = false;
+
+            // 제공자별 필드 검증
+            if (!validateProviderFields()) isValid = false;
+
+            return isValid;
+        }
+
         // 페이지 로드 시 권한 확인
-        document.addEventListener('DOMContentLoaded', checkPermission);
+        document.addEventListener('DOMContentLoaded', () => {
+            checkPermission();
+            setupValidation();
+        });
     </script>
 </body>
 </html>

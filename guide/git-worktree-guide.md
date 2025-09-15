@@ -1,6 +1,14 @@
 Git Worktree 병렬 작업 설정 가이드
 
-현재 상태: main 브랜치에 4개의 커밋이 origin보다 앞서 있고, 여러 개의 Gradle 서버가 백그라운드에서 실행 중입니다.
+# Git worktree란?
+- 같은 레포지토리에 붙어 있는 여러 브랜치를 관리할 때 사용하는 도구입니다.
+- 하나의 레포지토리에 연관된 worktree는 main worktree와 linked worktree로 분류되죠. main worktree는 git init, git clone을 통해 만들어집니다. 그에 반해 linked worktree는 main worktree와 linked worktree에서 만들어집니다.
+- git clone과 달리 브랜치와 커밋 히스토리를 공유합니다.
+
+# AI를 활용한 작업 장점
+- git checkout 을 통해 여러 브런치를 관리할 때와 달리 IDE indexing을 매번 할 필요 없어짐
+- AI Agent가 실행 가능한 코드를 작성할 수 있는 환경을 만드는데 큰 도움됨. 코드 작성을 AI Agent에 맡길 경우엔 컴파일 및 테스트를 실행할 수 있는 독립적인 환경을 쉽게 설정할 수 있는 것이 중요함
+- AI가 자신이 작성한 코드를 쉽게 검증할 수 있죠. Git worktree는 브랜치간 환경을 독립적으로 분리 하여 AI Agent에게 코드 작업을 대리하는데 유리한 환경을 만듭니다.
 
 1. 기본 Worktree 생성
 
