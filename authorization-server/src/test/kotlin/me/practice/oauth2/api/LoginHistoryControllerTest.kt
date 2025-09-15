@@ -1,8 +1,8 @@
 package me.practice.oauth2.api
 
 import me.practice.oauth2.service.LoginHistoryService
-import me.practice.oauth2.service.LoginStatistics
-import me.practice.oauth2.service.LoginTypeStatistics
+import me.practice.oauth2.service.history.LoginStatistics
+import me.practice.oauth2.service.history.LoginTypeStatistics
 import me.practice.oauth2.entity.LoginType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.DisplayName
