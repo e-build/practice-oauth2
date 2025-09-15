@@ -1,4 +1,4 @@
-package me.practice.oauth2.client.config
+package me.practice.oauth2.client.configuration
 
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean

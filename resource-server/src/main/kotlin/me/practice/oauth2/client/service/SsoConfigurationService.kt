@@ -1,6 +1,10 @@
 package me.practice.oauth2.client.service
 
-import me.practice.oauth2.client.dto.*
+import me.practice.oauth2.client.api.dto.SsoConfigurationRequestDto
+import me.practice.oauth2.client.api.dto.SsoConfigurationResponseDto
+import me.practice.oauth2.client.api.dto.SsoConfigurationSummaryDto
+import me.practice.oauth2.client.api.dto.SsoConnectionTestRequestDto
+import me.practice.oauth2.client.api.dto.SsoConnectionTestResponseDto
 import me.practice.oauth2.client.entity.IoClientSsoSetting
 import me.practice.oauth2.client.entity.SsoType
 import me.practice.oauth2.client.exception.*
@@ -382,46 +386,46 @@ class SsoConfigurationService(
      */
     private fun convertToResponseDto(entity: IoClientSsoSetting): SsoConfigurationResponseDto {
         return SsoConfigurationResponseDto(
-            id = entity.id,
-            clientId = entity.clientId,
-            ssoType = entity.ssoType,
+			id = entity.id,
+			clientId = entity.clientId,
+			ssoType = entity.ssoType,
 
-            // OIDC 필드 (Secret 제외)
-            oidcClientId = entity.oidcClientId,
-            oidcIssuer = entity.oidcIssuer,
-            oidcScopes = entity.oidcScopes,
-            oidcResponseType = entity.oidcResponseType,
-            oidcResponseMode = entity.oidcResponseMode,
-            oidcClaimsMapping = jsonMappingUtil.jsonToMap(entity.oidcClaimsMapping),
+			// OIDC 필드 (Secret 제외)
+			oidcClientId = entity.oidcClientId,
+			oidcIssuer = entity.oidcIssuer,
+			oidcScopes = entity.oidcScopes,
+			oidcResponseType = entity.oidcResponseType,
+			oidcResponseMode = entity.oidcResponseMode,
+			oidcClaimsMapping = jsonMappingUtil.jsonToMap(entity.oidcClaimsMapping),
 
-            // SAML 필드
-            samlEntityId = entity.samlEntityId,
-            samlSsoUrl = entity.samlSsoUrl,
-            samlSloUrl = entity.samlSloUrl,
-            samlNameIdFormat = entity.samlNameIdFormat,
-            samlBindingSso = entity.samlBindingSso,
-            samlBindingSlo = entity.samlBindingSlo,
-            samlWantAssertionsSigned = entity.samlWantAssertionsSigned,
-            samlWantResponseSigned = entity.samlWantResponseSigned,
-            samlSignatureAlgorithm = entity.samlSignatureAlgorithm,
-            samlDigestAlgorithm = entity.samlDigestAlgorithm,
-            samlAttributeMapping = jsonMappingUtil.jsonToMap(entity.samlAttributeMapping),
+			// SAML 필드
+			samlEntityId = entity.samlEntityId,
+			samlSsoUrl = entity.samlSsoUrl,
+			samlSloUrl = entity.samlSloUrl,
+			samlNameIdFormat = entity.samlNameIdFormat,
+			samlBindingSso = entity.samlBindingSso,
+			samlBindingSlo = entity.samlBindingSlo,
+			samlWantAssertionsSigned = entity.samlWantAssertionsSigned,
+			samlWantResponseSigned = entity.samlWantResponseSigned,
+			samlSignatureAlgorithm = entity.samlSignatureAlgorithm,
+			samlDigestAlgorithm = entity.samlDigestAlgorithm,
+			samlAttributeMapping = jsonMappingUtil.jsonToMap(entity.samlAttributeMapping),
 
-            // OAuth2 필드 (Secret 제외)
-            oauth2ClientId = entity.oauth2ClientId,
-            oauth2AuthorizationUri = entity.oauth2AuthorizationUri,
-            oauth2TokenUri = entity.oauth2TokenUri,
-            oauth2UserInfoUri = entity.oauth2UserInfoUri,
-            oauth2Scopes = entity.oauth2Scopes,
-            oauth2UserNameAttribute = entity.oauth2UserNameAttribute,
+			// OAuth2 필드 (Secret 제외)
+			oauth2ClientId = entity.oauth2ClientId,
+			oauth2AuthorizationUri = entity.oauth2AuthorizationUri,
+			oauth2TokenUri = entity.oauth2TokenUri,
+			oauth2UserInfoUri = entity.oauth2UserInfoUri,
+			oauth2Scopes = entity.oauth2Scopes,
+			oauth2UserNameAttribute = entity.oauth2UserNameAttribute,
 
-            // 공통 필드
-            redirectUris = jsonMappingUtil.jsonToList(entity.redirectUris),
-            autoProvision = entity.autoProvision,
-            defaultRole = entity.defaultRole,
-            regDt = entity.regDt,
-            modDt = entity.modDt
-        )
+			// 공통 필드
+			redirectUris = jsonMappingUtil.jsonToList(entity.redirectUris),
+			autoProvision = entity.autoProvision,
+			defaultRole = entity.defaultRole,
+			regDt = entity.regDt,
+			modDt = entity.modDt
+		)
     }
 
     /**
@@ -435,14 +439,14 @@ class SsoConfigurationService(
         }
 
         return SsoConfigurationSummaryDto(
-            id = entity.id,
-            clientId = entity.clientId,
-            ssoType = entity.ssoType,
-            providerName = providerName,
-            isActive = entity.delDt == null,
-            regDt = entity.regDt,
-            modDt = entity.modDt
-        )
+			id = entity.id,
+			clientId = entity.clientId,
+			ssoType = entity.ssoType,
+			providerName = providerName,
+			isActive = entity.delDt == null,
+			regDt = entity.regDt,
+			modDt = entity.modDt
+		)
     }
 
     /**

@@ -1,5 +1,6 @@
-package me.practice.oauth2.controller
+package me.practice.oauth2.api
 
+import jakarta.servlet.http.HttpServletRequest
 import me.practice.oauth2.entity.IoIdpShoplClientSsoSetting
 import me.practice.oauth2.entity.SsoType
 import me.practice.oauth2.service.CompositeClientRegistrationRepository
@@ -9,9 +10,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.servlet.view.RedirectView
-import jakarta.servlet.http.HttpServletRequest
 
 /**
  * SSO 관련 컨트롤러
@@ -20,9 +25,9 @@ import jakarta.servlet.http.HttpServletRequest
 @Controller
 @RequestMapping("/sso")
 class SsoController(
-    private val ssoConfigurationService: SsoConfigurationService,
-    private val dynamicClientRegistrationService: DynamicClientRegistrationService,
-    private val compositeClientRegistrationRepository: CompositeClientRegistrationRepository
+	private val ssoConfigurationService: SsoConfigurationService,
+	private val dynamicClientRegistrationService: DynamicClientRegistrationService,
+	private val compositeClientRegistrationRepository: CompositeClientRegistrationRepository
 ) {
 
     private val logger = LoggerFactory.getLogger(SsoController::class.java)
@@ -32,28 +37,28 @@ class SsoController(
      */
     @GetMapping("/providers")
     fun showProviders(
-        @RequestParam(required = false) clientId: String?,
-        @RequestParam(required = false) redirectUri: String?,
-        model: Model
+		@RequestParam(required = false) clientId: String?,
+		@RequestParam(required = false) redirectUri: String?,
+		model: Model
     ): String {
         val shoplClientId = clientId ?: "CLIENT001"
-        
+
         // 해당 클라이언트의 SSO 설정 조회
         val ssoSettings = ssoConfigurationService.getSsoSettings(shoplClientId)
-        
+
         model.addAttribute("ssoSettings", ssoSettings)
         model.addAttribute("clientId", shoplClientId)
         model.addAttribute("redirectUri", redirectUri)
-        
+
         // 사용 가능한 SSO 제공자 목록
         val availableProviders = if (ssoSettings != null) {
             listOf(createProviderInfo(ssoSettings))
         } else {
             emptyList()
         }
-        
+
         model.addAttribute("providers", availableProviders)
-        
+
         return "sso/providers" // SSO 제공자 선택 페이지 템플릿
     }
 
@@ -62,23 +67,23 @@ class SsoController(
      */
     @GetMapping("/authenticate/{registrationId}")
     fun startAuthentication(
-        @PathVariable registrationId: String,
-        @RequestParam(required = false) clientId: String?,
-        @RequestParam(required = false) redirectUri: String?,
-        request: HttpServletRequest
+		@PathVariable registrationId: String,
+		@RequestParam(required = false) clientId: String?,
+		@RequestParam(required = false) redirectUri: String?,
+		request: HttpServletRequest
     ): RedirectView {
         val shoplClientId = clientId ?: "CLIENT001"
         logger.info("Starting SSO authentication with registrationId: $registrationId, shoplClientId: $shoplClientId")
-        
+
         // 세션에 shopl_client_id 저장
         request.session.setAttribute("shopl_client_id", shoplClientId)
         redirectUri?.let { request.session.setAttribute("redirect_uri", it) }
-        
+
         val redirectUrl = "/oauth2/authorization/$registrationId"
-        
+
         val redirectView = RedirectView(redirectUrl)
         redirectView.setExposeModelAttributes(false)
-        
+
         return redirectView
     }
 
@@ -87,20 +92,20 @@ class SsoController(
      */
     @GetMapping("/callback")
     fun handleCallback(
-        @RequestParam(required = false) code: String?,
-        @RequestParam(required = false) state: String?,
-        @RequestParam(required = false) error: String?,
-        model: Model
+		@RequestParam(required = false) code: String?,
+		@RequestParam(required = false) state: String?,
+		@RequestParam(required = false) error: String?,
+		model: Model
     ): String {
         if (error != null) {
             logger.error("SSO callback error: $error")
             model.addAttribute("error", error)
             return "sso/error"
         }
-        
+
         // 성공적으로 인증 완료
         logger.info("SSO callback successful with code: $code")
-        
+
         // 기본적으로 인증 성공 핸들러가 처리하므로 여기는 백업용
         return "redirect:/oauth2/authorize"
     }
@@ -122,7 +127,7 @@ class SsoController(
     @ResponseBody
     fun getAvailableProviders(@PathVariable shoplClientId: String): ResponseEntity<List<ProviderInfo>> {
         val providers = mutableListOf<ProviderInfo>()
-        
+
         // 1. 정적 제공자 추가 (keycloak-acme 등)
         val staticRegistrationIds = compositeClientRegistrationRepository.getAllRegistrationIds()
         staticRegistrationIds.forEach { registrationId ->
@@ -139,13 +144,13 @@ class SsoController(
                 )
             }
         }
-        
+
         // 2. 동적 제공자 추가 (데이터베이스 설정)
         val ssoSettings = ssoConfigurationService.getSsoSettings(shoplClientId)
         if (ssoSettings != null) {
             providers.add(createProviderInfo(ssoSettings))
         }
-        
+
         return ResponseEntity.ok(providers)
     }
 
@@ -178,7 +183,7 @@ class SsoController(
      */
     private fun createProviderInfo(settings: IoIdpShoplClientSsoSetting): ProviderInfo {
         val registrationId = ssoConfigurationService.generateProviderRegistrationId(settings)
-        
+
         return ProviderInfo(
             registrationId = registrationId,
             name = settings.ssoType.name,
@@ -221,11 +226,11 @@ class SsoController(
      * SSO 제공자 정보 DTO
      */
     data class ProviderInfo(
-        val registrationId: String,
-        val name: String,
-        val displayName: String,
-        val type: SsoType,
-        val enabled: Boolean,
-        val authUrl: String
+		val registrationId: String,
+		val name: String,
+		val displayName: String,
+		val type: SsoType,
+		val enabled: Boolean,
+		val authUrl: String
     )
 }

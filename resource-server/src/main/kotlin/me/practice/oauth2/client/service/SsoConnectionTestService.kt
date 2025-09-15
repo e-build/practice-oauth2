@@ -1,17 +1,13 @@
 package me.practice.oauth2.client.service
 
-import me.practice.oauth2.client.dto.SsoConnectionTestRequestDto
-import me.practice.oauth2.client.dto.SsoConnectionTestResponseDto
+import me.practice.oauth2.client.api.dto.SsoConnectionTestRequestDto
+import me.practice.oauth2.client.api.dto.SsoConnectionTestResponseDto
 import me.practice.oauth2.client.entity.IoClientSsoSetting
-import me.practice.oauth2.client.entity.SsoType
-import me.practice.oauth2.client.exception.SsoConnectionTestException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.HttpClientErrorException
-import org.springframework.web.client.HttpServerErrorException
 import java.net.URL
-import java.time.LocalDateTime
 
 @Service
 class SsoConnectionTestService(

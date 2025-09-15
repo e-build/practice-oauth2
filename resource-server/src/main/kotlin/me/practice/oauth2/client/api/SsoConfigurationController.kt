@@ -1,6 +1,10 @@
 package me.practice.oauth2.client.controller
 
-import me.practice.oauth2.client.dto.*
+import me.practice.oauth2.client.api.dto.SsoConfigurationRequestDto
+import me.practice.oauth2.client.api.dto.SsoConfigurationResponseDto
+import me.practice.oauth2.client.api.dto.SsoConfigurationSummaryDto
+import me.practice.oauth2.client.api.dto.SsoConnectionTestRequestDto
+import me.practice.oauth2.client.api.dto.SsoConnectionTestResponseDto
 import me.practice.oauth2.client.service.SsoConfigurationService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
