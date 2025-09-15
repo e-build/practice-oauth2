@@ -3,6 +3,7 @@
 ## 프롬프트 가이드
 - 절대 기존 코드를 무시하지 말것!
 - 질문과 관련한 주제에 관하여 재사용가능한 것을 먼저 탐색하고 답변할 것
+- 작업 과정에서 playwright 로 브라우저 구동을 헀다면 작업이 완료된 후 종료한다.
 
 ## 프로젝트 개요
 - 이 프로젝트는 Kotlin, Spring boot 사용하는 REST API 서버입니다.
@@ -54,5 +55,31 @@
     - GET /api/admin/sso/configurations - SSO 설정 목록 데이터
 
 ## 핵심 명령어
+- 서버 구동
+    - 기본 구동:
+        - ./gradlew :authorization-server:bootRun
+        - ./gradlew :resource-server:bootRun
+    - 포트 변경하여 구동:
+        - ./gradlew :authorization-server:bootRun --args="--server.port=9000"
+        - ./gradlew :resource-server:bootRun --args="--server.port=9001"
+    - 프로필 지정(예: local):
+        - ./gradlew :authorization-server:bootRun --args="--spring.profiles.active=local"
+        - ./gradlew :resource-server:bootRun --args="--spring.profiles.active=local"
+    - 환경변수로 포트 지정 예시:
+        - SERVER_PORT=9000 ./gradlew :authorization-server:bootRun
+        - SERVER_PORT=9001 ./gradlew :resource-server:bootRun
+- 테스트 실행
+  - 전체 테스트:
+      - ./gradlew :authorization-server:test
+      - ./gradlew :resource-server:test
+  - 특정 프로필로 테스트(예: test):
+      - ./gradlew :authorization-server:test -Dspring.profiles.active=test
+      - ./gradlew :resource-server:test -Dspring.profiles.active=test
+  - 특정 테스트 클래스만:
+      - ./gradlew :authorization-server:test --tests "패키지경로.클래스명"
+      - ./gradlew :resource-server:test --tests "패키지경로.클래스명"
+  - 특정 테스트 메서드만:
+      - ./gradlew :authorization-server:test --tests "패키지경로.클래스명.메소드명"
+      - ./gradlew :resource-server:test --tests "패키지경로.클래스명.메소드명"
 
 ## 설치된 주요 도구
