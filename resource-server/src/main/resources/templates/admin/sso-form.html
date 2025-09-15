@@ -52,6 +52,7 @@
         .add-mapping { color: #007bff; cursor: pointer; font-size: 12px; }
         .add-mapping:hover { text-decoration: underline; }
     </style>
+    <script src="/js/auth.js"></script>
 </head>
 <body>
     <div class="container">
@@ -65,8 +66,8 @@
         </div>
 
         <div class="user-info">
-            <p><span class="label">관리자:</span> <span class="value" th:text="${username}">admin</span></p>
-            <p><span class="label">회사 ID:</span> <span class="value" th:text="${companyId}">company-001</span></p>
+            <p><span class="label">관리자:</span> <span class="value" id="username">로딩 중...</span></p>
+            <p><span class="label">회사 ID:</span> <span class="value" id="companyId">로딩 중...</span></p>
         </div>
 
         <form id="ssoConfigForm">
@@ -399,29 +400,31 @@
             }
         }
 
+        // 사용자 정보 로드
+        async function loadUserInfo() {
+            try {
+                const userInfo = await Auth.get('/api/admin/user-info');
+                if (userInfo.authenticated) {
+                    document.getElementById('username').textContent = userInfo.username || 'Unknown';
+                    document.getElementById('companyId').textContent = userInfo.account_id || 'Unknown';
+                } else {
+                    document.getElementById('username').textContent = 'anonymous';
+                    document.getElementById('companyId').textContent = 'unknown';
+                }
+            } catch (error) {
+                console.error('사용자 정보 로드 실패:', error);
+                document.getElementById('username').textContent = 'anonymous';
+                document.getElementById('companyId').textContent = 'unknown';
+            }
+        }
+
         // 권한 확인
         async function checkPermission() {
             try {
-                const token = localStorage.getItem("access_token");
-                if (!token) {
-                    window.location.href = '/admin/home?error=no_token';
-                    return;
-                }
-
-                const response = await fetch('/admin/sso/api/check-permission', {
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
-                });
-
-                const data = await response.json();
-                if (!data.hasPermission) {
-                    alert('❌ SSO 관리 권한이 없습니다. 관리자에게 문의하세요.');
-                    window.location.href = '/admin/home';
-                }
+                await Auth.initPageAuth('/api/admin/check-permission', '/admin/home');
+                await loadUserInfo();
             } catch (error) {
                 console.error('권한 확인 중 오류:', error);
-                window.location.href = '/admin/home?error=permission_check_failed';
             }
         }
 

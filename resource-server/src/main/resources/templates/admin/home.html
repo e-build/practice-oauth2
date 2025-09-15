@@ -47,6 +47,7 @@
         .quick-actions { margin-top: 20px; }
         .quick-actions .btn { margin-right: 10px; margin-bottom: 10px; }
     </style>
+    <script src="/js/auth.js"></script>
 </head>
 <body>
     <div class="container">
@@ -176,7 +177,7 @@
         const redirectUri = "http://localhost:9001/admin/home";
         const authServerAuthorizeUrl = "http://localhost:9000/oauth2/authorize";
         const tokenUrl = "http://localhost:9000/oauth2/token";
-        const adminHomeApiUrl = "http://localhost:9001/api/admin/home"; // API 엔드포인트 추가
+        const adminHomeApiUrl = "http://localhost:9001/api/admin/user-info"; // API 엔드포인트 수정
         const state = crypto.randomUUID();
 
         // 초기 상태 설정
@@ -204,8 +205,7 @@
                 if (!res.ok) throw new Error("Token exchange failed");
 
                 const tokenResponse = await res.json();
-                localStorage.setItem("access_token", tokenResponse.access_token);
-                localStorage.setItem("refresh_token", tokenResponse.refresh_token);
+                Auth.saveTokens(tokenResponse.access_token, tokenResponse.refresh_token);
 
                 await fetchProtectedData();
             } catch (error) {
@@ -214,28 +214,13 @@
         }
 
         async function fetchProtectedData() {
-            const token = localStorage.getItem("access_token");
-
-            if (!token) {
+            if (!Auth.hasValidToken()) {
                 redirectToAuth();
                 return;
             }
 
             try {
-                const res = await fetch(adminHomeApiUrl, {
-                    headers: {
-                        Authorization: "Bearer " + token
-                    }
-                });
-
-                if (res.status === 401 || res.status === 403) {
-                    localStorage.removeItem("access_token");
-                    localStorage.removeItem("refresh_token");
-                    redirectToAuth();
-                    return;
-                }
-
-                const data = await res.json();
+                const data = await Auth.get(adminHomeApiUrl);
                 
                 if (data.authenticated) {
                     setLoginStatus(true, "로그인 성공!");
@@ -324,9 +309,7 @@
         }
 
         function logout() {
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("refresh_token");
-            window.location.href = "http://localhost:9000/logout";
+            Auth.logout();
         }
 
         // SSO 관리 함수들

@@ -35,6 +35,8 @@ class ResourceServerSecurityConfiguration(
 					.requestMatchers("/favicon.ico").permitAll()
 					.requestMatchers("/error").permitAll()
 					.requestMatchers("/admin/**").permitAll()
+					// 정적 리소스
+					.requestMatchers("/js/**", "/css/**", "/images/**", "/static/**").permitAll()
 
 					// 나머지는 인증 필요
 					.anyRequest().authenticated()

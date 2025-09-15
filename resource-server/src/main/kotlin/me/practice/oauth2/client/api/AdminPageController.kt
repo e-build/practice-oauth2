@@ -1,9 +1,6 @@
 package me.practice.oauth2.client.api
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Controller
-import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 
@@ -12,37 +9,26 @@ import org.springframework.web.bind.annotation.RequestMapping
 class AdminPageController {
 
 	/**
-	 * 관리자 홈 페이지를 반환합니다 (HTML 템플릿)
+	 * 관리자 홈 페이지를 반환합니다 (HTML 템플릿만 제공, 데이터는 프론트엔드에서 처리)
 	 */
 	@GetMapping("/home")
-	fun adminHome(@AuthenticationPrincipal jwt: Jwt?, model: Model): String {
-		// JWT가 있으면 모델에 사용자 정보 추가 (Thymeleaf에서 사용)
-		jwt?.let {
-			model.addAttribute("username", it.getClaimAsString("username"))
-			model.addAttribute("userRole", it.getClaimAsString("role"))
-			model.addAttribute("companyId", it.getClaimAsString("account_id"))
-		}
+	fun adminHome(): String {
 		return "admin/home"
 	}
 
-
     /**
-     * SSO 설정 목록 페이지
+     * SSO 설정 목록 페이지 (HTML 템플릿만 제공)
      */
     @GetMapping("/sso/configurations")
-    fun ssoConfigurationList(@AuthenticationPrincipal jwt: Jwt, model: Model): String {
-        model.addAttribute("username", jwt.getClaimAsString("username"))
-        model.addAttribute("companyId", jwt.getClaimAsString("account_id"))
+    fun ssoConfigurationList(): String {
         return "admin/sso-list"
     }
 
     /**
-     * SSO 설정 등록/수정 폼 페이지
+     * SSO 설정 등록/수정 폼 페이지 (HTML 템플릿만 제공)
      */
     @GetMapping("/sso/configurations/form")
-    fun ssoConfigurationForm(@AuthenticationPrincipal jwt: Jwt, model: Model): String {
-        model.addAttribute("username", jwt.getClaimAsString("username"))
-        model.addAttribute("companyId", jwt.getClaimAsString("account_id"))
+    fun ssoConfigurationForm(): String {
         return "admin/sso-form"
     }
 }

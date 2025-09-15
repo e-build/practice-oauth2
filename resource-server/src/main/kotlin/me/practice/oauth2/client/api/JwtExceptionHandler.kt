@@ -2,11 +2,13 @@ package me.practice.oauth2.client.api
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.oauth2.jwt.JwtException
 import org.springframework.security.oauth2.jwt.JwtValidationException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.servlet.resource.NoResourceFoundException
 import java.time.LocalDateTime
 
 @ControllerAdvice
@@ -82,11 +84,30 @@ class JwtExceptionHandler {
 	}
 
 	/**
-	 * 일반적인 예외 처리
+	 * 정적 리소스를 찾을 수 없는 경우
 	 */
-	@ExceptionHandler(Exception::class)
-	fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
-//		log.error("Unexpected error: ", ex)
+	@ExceptionHandler(NoResourceFoundException::class)
+	fun handleNoResourceFoundException(ex: NoResourceFoundException): ResponseEntity<ErrorResponse> {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+			.body(ErrorResponse(
+				code = "RESOURCE_NOT_FOUND",
+				message = "요청한 리소스를 찾을 수 없습니다.",
+				timestamp = LocalDateTime.now()
+			))
+	}
+
+	/**
+	 * 일반적인 예외 처리 (보안 관련 예외만)
+	 */
+	@ExceptionHandler(RuntimeException::class)
+	fun handleRuntimeException(ex: RuntimeException): ResponseEntity<ErrorResponse> {
+		// 보안 관련 예외가 아닌 경우 다시 던지기
+		if (ex !is AuthenticationException &&
+			ex !is AccessDeniedException &&
+			ex !is JwtException) {
+			throw ex
+		}
+
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 			.body(ErrorResponse(
 				code = "INTERNAL_SERVER_ERROR",

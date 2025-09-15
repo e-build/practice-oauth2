@@ -47,6 +47,7 @@
         .loading { text-align: center; padding: 40px; color: #6c757d; }
         .error-message { background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb; }
     </style>
+    <script src="/js/auth.js"></script>
 </head>
 <body>
     <div class="container">
@@ -58,8 +59,8 @@
         </div>
 
         <div class="user-info">
-            <p><span class="label">관리자:</span> <span class="value" th:text="${username}">admin</span></p>
-            <p><span class="label">회사 ID:</span> <span class="value" th:text="${companyId}">company-001</span></p>
+            <p><span class="label">관리자:</span> <span class="value" id="username">로딩 중...</span></p>
+            <p><span class="label">회사 ID:</span> <span class="value" id="companyId">로딩 중...</span></p>
         </div>
 
         <div class="toolbar">
@@ -148,20 +149,15 @@
 
         async function loadSsoConfigurations() {
             try {
-                // TODO: 실제 API 호출로 교체
-                // const response = await fetch('/api/admin/sso/configurations', {
-                //     headers: {
-                //         'Authorization': 'Bearer ' + localStorage.getItem('access_token')
-                //     }
-                // });
-                // const configurations = await response.json();
-
-                // 현재는 모의 데이터 사용
-                await new Promise(resolve => setTimeout(resolve, 500)); // 로딩 시뮬레이션
-                displaySsoConfigurations(mockSsoConfigurations);
+                // 실제 API 호출
+                const configurations = await Auth.get('/api/admin/sso/configurations');
+                displaySsoConfigurations(configurations);
 
             } catch (error) {
-                showError('SSO 설정 목록을 불러오는 중 오류가 발생했습니다: ' + error.message);
+                console.error('SSO 설정 목록 로드 실패:', error);
+                // 오류 시 모의 데이터 사용
+                await new Promise(resolve => setTimeout(resolve, 500));
+                displaySsoConfigurations(mockSsoConfigurations);
             }
         }
 
@@ -255,30 +251,30 @@
             });
         });
 
+        // 사용자 정보 로드
+        async function loadUserInfo() {
+            try {
+                const userInfo = await Auth.get('/api/admin/user-info');
+                if (userInfo.authenticated) {
+                    document.getElementById('username').textContent = userInfo.username || 'Unknown';
+                    document.getElementById('companyId').textContent = userInfo.account_id || 'Unknown';
+                } else {
+                    document.getElementById('username').textContent = 'anonymous';
+                    document.getElementById('companyId').textContent = 'unknown';
+                }
+            } catch (error) {
+                console.error('사용자 정보 로드 실패:', error);
+                document.getElementById('username').textContent = 'anonymous';
+                document.getElementById('companyId').textContent = 'unknown';
+            }
+        }
+
         // 권한 확인 후 데이터 로드
         async function checkPermissionAndLoad() {
             try {
-                const token = localStorage.getItem("access_token");
-                if (!token) {
-                    window.location.href = '/admin/home?error=no_token';
-                    return;
-                }
-
-                const response = await fetch('/admin/sso/api/check-permission', {
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
-                });
-
-                const data = await response.json();
-                if (!data.hasPermission) {
-                    alert('❌ SSO 관리 권한이 없습니다. 관리자에게 문의하세요.');
-                    window.location.href = '/admin/home';
-                    return;
-                }
-
+                await Auth.initPageAuth('/api/admin/check-permission', '/admin/home');
+                await loadUserInfo();
                 await loadSsoConfigurations();
-
             } catch (error) {
                 console.error('권한 확인 중 오류:', error);
                 showError('권한 확인 중 오류가 발생했습니다.');
