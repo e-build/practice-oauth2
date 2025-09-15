@@ -1,4 +1,4 @@
-create table io_idp_client
+create table shopl_authorization.io_idp_client
 (
     id                            varchar(255)                             not null primary key comment 'PK, 내부 식별자',
     idp_client_id                 varchar(255)                             not null comment 'OAuth2 Client ID',
@@ -20,7 +20,7 @@ create table io_idp_client
     token_settings                varchar(2000)                            not null comment '토큰 발급 관련 설정 (만료, 서명 등)'
 );
 
-create table io_idp_authorization_consent
+create table shopl_authorization.io_idp_authorization_consent
 (
     id             bigint auto_increment primary key comment 'PK',
     idp_client_id  varchar(255)  not null comment 'OAuth2 Client ID',
@@ -28,7 +28,7 @@ create table io_idp_authorization_consent
     authorities    varchar(1000) not null comment '동의한 권한(scope/role 목록)'
 );
 
-create table io_idp_account
+create table shopl_authorization.io_idp_account
 (
     id              VARCHAR(20) PRIMARY KEY comment 'PK, 내부 계정 식별자',
     shopl_client_id VARCHAR(20)  NOT NULL comment '고객사 ID',
@@ -45,6 +45,7 @@ create table io_idp_account
     pwd             VARCHAR(255) NULL comment '비밀번호 해시',
     before_pwd      VARCHAR(255) NULL     DEFAULT NULL comment '이전 비밀번호 해시',
     pwd_update_dt   DATETIME     NULL     DEFAULT NULL comment '비밀번호 업데이트 시각',
+    role            VARCHAR(20) NOT NULL DEFAULT 'STAFF' comment 'STAFF, LEADER, ADMIN',
 
     reg_dt          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP comment '계정 생성 시각',
     mod_dt          DATETIME     NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP comment '계정 수정 시각',
@@ -54,7 +55,7 @@ create table io_idp_account
     INDEX idx_status (status)
 );
 
-create table io_idp_account_oauth_link
+create table shopl_authorization.io_idp_account_oauth_link
 (
     id                VARCHAR(20) PRIMARY KEY comment 'PK',
     account_id        VARCHAR(20)                                                                NOT NULL comment '내부 계정 ID',
@@ -76,7 +77,7 @@ create table io_idp_account_oauth_link
     INDEX idx_provider_email (provider_type, email_at_provider)
 );
 
-create table io_idp_shopl_client_sso_setting
+create table shopl_authorization.io_idp_shopl_client_sso_setting
 (
     id                          varchar(20)                                                                                        not null primary key,
     shopl_client_id             varchar(20) unique                                                                                 not null,
@@ -110,14 +111,13 @@ create table io_idp_shopl_client_sso_setting
     del_dt                      datetime                                                                                           null
 );
 
-CREATE TABLE io_idp_login_history
+CREATE TABLE io_idp_user_login_history
 (
     id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
     shopl_client_id     VARCHAR(20) NOT NULL,
     shopl_user_id       VARCHAR(20) NOT NULL,
     platform            ENUM('DASHBOARD', 'APP') NOT NULL,
 
-    login_time          DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     login_type          ENUM('BASIC', 'SOCIAL', 'SSO') NOT NULL,
     provider            VARCHAR(64) NULL,
 
@@ -126,11 +126,13 @@ CREATE TABLE io_idp_login_history
 
     ip_address          VARCHAR(45) NULL,
     user_agent          TEXT NULL,
-    location            VARCHAR(200) NULL,
 
     session_id          VARCHAR(128) NOT NULL,
 
-    INDEX idx_user_client_time (shopl_user_id, shopl_client_id, login_time),
-    INDEX idx_result_time (result, login_time),
-    INDEX idx_client_time (shopl_client_id, login_time)
-);
+    reg_dt          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_user_client_time (shopl_user_id, shopl_client_id, reg_dt),
+    INDEX idx_result_time (result, reg_dt),
+    INDEX idx_client_time (shopl_client_id, reg_dt)
+)
+;

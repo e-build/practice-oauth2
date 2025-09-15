@@ -160,8 +160,8 @@ class LoginHistoryService(
 	): Page<IoIdpUserLoginHistory> {
 		return loginHistoryRepository.findByShoplUserIdAndRegDtBetweenOrderByRegDtDesc(
 			shoplUserId,
-			startTime.atZone(ZoneId.systemDefault()).toInstant(),
-			endTime.atZone(ZoneId.systemDefault()).toInstant(),
+			startTime,
+			endTime,
 			pageable
 		)
 	}
@@ -188,7 +188,7 @@ class LoginHistoryService(
 	 */
 	@Transactional(readOnly = true)
 	fun getRecentFailedLoginAttempts(shoplUserId: String, hoursBack: Long = 24): Long {
-		val since = Instant.now().minus(hoursBack, ChronoUnit.HOURS)
+		val since = LocalDateTime.now().minusHours(hoursBack)
 		return loginHistoryRepository.countFailedLoginAttempts(shoplUserId, LoginResult.FAIL, since)
 	}
 
@@ -204,7 +204,7 @@ class LoginHistoryService(
 	 */
 	@Transactional(readOnly = true)
 	fun getClientLoginStats(shoplClientId: String, daysBack: Long = 30): LoginStatistics {
-		val since = Instant.now().minus(daysBack, ChronoUnit.DAYS)
+		val since = LocalDateTime.now().minusDays(daysBack)
 		val stats = loginHistoryRepository.getLoginStatsByClient(shoplClientId, since)
 
 		var successCount = 0L
@@ -234,7 +234,7 @@ class LoginHistoryService(
 	 */
 	@Transactional(readOnly = true)
 	fun getLoginTypeStats(shoplClientId: String, daysBack: Long = 30): List<LoginTypeStatistics> {
-		val since = Instant.now().minus(daysBack, ChronoUnit.DAYS)
+		val since = LocalDateTime.now().minusDays(daysBack)
 		val stats = loginHistoryRepository.getLoginTypeStats(shoplClientId, since)
 
 		val typeStatsMap = mutableMapOf<LoginType, MutableMap<LoginResult, Long>>()
@@ -274,7 +274,7 @@ class LoginHistoryService(
 	 */
 	@Transactional(readOnly = true)
 	fun getRecentLoginAttemptsByIp(ipAddress: String, hoursBack: Long = 1): Long {
-		val since = Instant.now().minus(hoursBack, ChronoUnit.HOURS)
+		val since = LocalDateTime.now().minusHours(hoursBack)
 		return loginHistoryRepository.countLoginAttemptsByIp(ipAddress, since)
 	}
 

@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import java.time.Instant
+import java.time.LocalDateTime
 
 interface IoIdpLoginHistoryRepository : JpaRepository<IoIdpUserLoginHistory, Long> {
 
@@ -31,8 +31,8 @@ interface IoIdpLoginHistoryRepository : JpaRepository<IoIdpUserLoginHistory, Lon
      */
     fun findByShoplUserIdAndRegDtBetweenOrderByRegDtDesc(
         shoplUserId: String,
-        startTime: Instant,
-        endTime: Instant,
+        startTime: LocalDateTime,
+        endTime: LocalDateTime,
         pageable: Pageable
     ): Page<IoIdpUserLoginHistory>
 
@@ -58,7 +58,7 @@ interface IoIdpLoginHistoryRepository : JpaRepository<IoIdpUserLoginHistory, Lon
     fun countFailedLoginAttempts(
         @Param("shoplUserId") shoplUserId: String,
         @Param("result") result: LoginResult,
-        @Param("since") since: Instant
+        @Param("since") since: LocalDateTime
     ): Long
 
     /**
@@ -74,7 +74,7 @@ interface IoIdpLoginHistoryRepository : JpaRepository<IoIdpUserLoginHistory, Lon
 	)
     fun getLoginStatsByClient(
         @Param("shoplClientId") shoplClientId: String,
-        @Param("since") since: Instant
+        @Param("since") since: LocalDateTime
     ): List<Array<Any>>
 
     /**
@@ -90,7 +90,7 @@ interface IoIdpLoginHistoryRepository : JpaRepository<IoIdpUserLoginHistory, Lon
 	)
     fun getLoginTypeStats(
         @Param("shoplClientId") shoplClientId: String,
-        @Param("since") since: Instant
+        @Param("since") since: LocalDateTime
     ): List<Array<Any>>
 
     /**
@@ -105,7 +105,7 @@ interface IoIdpLoginHistoryRepository : JpaRepository<IoIdpUserLoginHistory, Lon
 	)
     fun countLoginAttemptsByIp(
         @Param("ipAddress") ipAddress: String,
-        @Param("since") since: Instant
+        @Param("since") since: LocalDateTime
     ): Long
 
 }

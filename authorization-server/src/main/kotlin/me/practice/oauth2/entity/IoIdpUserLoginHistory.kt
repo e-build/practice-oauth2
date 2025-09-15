@@ -2,13 +2,10 @@ package me.practice.oauth2.entity
 
 import jakarta.persistence.*
 import me.practice.oauth2.domain.IdpClient
-import java.time.Instant
+import java.time.LocalDateTime
 
 @Entity
-@Table(
-    name = "io_idp_user_login_history",
-    catalog = "shopl_authorization"
-)
+@Table(name = "io_idp_user_login_history")
 data class IoIdpUserLoginHistory(
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,5 +46,5 @@ data class IoIdpUserLoginHistory(
     val sessionId: String,
 
 	@Column(name = "reg_dt", nullable = false)
-	val regDt: Instant = Instant.now(),
+	val regDt: LocalDateTime = LocalDateTime.now(),
 )
