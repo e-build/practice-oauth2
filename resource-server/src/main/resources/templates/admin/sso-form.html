@@ -244,24 +244,39 @@
     </div>
 
     <script>
-        // 제공자 유형에 따른 필드 표시/숨김
-        document.getElementById('providerType').addEventListener('change', function() {
-            const providerType = this.value;
+        // 제공자 유형에 따른 필드 표시/숨김 및 required 속성 관리
+        function updateProviderFields() {
+            const providerType = document.getElementById('providerType').value;
             const allFields = document.querySelectorAll('.provider-fields');
 
-            // 모든 필드 숨기기
+            // 모든 필드 숨기기 및 required 속성 제거
             allFields.forEach(field => {
                 field.classList.remove('active');
+                // 모든 input의 required 속성 제거
+                const allInputs = field.querySelectorAll('input');
+                allInputs.forEach(input => {
+                    if (input.hasAttribute('required')) {
+                        input.removeAttribute('required');
+                        input.setAttribute('data-original-required', 'true');
+                    }
+                });
             });
 
-            // 선택된 제공자 필드 표시
+            // 선택된 제공자 필드 표시 및 required 속성 복원
             if (providerType) {
                 const targetField = document.getElementById(providerType.toLowerCase() + 'Fields');
                 if (targetField) {
                     targetField.classList.add('active');
+                    // 원래 required였던 필드들만 required 속성 복원
+                    const originalRequiredInputs = targetField.querySelectorAll('input[data-original-required="true"]');
+                    originalRequiredInputs.forEach(input => {
+                        input.setAttribute('required', 'required');
+                    });
                 }
             }
-        });
+        }
+
+        document.getElementById('providerType').addEventListener('change', updateProviderFields);
 
         // 속성 매핑 추가 함수
         function addAttributeMapping() {
@@ -297,22 +312,58 @@
             const formData = new FormData(document.getElementById('ssoConfigForm'));
             const testResult = document.getElementById('testResult');
             const testResultMessage = document.getElementById('testResultMessage');
+            const providerType = document.getElementById('providerType').value;
+
+            if (!providerType) {
+                alert('❌ 먼저 SSO 제공자 유형을 선택해주세요.');
+                return;
+            }
 
             this.disabled = true;
             this.textContent = '🔄 테스트 중...';
+            testResult.style.display = 'none';
 
             try {
-                // TODO: 실제 테스트 API 호출
-                await new Promise(resolve => setTimeout(resolve, 2000)); // 시뮬레이션
+                // 연결 테스트 데이터 준비
+                const testData = {
+                    providerType: providerType,
+                    configName: formData.get('configName'),
+                    companyDomain: formData.get('companyDomain')
+                };
 
-                // 성공 시뮬레이션
-                testResult.className = 'test-result success';
-                testResultMessage.innerHTML = '✅ <strong>연결 테스트 성공!</strong><br>SSO 제공자와 성공적으로 연결되었습니다.';
+                // 제공자별 필드 추가
+                if (providerType === 'SAML') {
+                    testData.samlMetadataUrl = formData.get('samlMetadataUrl');
+                    testData.samlEntityId = formData.get('samlEntityId');
+                } else if (providerType === 'OIDC') {
+                    testData.oidcClientId = formData.get('oidcClientId');
+                    testData.oidcClientSecret = formData.get('oidcClientSecret');
+                    testData.oidcDiscoveryUrl = formData.get('oidcDiscoveryUrl');
+                    testData.oidcScope = formData.get('oidcScope');
+                } else if (providerType === 'OAUTH2') {
+                    testData.oauth2ClientId = formData.get('oauth2ClientId');
+                    testData.oauth2ClientSecret = formData.get('oauth2ClientSecret');
+                    testData.oauth2AuthUrl = formData.get('oauth2AuthUrl');
+                    testData.oauth2TokenUrl = formData.get('oauth2TokenUrl');
+                    testData.oauth2UserInfoUrl = formData.get('oauth2UserInfoUrl');
+                }
+
+                // 실제 연결 테스트 API 호출
+                const response = await Auth.post('/api/admin/sso/configuration/test', testData);
+
+                if (response.success) {
+                    testResult.className = 'test-result success';
+                    testResultMessage.innerHTML = `✅ <strong>연결 테스트 성공!</strong><br>${response.message || 'SSO 제공자와 성공적으로 연결되었습니다.'}<br><small>응답 시간: ${response.responseTime || 'N/A'}ms</small>`;
+                } else {
+                    testResult.className = 'test-result error';
+                    testResultMessage.innerHTML = `❌ <strong>연결 테스트 실패</strong><br>${response.message || '알 수 없는 오류가 발생했습니다.'}`;
+                }
                 testResult.style.display = 'block';
 
             } catch (error) {
+                console.error('연결 테스트 오류:', error);
                 testResult.className = 'test-result error';
-                testResultMessage.innerHTML = `❌ <strong>연결 테스트 실패</strong><br>${error.message}`;
+                testResultMessage.innerHTML = `❌ <strong>연결 테스트 실패</strong><br>${error.message || '네트워크 오류가 발생했습니다.'}`;
                 testResult.style.display = 'block';
             } finally {
                 this.disabled = false;
@@ -627,6 +678,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkPermission();
             setupValidation();
+            // 페이지 로드 시 provider fields 초기화
+            updateProviderFields();
         });
     </script>
 </body>

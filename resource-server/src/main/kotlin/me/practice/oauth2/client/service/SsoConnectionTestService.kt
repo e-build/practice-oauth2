@@ -2,6 +2,8 @@ package me.practice.oauth2.client.service
 
 import me.practice.oauth2.client.dto.SsoConnectionTestRequestDto
 import me.practice.oauth2.client.dto.SsoConnectionTestResponseDto
+import me.practice.oauth2.client.dto.SsoConnectionTestRequest
+import me.practice.oauth2.client.dto.SsoConnectionTestResponse
 import me.practice.oauth2.client.entity.IoClientSsoSetting
 import me.practice.oauth2.client.entity.SsoType
 import me.practice.oauth2.client.exception.SsoConnectionTestException
@@ -30,7 +32,7 @@ class SsoConnectionTestService(
             val testResults = mutableMapOf<String, Any>()
 
             // 1. OIDC Discovery Document 조회 테스트
-            val discoveryResult = testOidcDiscovery(setting.oidcIssuer!!)
+            val discoveryResult = testOidcDiscoveryFromIssuer(setting.oidcIssuer!!)
             testResults["discovery"] = discoveryResult as Any
 
             // 2. Authorization Endpoint 접근 테스트
@@ -178,9 +180,9 @@ class SsoConnectionTestService(
     }
 
     /**
-     * OIDC Discovery Document 조회
+     * OIDC Discovery Document 조회 (기존 메서드)
      */
-    private fun testOidcDiscovery(issuer: String): Map<String, Any> {
+    private fun testOidcDiscoveryFromIssuer(issuer: String): Map<String, Any> {
         return try {
             val wellKnownUrl = "${issuer.trimEnd('/')}/.well-known/openid_configuration"
             logger.debug("OIDC Discovery 조회: $wellKnownUrl")
@@ -368,6 +370,153 @@ class SsoConnectionTestService(
             mapOf(
                 "success" to false,
                 "message" to "인증서 검증 실패: ${e.message}"
+            )
+        }
+    }
+
+    /**
+     * 웹에서 전송된 연결 테스트 요청 처리
+     */
+    fun testConnection(request: SsoConnectionTestRequest): SsoConnectionTestResponse {
+        logger.info("웹 연결 테스트 시작: providerType=${request.providerType}")
+
+        return try {
+            val startTime = System.currentTimeMillis()
+            val testResults = mutableMapOf<String, Any>()
+
+            when (request.providerType.uppercase()) {
+                "SAML" -> {
+                    if (request.samlMetadataUrl.isNullOrBlank()) {
+                        return SsoConnectionTestResponse(
+                            success = false,
+                            message = "SAML 메타데이터 URL이 필요합니다",
+                            responseTime = System.currentTimeMillis() - startTime
+                        )
+                    }
+
+                    val metadataResult = testEndpointAccess(request.samlMetadataUrl)
+                    testResults["metadata_test"] = metadataResult
+
+                    val success = metadataResult["success"] == true
+                    SsoConnectionTestResponse(
+                        success = success,
+                        message = if (success) "SAML 메타데이터 URL 접근 성공" else "SAML 메타데이터 URL 접근 실패",
+                        responseTime = System.currentTimeMillis() - startTime,
+                        details = testResults
+                    )
+                }
+
+                "OIDC" -> {
+                    if (request.oidcDiscoveryUrl.isNullOrBlank()) {
+                        return SsoConnectionTestResponse(
+                            success = false,
+                            message = "OIDC Discovery URL이 필요합니다",
+                            responseTime = System.currentTimeMillis() - startTime
+                        )
+                    }
+
+                    // Discovery URL 테스트
+                    val discoveryResult = testOidcDiscovery(request.oidcDiscoveryUrl)
+                    testResults["discovery_test"] = discoveryResult
+
+                    val success = discoveryResult["success"] == true
+                    SsoConnectionTestResponse(
+                        success = success,
+                        message = if (success) "OIDC Discovery 엔드포인트 접근 성공" else "OIDC Discovery 엔드포인트 접근 실패",
+                        responseTime = System.currentTimeMillis() - startTime,
+                        details = testResults
+                    )
+                }
+
+                "OAUTH2" -> {
+                    if (request.oauth2AuthUrl.isNullOrBlank() || request.oauth2TokenUrl.isNullOrBlank()) {
+                        return SsoConnectionTestResponse(
+                            success = false,
+                            message = "OAuth2 인증 URL과 토큰 URL이 필요합니다",
+                            responseTime = System.currentTimeMillis() - startTime
+                        )
+                    }
+
+                    // 인증 URL 테스트
+                    val authUrlResult = testEndpointAccess(request.oauth2AuthUrl)
+                    testResults["auth_url_test"] = authUrlResult
+
+                    // 토큰 URL 테스트
+                    val tokenUrlResult = testEndpointAccess(request.oauth2TokenUrl)
+                    testResults["token_url_test"] = tokenUrlResult
+
+                    // 사용자 정보 URL 테스트 (선택사항)
+                    if (!request.oauth2UserInfoUrl.isNullOrBlank()) {
+                        val userInfoResult = testEndpointAccess(request.oauth2UserInfoUrl)
+                        testResults["userinfo_url_test"] = userInfoResult
+                    }
+
+                    val success = authUrlResult["success"] == true && tokenUrlResult["success"] == true
+                    SsoConnectionTestResponse(
+                        success = success,
+                        message = if (success) "OAuth2 엔드포인트 접근 성공" else "일부 OAuth2 엔드포인트 접근 실패",
+                        responseTime = System.currentTimeMillis() - startTime,
+                        details = testResults
+                    )
+                }
+
+                else -> {
+                    SsoConnectionTestResponse(
+                        success = false,
+                        message = "지원하지 않는 SSO 제공자 유형: ${request.providerType}",
+                        responseTime = System.currentTimeMillis() - startTime
+                    )
+                }
+            }
+
+        } catch (e: Exception) {
+            logger.error("웹 연결 테스트 중 오류 발생", e)
+            SsoConnectionTestResponse(
+                success = false,
+                message = "연결 테스트 중 오류 발생: ${e.message}",
+                responseTime = 0L
+            )
+        }
+    }
+
+    /**
+     * OIDC Discovery 엔드포인트 테스트
+     */
+    private fun testOidcDiscovery(discoveryUrl: String): Map<String, Any> {
+        return try {
+            logger.debug("OIDC Discovery URL 테스트: $discoveryUrl")
+
+            val response = restTemplate.getForEntity(discoveryUrl, String::class.java)
+
+            if (response.statusCode.is2xxSuccessful) {
+                val body = response.body
+                if (body?.contains("authorization_endpoint") == true &&
+                    body.contains("token_endpoint") == true) {
+                    mapOf(
+                        "success" to true,
+                        "message" to "OIDC Discovery 구성 유효함",
+                        "status_code" to response.statusCode.value(),
+                        "has_auth_endpoint" to body.contains("authorization_endpoint"),
+                        "has_token_endpoint" to body.contains("token_endpoint"),
+                        "has_userinfo_endpoint" to body.contains("userinfo_endpoint")
+                    )
+                } else {
+                    mapOf(
+                        "success" to false,
+                        "message" to "OIDC Discovery 응답이 유효하지 않음"
+                    )
+                }
+            } else {
+                mapOf(
+                    "success" to false,
+                    "message" to "HTTP 오류: ${response.statusCode}",
+                    "status_code" to response.statusCode.value()
+                )
+            }
+        } catch (e: Exception) {
+            mapOf(
+                "success" to false,
+                "message" to "Discovery URL 접근 실패: ${e.message}"
             )
         }
     }

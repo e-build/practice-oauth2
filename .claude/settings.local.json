@@ -42,7 +42,9 @@
       "Bash(git worktree:*)",
       "Bash(git checkout:*)",
       "Bash(git merge:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "mcp__playwright__browser_handle_dialog"
     ],
     "deny": [],
     "ask": []

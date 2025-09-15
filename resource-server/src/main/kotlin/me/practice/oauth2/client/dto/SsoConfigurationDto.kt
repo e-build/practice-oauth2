@@ -111,3 +111,39 @@ data class SsoConnectionTestResponseDto(
     val details: Map<String, Any>? = null,
     val testedAt: LocalDateTime = LocalDateTime.now()
 )
+
+/**
+ * SSO 연결 테스트 요청 DTO (웹에서 사용)
+ */
+data class SsoConnectionTestRequest(
+    val providerType: String,
+    val configName: String? = null,
+    val companyDomain: String? = null,
+
+    // SAML 필드
+    val samlMetadataUrl: String? = null,
+    val samlEntityId: String? = null,
+
+    // OIDC 필드
+    val oidcClientId: String? = null,
+    val oidcClientSecret: String? = null,
+    val oidcDiscoveryUrl: String? = null,
+    val oidcScope: String? = null,
+
+    // OAuth2 필드
+    val oauth2ClientId: String? = null,
+    val oauth2ClientSecret: String? = null,
+    val oauth2AuthUrl: String? = null,
+    val oauth2TokenUrl: String? = null,
+    val oauth2UserInfoUrl: String? = null
+)
+
+/**
+ * SSO 연결 테스트 응답 DTO (웹에서 사용)
+ */
+data class SsoConnectionTestResponse(
+    val success: Boolean,
+    val message: String,
+    val responseTime: Long,
+    val details: Map<String, Any> = emptyMap()
+)
