@@ -9,8 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import me.practice.oauth2.entity.IoIdpUserLoginHistory
 import me.practice.oauth2.service.LoginHistoryService
-import me.practice.oauth2.service.LoginStatistics
-import me.practice.oauth2.service.LoginTypeStatistics
+import me.practice.oauth2.service.history.LoginStatistics
+import me.practice.oauth2.service.history.LoginTypeStatistics
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
