@@ -36,7 +36,12 @@
       "mcp__playwright__browser_fill_form",
       "mcp__playwright__browser_wait_for",
       "mcp__playwright__browser_evaluate",
-      "mcp__playwright__browser_navigate"
+      "mcp__playwright__browser_navigate",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []
