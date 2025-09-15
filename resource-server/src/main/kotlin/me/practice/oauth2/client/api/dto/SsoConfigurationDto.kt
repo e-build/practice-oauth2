@@ -1,4 +1,4 @@
-package me.practice.oauth2.client.dto
+package me.practice.oauth2.client.api.dto
 
 import me.practice.oauth2.client.entity.SamlBinding
 import me.practice.oauth2.client.entity.SsoType

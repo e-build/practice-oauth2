@@ -1,5 +1,6 @@
 package me.practice.oauth2.api
 
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
@@ -7,6 +8,12 @@ import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
 class LoginController {
+
+	@GetMapping("/authorized")
+	fun authorized(): ResponseEntity<String> {
+		return ResponseEntity.ok("authorized")
+	}
+
 	/**
 	 * 커스텀 로그인 페이지를 반환합니다.
 	 * @param error 로그인 실패 시 'error' 파라미터가 전달됩니다.

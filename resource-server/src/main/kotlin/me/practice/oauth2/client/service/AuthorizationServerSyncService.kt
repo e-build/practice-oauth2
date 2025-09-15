@@ -1,6 +1,6 @@
 package me.practice.oauth2.client.service
 
-import me.practice.oauth2.client.dto.SsoConfigurationResponseDto
+import me.practice.oauth2.client.api.dto.SsoConfigurationResponseDto
 import me.practice.oauth2.client.entity.SsoType
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
