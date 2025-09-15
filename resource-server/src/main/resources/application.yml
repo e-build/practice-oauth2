@@ -20,6 +20,10 @@ spring:
           issuer-uri: http://localhost:9000
           jwk-set-uri: http://localhost:9000/oauth2/jwks
 
+# 인증 서버 연동 설정
+authorization-server:
+  base-url: http://localhost:9000
+
 logging:
   level:
     org.springframework.security: DEBUG  # TRACE에서 DEBUG로 조정
