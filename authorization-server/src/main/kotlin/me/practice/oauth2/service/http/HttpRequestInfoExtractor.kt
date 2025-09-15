@@ -56,8 +56,8 @@ class HttpRequestInfoExtractor {
      * @param request HTTP 요청 객체
      * @return 클라이언트 정보 객체
      */
-    fun extractClientInfo(request: HttpServletRequest?): ClientInfo {
-        return ClientInfo(
+    fun extract(request: HttpServletRequest?): LoginRequestSource {
+        return LoginRequestSource(
             ipAddress = extractIpAddress(request),
             userAgent = extractUserAgent(request)
         )
@@ -70,7 +70,7 @@ class HttpRequestInfoExtractor {
  * @property ipAddress 클라이언트 IP 주소
  * @property userAgent User-Agent 문자열
  */
-data class ClientInfo(
+data class LoginRequestSource(
     val ipAddress: String?,
     val userAgent: String?
 )

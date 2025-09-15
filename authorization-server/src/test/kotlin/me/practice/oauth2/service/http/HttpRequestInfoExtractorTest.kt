@@ -103,7 +103,7 @@ class HttpRequestInfoExtractorTest {
         whenever(mockRequest.getHeader("User-Agent")).thenReturn(expectedUserAgent)
 
         // when
-        val clientInfo = extractor.extractClientInfo(mockRequest)
+        val clientInfo = extractor.extract(mockRequest)
 
         // then
         assertEquals(expectedIp, clientInfo.ipAddress)
@@ -113,7 +113,7 @@ class HttpRequestInfoExtractorTest {
     @Test
     fun `null request로 클라이언트 정보 추출 시 모든 필드가 null`() {
         // when
-        val clientInfo = extractor.extractClientInfo(null)
+        val clientInfo = extractor.extract(null)
 
         // then
         assertNull(clientInfo.ipAddress)

@@ -59,7 +59,7 @@ class LoginHistoryService(
         sessionId: String,
         request: HttpServletRequest? = null,
     ): IoIdpUserLoginHistory {
-        val clientInfo = httpRequestInfoExtractor.extractClientInfo(request)
+        val requestSource = httpRequestInfoExtractor.extract(request)
         val history = IoIdpUserLoginHistory(
             shoplClientId = shoplClientId,
             shoplUserId = shoplUserId,
@@ -68,8 +68,8 @@ class LoginHistoryService(
             provider = provider,
             result = LoginResult.SUCCESS,
             sessionId = sessionId,
-            ipAddress = clientInfo.ipAddress,
-            userAgent = clientInfo.userAgent
+            ipAddress = requestSource.ipAddress,
+            userAgent = requestSource.userAgent
         )
 
         val savedHistory = loginHistoryRepository.save(history)
@@ -107,7 +107,7 @@ class LoginHistoryService(
         sessionId: String,
         request: HttpServletRequest? = null,
     ): IoIdpUserLoginHistory {
-        val clientInfo = httpRequestInfoExtractor.extractClientInfo(request)
+        val clientInfo = httpRequestInfoExtractor.extract(request)
         val history = IoIdpUserLoginHistory(
             shoplClientId = shoplClientId,
             shoplUserId = shoplUserId,
