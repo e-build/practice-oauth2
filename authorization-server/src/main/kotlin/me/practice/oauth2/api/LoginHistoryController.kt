@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
-import me.practice.oauth2.entity.IoIdpLoginHistory
+import me.practice.oauth2.entity.IoIdpUserLoginHistory
 import me.practice.oauth2.service.LoginHistoryService
 import me.practice.oauth2.service.LoginStatistics
 import me.practice.oauth2.service.LoginTypeStatistics
@@ -47,8 +47,8 @@ class LoginHistoryController(
         @RequestParam(defaultValue = "20") size: Int,
         @Parameter(description = "클라이언트 ID (선택적)", example = "SHOPL001")
         @RequestParam(required = false) clientId: String?
-    ): ResponseEntity<Page<IoIdpLoginHistory>> {
-        val pageable = PageRequest.of(page, size, Sort.by("loginTime").descending())
+    ): ResponseEntity<Page<IoIdpUserLoginHistory>> {
+        val pageable = PageRequest.of(page, size, Sort.by("regDt").descending())
         
         val result = if (clientId != null) {
             loginHistoryService.getUserLoginHistory(userId, clientId, pageable)
@@ -75,8 +75,8 @@ class LoginHistoryController(
         @RequestParam(defaultValue = "0") page: Int,
         @Parameter(description = "페이지 크기", example = "20")
         @RequestParam(defaultValue = "20") size: Int
-    ): ResponseEntity<Page<IoIdpLoginHistory>> {
-        val pageable = PageRequest.of(page, size, Sort.by("loginTime").descending())
+    ): ResponseEntity<Page<IoIdpUserLoginHistory>> {
+        val pageable = PageRequest.of(page, size, Sort.by("regDt").descending())
         val result = loginHistoryService.getUserLoginHistory(userId, startTime, endTime, pageable)
         return ResponseEntity.ok(result)
     }
@@ -93,7 +93,7 @@ class LoginHistoryController(
     fun getLastSuccessfulLogin(
         @Parameter(description = "사용자 ID", required = true, example = "user001")
         @PathVariable userId: String
-    ): ResponseEntity<IoIdpLoginHistory?> {
+    ): ResponseEntity<IoIdpUserLoginHistory?> {
         val result = loginHistoryService.getLastSuccessfulLogin(userId)
         return if (result != null) {
             ResponseEntity.ok(result)

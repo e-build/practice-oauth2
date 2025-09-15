@@ -210,7 +210,7 @@ class SsoAuthenticationSuccessHandler(
         
         // 4. 기본 대시보드로
         logger.debug("No OAuth2 parameters found, redirecting to admin auth-dashboard")
-        return "http://localhost:9001/admin/auth-dashboard"
+        return "http://localhost:9001/admin/home"
     }
 
     /**

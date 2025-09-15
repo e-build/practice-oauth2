@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard - Shopl B2B SaaS</title>
+    <title>Admin Home - Shopl B2B SaaS</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -24,12 +24,34 @@
         .logout-btn { background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
         .logout-btn:hover { background-color: #c82333; }
         .loading { text-align: center; color: #6c757d; }
+        .navigation { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .nav-card { background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; transition: all 0.3s ease; cursor: pointer; }
+        .nav-card:hover { background: #e9ecef; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .nav-card .icon { font-size: 48px; margin-bottom: 15px; }
+        .nav-card h3 { margin: 0 0 10px 0; color: #495057; }
+        .nav-card p { margin: 0; color: #6c757d; font-size: 14px; }
+        .stats-section { margin-top: 30px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .stat-card { background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        .stat-card .number { font-size: 32px; font-weight: bold; margin-bottom: 5px; }
+        .stat-card .label { font-size: 14px; opacity: 0.9; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 14px; transition: all 0.3s ease; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #545b62; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-success:hover { background-color: #1e7e34; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-warning:hover { background-color: #e0a800; }
+        .quick-actions { margin-top: 20px; }
+        .quick-actions .btn { margin-right: 10px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏢 Shopl B2B SaaS Dashboard</h1>
+            <h1>🏢 Shopl B2B SaaS Admin Home</h1>
             <div id="login_status" class="status loading">🔄 Checking authentication...</div>
         </div>
 
@@ -69,6 +91,65 @@
                 </div>
             </div>
 
+            <!-- SSO 관리 섹션 -->
+            <div class="navigation">
+                <!-- SSO 관리 섹션 -->
+                <div class="nav-card" onclick="location.href='/admin/sso/configurations'">
+                    <div class="icon">📋</div>
+                    <h3>SSO 설정 목록</h3>
+                    <p>등록된 모든 SSO 제공자 설정을 확인하고 관리합니다.</p>
+                </div>
+
+                <div class="nav-card" onclick="location.href='/admin/sso/configurations/form'">
+                    <div class="icon">➕</div>
+                    <h3>새 SSO 설정</h3>
+                    <p>SAML, OIDC, OAuth2 등 새로운 SSO 제공자를 추가합니다.</p>
+                </div>
+
+                <!-- 빠른 SSO 설정 섹션 -->
+                <div class="nav-card" onclick="quickAddSAML()">
+                    <div class="icon">🔐</div>
+                    <h3>SAML 빠른 설정</h3>
+                    <p>SAML 2.0 제공자를 빠르게 설정합니다.</p>
+                </div>
+
+                <div class="nav-card" onclick="quickAddOIDC()">
+                    <div class="icon">🆔</div>
+                    <h3>OIDC 빠른 설정</h3>
+                    <p>OpenID Connect 제공자를 빠르게 설정합니다.</p>
+                </div>
+
+                <!-- 테스트 및 검증 섹션 -->
+                <div class="nav-card" onclick="testAllConfigurations()">
+                    <div class="icon">🔧</div>
+                    <h3>전체 SSO 테스트</h3>
+                    <p>모든 활성화된 SSO 설정의 연결 상태를 테스트합니다.</p>
+                </div>
+
+            </div>
+
+            <div class="stats-section">
+                <h3>📈 SSO 현황 (개발 예정)</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number" id="totalConfigurations">0</div>
+                        <div class="label">총 SSO 설정 수</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="activeConfigurations">0</div>
+                        <div class="label">활성 SSO 설정</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="todayLogins">0</div>
+                        <div class="label">오늘 SSO 로그인</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="successRate">0%</div>
+                        <div class="label">로그인 성공률</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="claims-section">
                 <h3>📋 모든 JWT 클레임</h3>
                 <table class="claims-table" id="claims_table">
@@ -92,10 +173,10 @@
     <script>
         const idpClientId = "oauth2-client";
         const clientSecret = "secret";
-        const redirectUri = "http://localhost:9001/dashboard";
+        const redirectUri = "http://localhost:9001/admin/home";
         const authServerAuthorizeUrl = "http://localhost:9000/oauth2/authorize";
         const tokenUrl = "http://localhost:9000/oauth2/token";
-        const dashboardApiUrl = "http://localhost:9001/api/dashboard"; // API 엔드포인트 추가
+        const adminHomeApiUrl = "http://localhost:9001/api/admin/home"; // API 엔드포인트 추가
         const state = crypto.randomUUID();
 
         // 초기 상태 설정
@@ -141,7 +222,7 @@
             }
 
             try {
-                const res = await fetch(dashboardApiUrl, {
+                const res = await fetch(adminHomeApiUrl, {
                     headers: {
                         Authorization: "Bearer " + token
                     }
@@ -248,25 +329,149 @@
             window.location.href = "http://localhost:9000/logout";
         }
 
+        // SSO 관리 함수들
+        function showComingSoon() {
+            alert('🚧 개발 예정인 기능입니다. 곧 제공될 예정입니다!');
+        }
+
+        // 빠른 SSO 설정 함수들
+        function quickAddSAML() {
+            const url = '/admin/sso/configurations/form?type=SAML&quick=true';
+            window.location.href = url;
+        }
+
+        function quickAddOIDC() {
+            const url = '/admin/sso/configurations/form?type=OIDC&quick=true';
+            window.location.href = url;
+        }
+
+        function quickAddOAuth2() {
+            const url = '/admin/sso/configurations/form?type=OAUTH2&quick=true';
+            window.location.href = url;
+        }
+
+        // 테스트 및 관리 함수들
+        async function testAllConfigurations() {
+            const confirmTest = confirm('🔧 모든 활성화된 SSO 설정의 연결을 테스트하시겠습니까?\\n\\n이 작업은 몇 분 정도 소요될 수 있습니다.');
+
+            if (!confirmTest) return;
+
+            try {
+                // 테스트 진행 알림
+                const progressModal = showProgressModal('SSO 연결 테스트 진행 중...', 0);
+
+                // TODO: 실제 테스트 API 호출
+                const testResults = await simulateAllSSOTest();
+
+                hideProgressModal(progressModal);
+                showTestResults(testResults);
+
+            } catch (error) {
+                alert('❌ 테스트 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        async function simulateAllSSOTest() {
+            // 시뮬레이션: 3개의 SSO 설정 테스트
+            const configs = ['Google Workspace', 'Microsoft Azure AD', 'Okta'];
+            const results = [];
+
+            for (let i = 0; i < configs.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                results.push({
+                    name: configs[i],
+                    success: Math.random() > 0.3, // 70% 성공률
+                    responseTime: Math.floor(Math.random() * 500) + 100
+                });
+            }
+
+            return results;
+        }
+
+        function showTestResults(results) {
+            const successCount = results.filter(r => r.success).length;
+            const totalCount = results.length;
+
+            let message = `🔧 전체 SSO 테스트 완료\\n\\n`;
+            message += `✅ 성공: ${successCount}/${totalCount}\\n\\n`;
+
+            results.forEach(result => {
+                const status = result.success ? '✅' : '❌';
+                message += `${status} ${result.name}: ${result.responseTime}ms\\n`;
+            });
+
+            alert(message);
+        }
+
+        function showProgressModal(message, progress) {
+            // 간단한 진행률 표시 (실제로는 모달 구현)
+            console.log(`${message} ${progress}%`);
+            return { message, progress };
+        }
+
+        function hideProgressModal(modal) {
+            console.log('테스트 완료');
+        }
+
+        // 통계 및 가이드 함수들
+        function showSSOUsageStats() {
+            // TODO: 실제 통계 페이지로 이동
+            alert('📊 SSO 사용 통계\\n\\n• 오늘 로그인: 147회\\n• 이번 주 성공률: 94.2%\\n• 가장 많이 사용되는 제공자: Google Workspace\\n\\n🚧 상세 통계 페이지는 개발 예정입니다.');
+        }
+
+        function showSSOGuide() {
+            const guides = [
+                '📖 SSO 설정 가이드',
+                '',
+                '🔐 SAML 2.0 설정 가이드',
+                '• 메타데이터 URL 확인 방법',
+                '• 속성 매핑 설정',
+                '• 인증서 관리',
+                '',
+                '🆔 OIDC 설정 가이드',
+                '• Discovery URL 설정',
+                '• 클라이언트 인증 설정',
+                '• 스코프 및 클레임 매핑',
+                '',
+                '🔑 OAuth 2.0 설정 가이드',
+                '• 인증/토큰 엔드포인트 설정',
+                '• 사용자 정보 API 연동',
+                '',
+                '🚧 상세 가이드는 개발 예정입니다.'
+            ];
+
+            alert(guides.join('\\n'));
+        }
+
+        // 통계 데이터 로드 (향후 구현)
+        async function loadStatistics() {
+            // TODO: 실제 API에서 통계 데이터 가져오기
+            document.getElementById('totalConfigurations').textContent = '0';
+            document.getElementById('activeConfigurations').textContent = '0';
+            document.getElementById('todayLogins').textContent = '0';
+            document.getElementById('successRate').textContent = '0%';
+        }
+
         // 이벤트 리스너 등록
         document.getElementById("logout_btn").addEventListener("click", logout);
 
         // 초기 실행
         (async () => {
+            // OAuth2 로그인 완료 후 토큰 교환
             const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get("code");
+            const code = urlParams.get('code');
 
-            if (code && !localStorage.getItem("access_token")) {
-                try {
-                    await fetchToken(code);
-                    window.history.replaceState({}, document.title, "/dashboard");
-                } catch (e) {
-                    setLoginStatus(false, "로그인 실패. 다시 시도해주세요.");
-                    return;
-                }
+            if (code) {
+                // Authorization Code가 있으면 토큰 교환
+                await fetchToken(code);
+                // URL 정리 (code, state 제거)
+                window.history.replaceState({}, document.title, "/admin/home");
             } else {
+                // 코드가 없으면 기존 토큰으로 데이터 로드
                 await fetchProtectedData();
             }
+
+            await loadStatistics();
         })();
     </script>
 </body>

@@ -55,7 +55,7 @@ class LoginHistoryServiceIT(
         assertEquals(LoginResult.SUCCESS, savedHistory.result)
         assertEquals(sessionId, savedHistory.sessionId)
         assertNull(savedHistory.failureReason)
-        assertNotNull(savedHistory.loginTime)
+        assertNotNull(savedHistory.regDt)
 
         // DB에서 직접 확인
         val dbHistory = loginHistoryRepository.findById(savedHistory.id!!)
@@ -144,8 +144,8 @@ class LoginHistoryServiceIT(
         // 최신순으로 정렬되어 있는지 확인
         for (i in 0 until result.content.size - 1) {
             assertTrue(
-                result.content[i].loginTime.isAfter(result.content[i + 1].loginTime) ||
-                result.content[i].loginTime.isEqual(result.content[i + 1].loginTime)
+                result.content[i].regDt.isAfter(result.content[i + 1].regDt) ||
+                result.content[i].regDt.isEqual(result.content[i + 1].regDt)
             )
         }
     }
@@ -228,8 +228,8 @@ class LoginHistoryServiceIT(
         // Then
         assertEquals(3, result.totalElements)
         result.content.forEach { history ->
-            assertTrue(history.loginTime.isAfter(startTime) || history.loginTime.isEqual(startTime))
-            assertTrue(history.loginTime.isBefore(endTime) || history.loginTime.isEqual(endTime))
+            assertTrue(history.regDt.isAfter(startTime) || history.regDt.isEqual(startTime))
+            assertTrue(history.regDt.isBefore(endTime) || history.regDt.isEqual(endTime))
         }
     }
 

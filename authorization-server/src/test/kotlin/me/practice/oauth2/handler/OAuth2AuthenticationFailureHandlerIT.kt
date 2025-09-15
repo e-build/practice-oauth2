@@ -60,7 +60,7 @@ class OAuth2AuthenticationFailureHandlerIT(
 		assertEquals(LoginResult.FAIL, history.result)
 		assertEquals(FailureReasonType.SSO_ERROR, history.failureReason)
 		assertNotNull(history.sessionId)
-		assertNotNull(history.loginTime)
+		assertNotNull(history.regDt)
 	}
 
 	@Test

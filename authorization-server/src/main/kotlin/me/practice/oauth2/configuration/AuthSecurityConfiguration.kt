@@ -46,7 +46,7 @@ import java.util.*
 @EnableWebSecurity
 class AuthSecurityConfiguration(
 	private val oAuth2AuthorizationServerProperties: OAuth2AuthorizationServerProperties,
-	private val customAuthenticationProvider: CustomAuthenticationProvider,
+	private val basicAuthenticationProvider: BasicAuthenticationProvider,
 	private val customUserDetailsService: CustomUserDetailsService,
 	private val registeredClientRepository: RegisteredClientRepository,
 	private val oAuth2AuthorizationConsentService: OAuth2AuthorizationConsentService,
@@ -109,7 +109,7 @@ class AuthSecurityConfiguration(
 	@Bean
 	@Order(2)
 	fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
-		http.authenticationProvider(customAuthenticationProvider)
+		http.authenticationProvider(basicAuthenticationProvider)
 			.cors(Customizer.withDefaults())
 			.authorizeHttpRequests {
 				it.requestMatchers("/favicon.ico").permitAll()
@@ -127,7 +127,7 @@ class AuthSecurityConfiguration(
 					.anyRequest().authenticated()
 			}.formLogin { form ->
 				form.loginPage("/login") // 커스텀 로그인 페이지 경로
-					.defaultSuccessUrl("http://localhost:9001/admin/auth-dashboard", true) // 로그인 성공 시 리다이렉트 URL 명시적 설정
+					.defaultSuccessUrl("http://localhost:9001/admin/home", true) // 로그인 성공 시 리다이렉트 URL 명시적 설정
 					.permitAll()
 			}
 			.oauth2Login { oauth2 ->
@@ -139,7 +139,7 @@ class AuthSecurityConfiguration(
 			.logout {
 				it
 					.logoutUrl("/logout")
-					.logoutSuccessUrl("http://localhost:9001/admin/auth-dashboard")
+					.logoutSuccessUrl("http://localhost:9001/admin/home")
 					.invalidateHttpSession(true)
 					.clearAuthentication(true)
 					.deleteCookies("JSESSIONID")

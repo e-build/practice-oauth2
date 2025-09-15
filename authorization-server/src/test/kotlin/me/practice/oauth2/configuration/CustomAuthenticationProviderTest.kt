@@ -25,7 +25,7 @@ import kotlin.test.assertTrue
 
 class CustomAuthenticationProviderTest {
 
-    private lateinit var sut: CustomAuthenticationProvider
+    private lateinit var sut: BasicAuthenticationProvider
     private lateinit var userDetailsService: CustomUserDetailsService
     private lateinit var passwordEncoder: PasswordEncoder
     private lateinit var loginHistoryService: LoginHistoryService
@@ -44,7 +44,7 @@ class CustomAuthenticationProviderTest {
         mockRequest = mockk()
         mockSession = mockk()
 
-        sut = CustomAuthenticationProvider(
+        sut = BasicAuthenticationProvider(
             userDetailsService,
             passwordEncoder,
             loginHistoryService

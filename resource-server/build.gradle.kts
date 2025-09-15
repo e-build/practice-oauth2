@@ -6,8 +6,7 @@ plugins {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
-	// OAuth2 Client 및 Resource Server 모두 지원
-	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+	// OAuth2 Resource Server만 지원 (JWT 토큰 검증용)
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
 	// DB

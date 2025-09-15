@@ -13,18 +13,17 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
-import org.springframework.security.authentication.LockedException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import kotlin.test.*
 
-@Import(CustomAuthenticationProvider::class, LoginHistoryService::class)
+@Import(BasicAuthenticationProvider::class, LoginHistoryService::class)
 class CustomAuthenticationProviderIT(
-    private val sut: CustomAuthenticationProvider,
-    private val loginHistoryService: LoginHistoryService,
-    private val loginHistoryRepository: IoIdpLoginHistoryRepository
+	private val sut: BasicAuthenticationProvider,
+	private val loginHistoryService: LoginHistoryService,
+	private val loginHistoryRepository: IoIdpLoginHistoryRepository
 ) : IntegrationTestBase() {
 
     @MockBean
@@ -83,7 +82,7 @@ class CustomAuthenticationProviderIT(
             assertEquals(LoginResult.SUCCESS, history.result)
             assertEquals(TEST_SESSION_ID, history.sessionId)
             assertNull(history.failureReason)
-            assertNotNull(history.loginTime)
+            assertNotNull(history.regDt)
         } finally {
             RequestContextHolder.resetRequestAttributes()
         }
@@ -130,7 +129,7 @@ class CustomAuthenticationProviderIT(
             assertEquals(LoginResult.FAIL, history.result)
             assertEquals(FailureReasonType.INVALID_CREDENTIALS, history.failureReason)
             assertEquals(TEST_SESSION_ID, history.sessionId)
-            assertNotNull(history.loginTime)
+            assertNotNull(history.regDt)
         } finally {
             RequestContextHolder.resetRequestAttributes()
         }

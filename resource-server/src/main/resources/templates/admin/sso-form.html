@@ -58,7 +58,7 @@
         <div class="header">
             <h1 id="pageTitle">➕ 새 SSO 설정 추가</h1>
             <div class="breadcrumb">
-                <a href="/admin/auth-dashboard">Shopl B2B SaaS > 관리자 > 인증 관리</a> >
+                <a href="/admin/home">Shopl B2B SaaS > 관리자 > 인증 관리</a> >
                 <a href="/admin/sso/configurations">SSO 설정 목록</a> >
                 <span id="breadcrumbAction">새 설정</span>
             </div>
@@ -404,7 +404,7 @@
             try {
                 const token = localStorage.getItem("access_token");
                 if (!token) {
-                    window.location.href = '/dashboard?error=no_token';
+                    window.location.href = '/admin/home?error=no_token';
                     return;
                 }
 
@@ -417,11 +417,11 @@
                 const data = await response.json();
                 if (!data.hasPermission) {
                     alert('❌ SSO 관리 권한이 없습니다. 관리자에게 문의하세요.');
-                    window.location.href = '/dashboard';
+                    window.location.href = '/admin/home';
                 }
             } catch (error) {
                 console.error('권한 확인 중 오류:', error);
-                window.location.href = '/dashboard?error=permission_check_failed';
+                window.location.href = '/admin/home?error=permission_check_failed';
             }
         }
 

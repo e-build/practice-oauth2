@@ -22,7 +22,7 @@
 
 ### 1. 관리자 페이지 라우팅 및 보안 설정
 - [x] 관리자 전용 SSO 관리 페이지 접근 권한 설정
-- [x] 기존 `/dashboard` 외 추가 관리 페이지 라우팅
+- [x] 기존 `/dashboard`를 `/admin/home`으로 변경하고 추가 관리 페이지 라우팅
 - [x] 관리자 역할(role) 기반 접근 제어 구현
 
 ### 2. SSO 관리 컨트롤러 개발
@@ -31,13 +31,13 @@
 - [x] 관리자 권한 검증 로직 추가
 
 ### 3. SSO 설정 관리 페이지 템플릿 생성
-- [x] 기존 `dashboard.html` 스타일을 참고한 일관된 디자인
+- [x] 기존 `home.html` 스타일을 참고한 일관된 디자인 (기존 dashboard.html에서 변경)
 - [x] SSO 관리 메인 페이지 (`/admin/sso`) - `templates/admin/sso-main.html`
 - [x] SSO 설정 목록 페이지 (`/admin/sso/configurations`) - `templates/admin/sso-list.html`
 - [x] SSO 설정 등록/수정 페이지 (`/admin/sso/configurations/form`) - `templates/admin/sso-form.html`
 
 ### 4. SSO 제공자별 설정 폼 개발 (JavaScript + Thymeleaf)
-- [ ] 기존 dashboard.html의 JavaScript 패턴을 따라 동적 폼 구현
+- [ ] 기존 home.html의 JavaScript 패턴을 따라 동적 폼 구현
 - [ ] SSO 제공자 타입 선택 시 동적 필드 표시
 - [ ] SAML 설정 폼
   - [ ] 메타데이터 URL 입력 필드
@@ -51,7 +51,7 @@
   - [ ] 클레임 매핑 설정
 
 ### 5. 프론트엔드 유효성 검증 및 UX
-- [ ] 기존 dashboard.html의 JavaScript 패턴을 활용한 클라이언트 사이드 검증
+- [ ] 기존 home.html의 JavaScript 패턴을 활용한 클라이언트 사이드 검증
 - [ ] 필수 필드 실시간 검증
 - [ ] URL 형식 검증 (메타데이터 URL, Discovery URL)
 - [ ] 중복 설정 방지 (동일 회사/도메인)
@@ -144,7 +144,7 @@
 ### 17. 통합 테스트 및 검증
 - [ ] resource-server → authorization-server API 연동 테스트
 - [ ] 전체 SSO 설정 플로우 테스트 (웹 UI → API → 인증서버 저장 → 로그인)
-- [ ] 기존 대시보드 인증과 SSO 관리 권한 연동 테스트
+- [ ] 기존 관리자 홈 인증과 SSO 관리 권한 연동 테스트
 - [ ] 다중 회사 SSO 설정 시나리오 테스트
 - [ ] 실제 SSO 제공자와의 연동 테스트
 - [ ] 오류 상황 처리 테스트
@@ -153,7 +153,7 @@
 - [ ] 기존 OAuth2 인증 플로우에 SSO 옵션 추가
 - [ ] 회사/도메인 기반 SSO 제공자 자동 감지
 - [ ] 기존 JWT 토큰과 SSO 사용자 정보 연계
-- [ ] 대시보드에서 SSO 로그인 사용자 구분 표시
+- [ ] 관리자 홈에서 SSO 로그인 사용자 구분 표시
 
 ### 19. 모니터링 및 로깅 강화
 - [ ] 기존 로깅 패턴을 따른 SSO 관련 로그 추가

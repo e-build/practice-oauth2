@@ -73,18 +73,10 @@ class OpenApiConfig {
             .servers(
                 listOf(
                     Server().url("http://localhost:9000").description("Local Development Server"),
-                    Server().url("https://auth-dev.company.com").description("Development Server"),
-                    Server().url("https://auth.company.com").description("Production Server")
                 )
             )
             .tags(
-                listOf(
-                    Tag().name("로그인 이력 관리").description("사용자 로그인 이력 조회 및 통계 API"),
-                    Tag().name("보안 모니터링").description("보안 관련 로그인 시도 분석 API"),
-                    Tag().name("통계 분석").description("클라이언트별, 타입별 로그인 통계 API"),
-                    Tag().name("OAuth2 Authorization").description("OAuth2 인증 및 토큰 발급 엔드포인트"),
-                    Tag().name("OAuth2 Endpoints").description("OAuth2 표준 엔드포인트")
-                )
+                listOf()
             )
             .components(
                 Components()
@@ -123,7 +115,7 @@ class OpenApiConfig {
                         .`in`("query")
                         .required(true)
                         .description("클라이언트 ID")
-                        .example("dashboard-client-1")
+                        .example("oauth2-client")
                         .schema(Schema<String>().type("string"))
                 )
                 .addParametersItem(

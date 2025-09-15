@@ -80,7 +80,7 @@ class SsoAuthenticationSuccessHandlerIT(
 		assertEquals(LoginResult.SUCCESS, history.result)
 		assertNotNull(history.sessionId)
 		assertNull(history.failureReason)
-		assertNotNull(history.loginTime)
+		assertNotNull(history.regDt)
 	}
 
 	@Test
@@ -122,7 +122,7 @@ class SsoAuthenticationSuccessHandlerIT(
 		assertEquals(LoginResult.SUCCESS, history.result)
 		assertNotNull(history.sessionId)
 		assertNull(history.failureReason)
-		assertNotNull(history.loginTime)
+		assertNotNull(history.regDt)
 	}
 
 	@Test

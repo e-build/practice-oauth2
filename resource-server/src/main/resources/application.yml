@@ -15,17 +15,6 @@ spring:
       ddl-auto: none  # 임시로 none 설정
   security:
     oauth2:
-      client:
-        registration:
-          oauth2-client:
-            client-id: oauth2-client
-            client-secret: secret
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope: openid, profile, read, write
-        provider:
-          oauth2-client:
-            issuer-uri: http://localhost:9000
       resourceserver:
         jwt:
           issuer-uri: http://localhost:9000

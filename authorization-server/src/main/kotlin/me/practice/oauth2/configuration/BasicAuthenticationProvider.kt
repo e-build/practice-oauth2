@@ -18,13 +18,13 @@ import org.slf4j.LoggerFactory
  * 데이터베이스 기반 사용자 인증을 처리하는 AuthenticationProvider
  */
 @Component
-class CustomAuthenticationProvider(
+class BasicAuthenticationProvider(
 	private val userDetailsService: CustomUserDetailsService,
 	private val passwordEncoder: PasswordEncoder,
 	private val loginHistoryService: LoginHistoryService,
 ) : AuthenticationProvider {
 
-	private val logger = LoggerFactory.getLogger(CustomAuthenticationProvider::class.java)
+	private val logger = LoggerFactory.getLogger(BasicAuthenticationProvider::class.java)
 
 	override fun authenticate(authentication: Authentication): Authentication {
 		val username = authentication.name

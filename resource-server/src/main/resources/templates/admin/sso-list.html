@@ -53,7 +53,7 @@
         <div class="header">
             <h1>📋 SSO 설정 목록</h1>
             <div class="breadcrumb">
-                <a href="/admin/auth-dashboard">Shopl B2B SaaS > 관리자 > 인증 관리</a> > SSO 설정 목록
+                <a href="/admin/home">Shopl B2B SaaS > 관리자 > 인증 관리</a> > SSO 설정 목록
             </div>
         </div>
 
@@ -106,8 +106,8 @@
 
         <div class="toolbar">
             <div class="left">
-                <a href="/admin/auth-dashboard" class="btn btn-secondary">🏠 관리자 홈</a>
-                <a href="/dashboard" class="btn btn-secondary">📊 일반 대시보드</a>
+                <a href="/admin/home" class="btn btn-secondary">🏠 관리자 홈</a>
+                <a href="/admin/home" class="btn btn-secondary">📊 관리자 홈</a>
                 <button onclick="quickAddSAML()" class="btn btn-success">🔐 SAML 빠른 추가</button>
                 <button onclick="quickAddOIDC()" class="btn btn-success">🆔 OIDC 빠른 추가</button>
             </div>
@@ -260,7 +260,7 @@
             try {
                 const token = localStorage.getItem("access_token");
                 if (!token) {
-                    window.location.href = '/dashboard?error=no_token';
+                    window.location.href = '/admin/home?error=no_token';
                     return;
                 }
 
@@ -273,7 +273,7 @@
                 const data = await response.json();
                 if (!data.hasPermission) {
                     alert('❌ SSO 관리 권한이 없습니다. 관리자에게 문의하세요.');
-                    window.location.href = '/dashboard';
+                    window.location.href = '/admin/home';
                     return;
                 }
 

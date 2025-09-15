@@ -28,7 +28,7 @@
   - 소셜 로그인 - GOOGLE, KAKAO, ...
 - resource-server
   - 페이지 제공
-    - /admin/auth-dashboard - 인증된 토큰 정보 표시. SSO 설정 화면 라우팅 버튼 노출
+    - /admin/home - 인증된 토큰 정보 표시. SSO 설정 화면 라우팅 버튼 노출
     - 등등...
 
 ## 핵심 명령어
