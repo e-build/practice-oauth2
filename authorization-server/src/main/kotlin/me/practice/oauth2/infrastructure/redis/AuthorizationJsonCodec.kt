@@ -1,9 +1,9 @@
 package me.practice.oauth2.infrastructure.redis
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import me.practice.oauth2.configuration.RedisAuthorizationConverter
-import me.practice.oauth2.configuration.RedisAuthorizationDTO
 import me.practice.oauth2.entity.IoIdpAccountRepository
+import me.practice.oauth2.infrastructure.redis.converter.OAuth2AuthorizationConverter
+import me.practice.oauth2.infrastructure.redis.dto.RedisAuthorizationDTO
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
@@ -12,11 +12,12 @@ import org.springframework.stereotype.Component
 @Component
 class AuthorizationJsonCodec(
 	@Qualifier("redisObjectMapper") private val objectMapper: ObjectMapper,
+	private val oAuth2AuthorizationConverter: OAuth2AuthorizationConverter,
 	private val registeredClientRepository: RegisteredClientRepository,
 	private val ioIdpAccountRepository: IoIdpAccountRepository,
 ) {
 	fun serialize(auth: OAuth2Authorization): String =
-		objectMapper.writeValueAsString(RedisAuthorizationConverter.toDTO(auth))
+		objectMapper.writeValueAsString(oAuth2AuthorizationConverter.toDTO(auth))
 
 	fun deserialize(json: String): OAuth2Authorization {
 		return try {
@@ -25,7 +26,7 @@ class AuthorizationJsonCodec(
 			}
 
 			val dto = objectMapper.readValue(json, RedisAuthorizationDTO::class.java)
-			RedisAuthorizationConverter.fromDTO(
+			oAuth2AuthorizationConverter.fromDTO(
 				dto = dto,
 				registeredClientRepository = registeredClientRepository,
 				ioIdpAccountRepository = ioIdpAccountRepository
