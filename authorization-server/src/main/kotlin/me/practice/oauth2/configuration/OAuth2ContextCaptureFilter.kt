@@ -84,11 +84,9 @@ class OAuth2ContextCaptureFilter(
                 clientId = clientId
             )
 
-            logger.info("Captured OAuth2 user context: provider={}, user={}, client={}",
-                providerType, maskUserIdentifier(userIdentifier), clientId)
+            logger.info("Captured OAuth2 user context: provider=${providerType.name}, user=${maskUserIdentifier(userIdentifier)}, client=$clientId")
         } else {
-            logger.debug("Could not extract complete user context: user={}, client={}, provider={}",
-                userIdentifier != null, clientId != null, providerType)
+            logger.debug("Could not extract complete user context: user=${userIdentifier != null}, client=${clientId != null}, provider=${providerType.name}")
         }
     }
 
@@ -129,7 +127,7 @@ class OAuth2ContextCaptureFilter(
         for (paramName in USER_IDENTIFIER_PARAMS) {
             request.getParameter(paramName)?.let { value ->
                 if (value.isNotBlank()) {
-                    logger.debug("Found user identifier in parameter '{}': {}", paramName, maskUserIdentifier(value))
+                    logger.debug("Found user identifier in parameter '$paramName': ${maskUserIdentifier(value)}")
                     return value
                 }
             }
@@ -140,7 +138,7 @@ class OAuth2ContextCaptureFilter(
         if (referer != null && referer.contains(LOGIN_PATH)) {
             val refererIdentifier = extractUserFromReferer(referer)
             if (refererIdentifier != null) {
-                logger.debug("Found user identifier in referer: {}", maskUserIdentifier(refererIdentifier))
+                logger.debug("Found user identifier in referer: ${maskUserIdentifier(refererIdentifier)}")
                 return refererIdentifier
             }
         }
@@ -148,7 +146,7 @@ class OAuth2ContextCaptureFilter(
         // 3. 세션에서 이전에 저장된 사용자 정보 활용
         val existingContext = sessionUserContextManager.getMinimalUserContext(request.session)
         if (existingContext != null) {
-            logger.debug("Reusing existing session context: {}", existingContext.providerType)
+            logger.debug("Reusing existing session context: ${existingContext.providerType.name}")
             return existingContext.originalIdentifier
         }
 
@@ -164,7 +162,7 @@ class OAuth2ContextCaptureFilter(
         for (paramName in CLIENT_ID_PARAMS) {
             request.getParameter(paramName)?.let { value ->
                 if (value.isNotBlank()) {
-                    logger.debug("Found client ID in parameter '{}': {}", paramName, value)
+                    logger.debug("Found client ID in parameter '$paramName': $value")
                     return value
                 }
             }
@@ -175,7 +173,7 @@ class OAuth2ContextCaptureFilter(
         if (referer != null) {
             val refererClientId = extractClientFromReferer(referer)
             if (refererClientId != null) {
-                logger.debug("Found client ID in referer: {}", refererClientId)
+                logger.debug("Found client ID in referer: $refererClientId")
                 return refererClientId
             }
         }
@@ -205,7 +203,7 @@ class OAuth2ContextCaptureFilter(
 
             params.firstOrNull()
         } catch (e: Exception) {
-            logger.debug("Failed to extract user from referer: {}", referer, e)
+            logger.debug("Failed to extract user from referer: $referer", e)
             null
         }
     }
@@ -229,7 +227,7 @@ class OAuth2ContextCaptureFilter(
 
             params.firstOrNull()
         } catch (e: Exception) {
-            logger.debug("Failed to extract client from referer: {}", referer, e)
+            logger.debug("Failed to extract client from referer: $referer", e)
             null
         }
     }
