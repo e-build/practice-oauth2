@@ -128,4 +128,7 @@
       - ./gradlew :authorization-server:test --tests "패키지경로.클래스명.메소드명"
       - ./gradlew :resource-server:test --tests "패키지경로.클래스명.메소드명"
 
+## 테스트 계정 정보
+- **테스트 로그인 계정**: test@example.com / password123
+
 ## 설치된 주요 도구

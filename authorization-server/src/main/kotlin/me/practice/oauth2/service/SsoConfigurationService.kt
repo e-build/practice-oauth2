@@ -91,4 +91,34 @@ class SsoConfigurationService(
     fun parseRedirectUris(settings: IoIdpShoplClientSsoSetting): Set<String> {
         return settings.redirectUris?.split(",")?.map { it.trim() }?.toSet() ?: emptySet()
     }
+
+    /**
+     * SSO 설정 생성
+     */
+    @Transactional
+    fun createSsoSettings(settings: IoIdpShoplClientSsoSetting): IoIdpShoplClientSsoSetting {
+        return ioIdpShoplSsoSettingRepository.save(settings)
+    }
+
+    /**
+     * SSO 설정 수정
+     */
+    @Transactional
+    fun updateSsoSettings(settings: IoIdpShoplClientSsoSetting): IoIdpShoplClientSsoSetting {
+        return ioIdpShoplSsoSettingRepository.save(settings)
+    }
+
+    /**
+     * SSO 설정 삭제
+     */
+    @Transactional
+    fun deleteSsoSettings(shoplClientId: String): Boolean {
+        val settings = ioIdpShoplSsoSettingRepository.findByShoplClientId(shoplClientId)
+        return if (settings != null) {
+            ioIdpShoplSsoSettingRepository.delete(settings)
+            true
+        } else {
+            false
+        }
+    }
 }

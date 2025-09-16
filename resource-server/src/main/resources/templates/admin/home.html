@@ -174,10 +174,10 @@
     <script>
         const idpClientId = "oauth2-client";
         const clientSecret = "secret";
-        const redirectUri = "http://localhost:9001/admin/home";
-        const authServerAuthorizeUrl = "http://localhost:9000/oauth2/authorize";
-        const tokenUrl = "http://localhost:9000/oauth2/token";
-        const adminHomeApiUrl = "http://localhost:9001/api/admin/user-info"; // API 엔드포인트 수정
+        const redirectUri = "[[${resourceServerBaseUrl}]]/admin/home";
+        const authServerAuthorizeUrl = "[[${authServerBaseUrl}]]/oauth2/authorize";
+        const tokenUrl = "[[${authServerBaseUrl}]]/oauth2/token";
+        const adminHomeApiUrl = "[[${resourceServerBaseUrl}]]/api/admin/user-info"; // API 엔드포인트 수정
         const state = crypto.randomUUID();
 
         // 초기 상태 설정

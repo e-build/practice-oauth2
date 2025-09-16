@@ -1,6 +1,7 @@
 package me.practice.oauth2.service
 
 import me.practice.oauth2.entity.SsoType
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.core.AuthorizationGrantType
@@ -13,7 +14,9 @@ import org.springframework.stereotype.Component
  */
 @Component
 class DynamicClientRegistrationRepository(
-    private val ssoConfigurationService: SsoConfigurationService
+    private val ssoConfigurationService: SsoConfigurationService,
+    @Value("\${authorization-server.base-url:http://localhost:9000}")
+    private val authorizationServerBaseUrl: String
 ) : ClientRegistrationRepository {
 
     /**
@@ -60,7 +63,7 @@ class DynamicClientRegistrationRepository(
         val redirectUri = if (redirectUris.isNotEmpty()) {
             redirectUris.first()
         } else {
-            "http://localhost:9000/login/oauth2/code/$registrationId"
+            "$authorizationServerBaseUrl/login/oauth2/code/$registrationId"
         }
 
         return ClientRegistration.withRegistrationId(registrationId)

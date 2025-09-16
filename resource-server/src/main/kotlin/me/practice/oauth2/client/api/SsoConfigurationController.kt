@@ -6,25 +6,41 @@ import me.practice.oauth2.client.api.dto.SsoConfigurationSummaryDto
 import me.practice.oauth2.client.api.dto.SsoConnectionTestRequestDto
 import me.practice.oauth2.client.api.dto.SsoConnectionTestResponseDto
 import me.practice.oauth2.client.service.SsoConfigurationService
+import me.practice.oauth2.client.service.SsoConnectionTestService
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/api/admin/sso")
 class SsoConfigurationController(
-    private val ssoConfigurationService: SsoConfigurationService
+    private val ssoConfigurationService: SsoConfigurationService,
+    private val ssoConnectionTestService: SsoConnectionTestService
 ) {
+
+    private val logger = LoggerFactory.getLogger(SsoConfigurationController::class.java)
 
     data class ApiResponse<T>(
         val success: Boolean = true,
         val data: T? = null,
         val message: String? = null,
         val timestamp: LocalDateTime = LocalDateTime.now()
-    )
+    ) {
+        companion object {
+            fun <T> success(data: T, message: String? = null): ApiResponse<T> {
+                return ApiResponse(success = true, data = data, message = message)
+            }
+
+            fun <T> error(message: String, data: T? = null): ApiResponse<T> {
+                return ApiResponse(success = false, data = data, message = message)
+            }
+        }
+    }
 
     /**
      * 현재 클라이언트의 SSO 설정 조회
@@ -214,6 +230,52 @@ class SsoConfigurationController(
                 "message" to (e.message ?: "검증 실패")
             )
             ResponseEntity.ok(ApiResponse(data = validationResult, message = "검증 완료"))
+        }
+    }
+
+    /**
+     * SSO 설정 연결 테스트
+     * POST /api/admin/sso/configuration/test
+     */
+    @PostMapping("/test")
+    fun testSsoConnection(
+        @RequestBody testRequest: SsoConnectionTestRequest,
+        @AuthenticationPrincipal authentication: JwtAuthenticationToken
+    ): ResponseEntity<ApiResponse<SsoConnectionTestResponse>> {
+        logger.info("SSO 연결 테스트 요청: ${testRequest.providerType}")
+
+        return try {
+            val startTime = System.currentTimeMillis()
+            val jwt = authentication.token
+
+            // 연결 테스트 실행
+            val testResult = ssoConnectionTestService.testConnection(testRequest)
+            val responseTime = System.currentTimeMillis() - startTime
+
+            val response = SsoConnectionTestResponse(
+                success = testResult.success,
+                message = testResult.message,
+                responseTime = responseTime,
+                details = testResult.details
+            )
+
+            if (testResult.success) {
+                logger.info("SSO 연결 테스트 성공: ${testRequest.providerType}")
+                ResponseEntity.ok(ApiResponse.success(response, "연결 테스트가 성공했습니다"))
+            } else {
+                logger.warn("SSO 연결 테스트 실패: ${testRequest.providerType} - ${testResult.message}")
+                ResponseEntity.ok(ApiResponse.success(response, "연결 테스트가 완료되었습니다"))
+            }
+
+        } catch (e: Exception) {
+            logger.error("SSO 연결 테스트 중 오류 발생", e)
+            val response = SsoConnectionTestResponse(
+                success = false,
+                message = "연결 테스트 중 오류가 발생했습니다: ${e.message}",
+                responseTime = 0L,
+                details = emptyMap()
+            )
+            ResponseEntity.ok(ApiResponse.error("연결 테스트 실패", response))
         }
     }
 

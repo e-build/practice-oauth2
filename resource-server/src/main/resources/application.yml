@@ -1,5 +1,5 @@
 server:
-  port: 9001  # 기존 포트 유지
+  port: ${SERVER_PORT:9001}
 
 spring:
   application:
@@ -17,8 +17,12 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000
-          jwk-set-uri: http://localhost:9000/oauth2/jwks
+          issuer-uri: ${AUTHORIZATION_SERVER_ISSUER_URL:http://localhost:9000}
+          jwk-set-uri: ${AUTHORIZATION_SERVER_ISSUER_URL:http://localhost:9000}/oauth2/jwks
+
+# 인증 서버 연동 설정
+authorization-server:
+  base-url: ${AUTHORIZATION_SERVER_ISSUER_URL:http://localhost:9000}
 
 logging:
   level:

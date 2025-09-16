@@ -41,6 +41,7 @@ import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.util.*
+import org.springframework.beans.factory.annotation.Value
 
 @Configuration
 @EnableWebSecurity
@@ -48,6 +49,8 @@ class AuthSecurityConfiguration(
 	private val oAuth2AuthorizationServerProperties: OAuth2AuthorizationServerProperties,
 	private val basicAuthenticationProvider: BasicAuthenticationProvider,
 	private val customUserDetailsService: CustomUserDetailsService,
+	@Value("\${RESOURCE_SERVER_BASE_URL:http://localhost:9001}")
+	private val resourceServerBaseUrl: String,
 	private val registeredClientRepository: RegisteredClientRepository,
 	private val oAuth2AuthorizationConsentService: OAuth2AuthorizationConsentService,
 	private val stringRedisTemplate: StringRedisTemplate,
@@ -127,7 +130,7 @@ class AuthSecurityConfiguration(
 					.anyRequest().authenticated()
 			}.formLogin { form ->
 				form.loginPage("/login") // 커스텀 로그인 페이지 경로
-					.defaultSuccessUrl("http://localhost:9001/admin/home", true) // 로그인 성공 시 리다이렉트 URL 명시적 설정
+					.defaultSuccessUrl("$resourceServerBaseUrl/admin/home", true) // 로그인 성공 시 리다이렉트 URL 명시적 설정
 					.permitAll()
 			}
 			.oauth2Login { oauth2 ->
@@ -139,7 +142,7 @@ class AuthSecurityConfiguration(
 			.logout {
 				it
 					.logoutUrl("/logout")
-					.logoutSuccessUrl("http://localhost:9001/admin/home")
+					.logoutSuccessUrl("$resourceServerBaseUrl/admin/home")
 					.invalidateHttpSession(true)
 					.clearAuthentication(true)
 					.deleteCookies("JSESSIONID")

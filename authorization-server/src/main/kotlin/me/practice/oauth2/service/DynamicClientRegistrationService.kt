@@ -3,6 +3,7 @@ package me.practice.oauth2.service
 import me.practice.oauth2.domain.IdpClient
 import me.practice.oauth2.entity.IoIdpShoplClientSsoSetting
 import me.practice.oauth2.entity.SsoType
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
@@ -21,7 +22,9 @@ import java.util.*
 @Service
 class DynamicClientRegistrationService(
     private val registeredClientRepository: RegisteredClientRepository,
-    private val ssoConfigurationService: SsoConfigurationService
+    private val ssoConfigurationService: SsoConfigurationService,
+    @Value("\${authorization-server.base-url:http://localhost:9000}")
+    private val authorizationServerBaseUrl: String
 ) {
 
     /**
@@ -62,8 +65,8 @@ class DynamicClientRegistrationService(
                 clientBuilder.redirectUri(uri)
             }
         } else {
-            // 기본 리다이렉트 URI
-            clientBuilder.redirectUri("http://localhost:9000/login/oauth2/code/$registrationId")
+            // 기본 리다이렉트 URI (환경변수 사용)
+            clientBuilder.redirectUri("$authorizationServerBaseUrl/login/oauth2/code/$registrationId")
         }
 
         // 스코프 설정

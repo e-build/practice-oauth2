@@ -14,12 +14,15 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidator
 import org.springframework.security.oauth2.jwt.*
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.beans.factory.annotation.Value
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 class ResourceServerSecurityConfiguration(
 //	private val cacheManager: CacheManager,
+	@Value("\${authorization-server.base-url}")
+	private val authorizationServerBaseUrl: String
 ) {
 
 	@Bean
@@ -45,7 +48,7 @@ class ResourceServerSecurityConfiguration(
 			.exceptionHandling { exceptions ->
 				exceptions.authenticationEntryPoint { request, response, authException ->
 					// Authorization Server의 로그인 페이지로 리다이렉트
-					response.sendRedirect("http://localhost:9000/login")
+					response.sendRedirect("$authorizationServerBaseUrl/login")
 				}
 			}
 			// Resource Server 설정 (JWT 토큰 검증)
@@ -68,7 +71,7 @@ class ResourceServerSecurityConfiguration(
 	@Bean
 	fun jwtDecoder(): JwtDecoder {
 		val jwtDecoder = NimbusJwtDecoder
-			.withJwkSetUri("http://localhost:9000/oauth2/jwks")
+			.withJwkSetUri("$authorizationServerBaseUrl/oauth2/jwks")
 //			.cache(cacheManager.getCache("jwks"))
 			.build()
 
@@ -84,7 +87,7 @@ class ResourceServerSecurityConfiguration(
 	fun jwtValidator(): OAuth2TokenValidator<Jwt> {
 		val validators = mutableListOf<OAuth2TokenValidator<Jwt>>()
 		validators.add(JwtTimestampValidator()) // 만료시간 검증
-		validators.add(JwtIssuerValidator("http://localhost:9000")) // 발급자 검증
+		validators.add(JwtIssuerValidator(authorizationServerBaseUrl)) // 발급자 검증
 		return DelegatingOAuth2TokenValidator(validators)
 	}
 
