@@ -242,10 +242,10 @@
             document.getElementById("role").textContent = data.role || 'N/A';
 
             // Shopl 계정 정보
-            document.getElementById("account_id").textContent = data.account_id || 'N/A';
-            document.getElementById("shopl_client_id").textContent = data.shopl_client_id || 'N/A';
-            document.getElementById("shopl_user_id").textContent = data.shopl_user_id || 'N/A';
-            document.getElementById("user_id").textContent = data.user_id || 'N/A';
+            document.getElementById("account_id").textContent = data.accountId || 'N/A';
+            document.getElementById("shopl_client_id").textContent = data.shoplClientId || 'N/A';
+            document.getElementById("shopl_user_id").textContent = data.shoplUserId || 'N/A';
+            document.getElementById("user_id").textContent = data.userId || 'N/A';
 
             // JWT 토큰 정보
             document.getElementById("sub").textContent = data.sub || 'N/A';
@@ -259,7 +259,7 @@
             document.getElementById("authenticated").textContent = data.authenticated ? '✅ 인증됨' : '❌ 미인증';
 
             // 모든 클레임 테이블 생성
-            populateClaimsTable(data.all_claims || {});
+            populateClaimsTable(data.allClaims || {});
         }
 
         function populateClaimsTable(claims) {

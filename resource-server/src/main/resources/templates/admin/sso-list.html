@@ -116,7 +116,7 @@
     </div>
 
     <script>
-        // 현재는 모의 데이터 사용, 나중에 실제 API로 교체
+        // 현재는 모의 데이터 사용, 나중에 실제 API로 교체 TODO: 당장 실제 API 로 교체바람
         const mockSsoConfigurations = [
             {
                 id: 1,
@@ -182,14 +182,14 @@
                 <tr>
                     <td><strong>${config.name}</strong></td>
                     <td><span class="provider-type provider-${config.providerType.toLowerCase()}">${config.providerType}</span></td>
-                    <td>${config.companyDomain}</td>
+                    <td>${extractCompanyDomain(config)}</td>
                     <td><span class="status-badge status-${config.status.toLowerCase()}">${getStatusText(config.status)}</span></td>
                     <td>${formatDate(config.createdAt)}</td>
                     <td>${formatDate(config.updatedAt)}</td>
                     <td>
-                        <button onclick="editConfiguration(${config.id})" class="btn btn-sm btn-primary">✏️ 편집</button>
-                        <button onclick="testConfiguration(${config.id})" class="btn btn-sm btn-success">🔧 테스트</button>
-                        <button onclick="deleteConfiguration(${config.id})" class="btn btn-sm btn-danger">🗑️ 삭제</button>
+                        <button onclick="editConfiguration('${config.id}')" class="btn btn-sm btn-primary">✏️ 편집</button>
+                        <button onclick="testConfiguration('${config.id}')" class="btn btn-sm btn-success">🔧 테스트</button>
+                        <button onclick="deleteConfiguration('${config.id}')" class="btn btn-sm btn-danger">🗑️ 삭제</button>
                     </td>
                 </tr>
             `).join('');
@@ -251,13 +251,43 @@
             });
         });
 
+        // 회사/도메인 정보 추출 함수
+        function extractCompanyDomain(config) {
+            if (config.details) {
+                // OIDC의 경우 issuer에서 도메인 추출
+                if (config.details.issuer) {
+                    try {
+                        const url = new URL(config.details.issuer);
+                        return url.hostname;
+                    } catch (e) {
+                        return config.details.issuer;
+                    }
+                }
+                // SAML의 경우 entityId에서 도메인 추출
+                if (config.details.entityId) {
+                    try {
+                        const url = new URL(config.details.entityId);
+                        return url.hostname;
+                    } catch (e) {
+                        // URL이 아닌 경우 entityId 자체 반환
+                        return config.details.entityId;
+                    }
+                }
+                // clientId가 있는 경우
+                if (config.details.clientId) {
+                    return config.details.clientId;
+                }
+            }
+            return 'N/A';
+        }
+
         // 사용자 정보 로드
         async function loadUserInfo() {
             try {
                 const userInfo = await Auth.get('/api/admin/user-info');
                 if (userInfo.authenticated) {
                     document.getElementById('username').textContent = userInfo.username || 'Unknown';
-                    document.getElementById('companyId').textContent = userInfo.account_id || 'Unknown';
+                    document.getElementById('companyId').textContent = userInfo.accountId || 'Unknown';
                 } else {
                     document.getElementById('username').textContent = 'anonymous';
                     document.getElementById('companyId').textContent = 'unknown';
