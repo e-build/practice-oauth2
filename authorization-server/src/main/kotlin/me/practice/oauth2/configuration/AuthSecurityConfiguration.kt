@@ -33,6 +33,7 @@ import org.springframework.security.oauth2.server.authorization.token.JwtEncodin
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
@@ -59,6 +60,7 @@ class AuthSecurityConfiguration(
 	private val compositeClientRegistrationRepository: CompositeClientRegistrationRepository,
 	private val ssoAuthenticationSuccessHandler: SsoAuthenticationSuccessHandler,
 	private val oAuth2AuthenticationFailureHandler: OAuth2AuthenticationFailureHandler,
+	private val oAuth2ContextCaptureFilter: OAuth2ContextCaptureFilter,
 ) {
 
 	/**
@@ -140,6 +142,8 @@ class AuthSecurityConfiguration(
 					.successHandler(ssoAuthenticationSuccessHandler)
 					.failureHandler(oAuth2AuthenticationFailureHandler)
 			}
+			// OAuth2 컨텍스트 캡처 필터 추가 (DON-49: OAuth2 시작 시점 컨텍스트 저장)
+			.addFilterBefore(oAuth2ContextCaptureFilter, UsernamePasswordAuthenticationFilter::class.java)
 			.logout {
 				it
 					.logoutUrl("/logout")
