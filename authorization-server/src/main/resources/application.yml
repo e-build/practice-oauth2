@@ -16,7 +16,7 @@ spring:
           keycloak-acme:
             provider: keycloak-acme
             client-id: as-broker
-            client-secret: as-secret
+            client-secret: XMAxGpivuhKxxVnoltQ2MTjhyYHW9Vqq
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope: openid, email, profile

@@ -6,8 +6,14 @@ import me.practice.oauth2.service.LoginHistoryService
 import me.practice.oauth2.service.AccountValidator
 import me.practice.oauth2.service.PasswordValidator
 import me.practice.oauth2.service.RequestContextService
+import me.practice.oauth2.service.LoginSecurityValidator
 import me.practice.oauth2.domain.IdpClient
+import me.practice.oauth2.exception.AccountExpiredException
+import me.practice.oauth2.exception.PasswordExpiredException
+import me.practice.oauth2.exception.TooManyAttemptsException
+import me.practice.oauth2.exception.GlobalAuthenticationExceptionHandler
 import org.springframework.security.authentication.*
+import org.springframework.dao.DataAccessException
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
 import me.practice.oauth2.entity.IoIdpAccount
@@ -23,7 +29,9 @@ class BasicAuthenticationProvider(
 	private val accountValidator: AccountValidator,
 	private val passwordValidator: PasswordValidator,
 	private val loginHistoryService: LoginHistoryService,
-	private val requestContextService: RequestContextService
+	private val requestContextService: RequestContextService,
+	private val loginSecurityValidator: LoginSecurityValidator,
+	private val globalExceptionHandler: GlobalAuthenticationExceptionHandler
 ) : AuthenticationProvider {
 
 	private val logger = LoggerFactory.getLogger(BasicAuthenticationProvider::class.java)
@@ -35,19 +43,50 @@ class BasicAuthenticationProvider(
 		// 데이터베이스에서 사용자 정보 조회
 		val userDetails = userDetailsService.loadUserByUsername(username) as CustomUserDetails
 
-		// 계정 상태 검증 (별도 클래스에서 처리)
-		accountValidator.validateAccountStatus(userDetails)
-
 		try {
+			// 보안 검증 (로그인 시도 횟수 등)
+			loginSecurityValidator.validateLoginAttempts(userDetails.getAccount().shoplUserId)
+
+			// 계정 상태 검증 (별도 클래스에서 처리)
+			accountValidator.validateAccountStatus(userDetails)
+
 			// 비밀번호 검증 (별도 클래스에서 처리)
 			passwordValidator.validatePassword(userDetails, rawPassword)
 
 			// 로그인 성공 처리
 			handleAuthenticationSuccess(userDetails.getAccount())
-		} catch (e: BadCredentialsException) {
-			// 로그인 실패 처리
-			handleAuthenticationFailure(userDetails.getAccount())
+		} catch (e: TooManyAttemptsException) {
+			// 로그인 시도 횟수 초과
+			handleAuthenticationFailure(userDetails.getAccount(), FailureReasonType.TOO_MANY_ATTEMPTS)
 			throw e
+		} catch (e: AccountExpiredException) {
+			// 계정 만료
+			handleAuthenticationFailure(userDetails.getAccount(), FailureReasonType.ACCOUNT_EXPIRED)
+			throw e
+		} catch (e: LockedException) {
+			// 계정 잠금
+			handleAuthenticationFailure(userDetails.getAccount(), FailureReasonType.ACCOUNT_LOCKED)
+			throw e
+		} catch (e: DisabledException) {
+			// 계정 비활성화
+			handleAuthenticationFailure(userDetails.getAccount(), FailureReasonType.ACCOUNT_DISABLED)
+			throw e
+		} catch (e: PasswordExpiredException) {
+			// 비밀번호 만료
+			handleAuthenticationFailure(userDetails.getAccount(), FailureReasonType.PASSWORD_EXPIRED)
+			throw e
+		} catch (e: BadCredentialsException) {
+			// 잘못된 자격증명
+			handleAuthenticationFailure(userDetails.getAccount(), FailureReasonType.INVALID_CREDENTIALS)
+			throw e
+		} catch (e: DataAccessException) {
+			// 데이터베이스 관련 시스템 오류
+			handleSystemException(e, userDetails.getAccount())
+			throw InternalAuthenticationServiceException("Database access error", e)
+		} catch (e: Exception) {
+			// 기타 시스템 오류
+			handleSystemException(e, userDetails.getAccount())
+			throw InternalAuthenticationServiceException("System error during authentication", e)
 		}
 
 		return UsernamePasswordAuthenticationToken(
@@ -88,7 +127,7 @@ class BasicAuthenticationProvider(
 	 * 로그인 실패 시 처리
 	 * - 로그인 실패 이력 기록
 	 */
-	private fun handleAuthenticationFailure(account: IoIdpAccount) {
+	private fun handleAuthenticationFailure(account: IoIdpAccount, failureReason: FailureReasonType) {
 		try {
 			val request = requestContextService.getCurrentRequest()
 			val sessionId = requestContextService.getCurrentSessionId()
@@ -98,13 +137,31 @@ class BasicAuthenticationProvider(
 				shoplUserId = account.shoplUserId,
 				platform = IdpClient.Platform.DASHBOARD,
 				loginType = LoginType.BASIC,
-				failureReason = FailureReasonType.INVALID_CREDENTIALS,
+				failureReason = failureReason,
 				sessionId = sessionId,
 				request = request
 			)
 		} catch (e: Exception) {
 			// 로그인 이력 기록 실패가 인증 자체를 방해하지 않도록 예외 처리
 			logger.warn("Failed to record failed login history for user: ${account.shoplUserId}", e)
+		}
+	}
+
+	/**
+	 * 시스템 예외 처리
+	 * - 전역 예외 처리기에 위임하여 시스템 오류 이력 기록
+	 */
+	private fun handleSystemException(exception: Exception, account: IoIdpAccount) {
+		try {
+			val request = requestContextService.getCurrentRequest()
+			globalExceptionHandler.handleSystemException(
+				exception = exception,
+				request = request,
+				shoplClientId = account.shoplClientId,
+				shoplUserId = account.shoplUserId
+			)
+		} catch (e: Exception) {
+			logger.error("Failed to handle system exception for user: ${account.shoplUserId}", e)
 		}
 	}
 }

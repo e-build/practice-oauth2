@@ -61,25 +61,7 @@ class OAuth2AuthenticationFailureHandler(
                 else -> LoginType.SSO
             }
             
-            val failureReason = when (exception) {
-                is OAuth2AuthenticationException -> {
-                    when (exception.error?.errorCode) {
-                        "invalid_client" -> FailureReasonType.INVALID_CLIENT
-                        "invalid_scope" -> FailureReasonType.INVALID_SCOPE
-                        "network_error" -> FailureReasonType.NETWORK_ERROR
-                        else -> {
-                            // description에서도 확인
-                            when {
-                                exception.error?.description?.contains("invalid_client") == true -> FailureReasonType.INVALID_CLIENT
-                                exception.error?.description?.contains("invalid_scope") == true -> FailureReasonType.INVALID_SCOPE
-                                exception.error?.description?.contains("network") == true -> FailureReasonType.NETWORK_ERROR
-                                else -> FailureReasonType.SSO_ERROR
-                            }
-                        }
-                    }
-                }
-                else -> FailureReasonType.SSO_ERROR
-            }
+            val failureReason = mapOAuth2ExceptionToFailureReason(exception)
             
             loginHistoryService.recordFailedLogin(
                 shoplClientId = shoplClientId,
@@ -97,7 +79,54 @@ class OAuth2AuthenticationFailureHandler(
             logger.warn("Failed to record OAuth2 authentication failure history", e)
         }
     }
-    
+
+    /**
+     * OAuth2 예외를 구체적인 실패 사유로 매핑
+     */
+    private fun mapOAuth2ExceptionToFailureReason(exception: AuthenticationException): FailureReasonType {
+        return when (exception) {
+            is OAuth2AuthenticationException -> {
+                when (exception.error?.errorCode) {
+                    "invalid_client" -> FailureReasonType.INVALID_CLIENT
+                    "invalid_scope" -> FailureReasonType.INVALID_SCOPE
+                    "unsupported_grant_type" -> FailureReasonType.UNSUPPORTED_GRANT_TYPE
+                    "server_error" -> FailureReasonType.SSO_PROVIDER_UNAVAILABLE
+                    "temporarily_unavailable" -> FailureReasonType.SSO_PROVIDER_UNAVAILABLE
+                    "service_unavailable" -> FailureReasonType.SSO_PROVIDER_UNAVAILABLE
+                    "invalid_grant" -> FailureReasonType.SSO_TOKEN_EXCHANGE_FAILED
+                    "network_error" -> FailureReasonType.NETWORK_ERROR
+                    else -> {
+                        // HTTP 상태 코드나 description으로 추가 분류
+                        when {
+                            exception.error?.description?.contains("invalid_client") == true -> FailureReasonType.INVALID_CLIENT
+                            exception.error?.description?.contains("invalid_scope") == true -> FailureReasonType.INVALID_SCOPE
+                            exception.error?.description?.contains("server error") == true -> FailureReasonType.SSO_PROVIDER_UNAVAILABLE
+                            exception.error?.description?.contains("service unavailable") == true -> FailureReasonType.SSO_PROVIDER_UNAVAILABLE
+                            exception.error?.description?.contains("token exchange") == true -> FailureReasonType.SSO_TOKEN_EXCHANGE_FAILED
+                            exception.error?.description?.contains("network") == true -> FailureReasonType.NETWORK_ERROR
+                            else -> FailureReasonType.SSO_ERROR
+                        }
+                    }
+                }
+            }
+            // 네트워크 관련 예외
+            is java.net.ConnectException,
+            is java.net.SocketTimeoutException,
+            is java.net.UnknownHostException -> FailureReasonType.NETWORK_ERROR
+
+            // 외부 제공자 서버 오류
+            is org.springframework.web.client.HttpServerErrorException -> {
+                when (exception.statusCode.value()) {
+                    500, 502, 503, 504 -> FailureReasonType.SSO_PROVIDER_UNAVAILABLE
+                    else -> FailureReasonType.EXTERNAL_PROVIDER_ERROR
+                }
+            }
+
+            // 기타 모든 OAuth2 관련 오류
+            else -> FailureReasonType.SSO_ERROR
+        }
+    }
+
     /**
      * 요청에서 Shopl Client ID 추출
      */

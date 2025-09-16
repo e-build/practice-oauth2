@@ -14,7 +14,7 @@ class CustomUserDetails(
 
 	override fun getAuthorities(): Collection<GrantedAuthority> {
 		// role 필드를 기반으로 권한 생성
-		return listOf(SecurityConstants.DEFAULT_ROLE).map {
+		return listOf(TokenClaimConstants.DEFAULT_ROLE).map {
 			SimpleGrantedAuthority("ROLE_${it.trim().uppercase()}")
 		}
 	}
@@ -29,15 +29,22 @@ class CustomUserDetails(
 	}
 
 	override fun isAccountNonExpired(): Boolean {
-		return true // 필요시 계정 만료 로직 구현
+		// 계정 삭제 날짜가 있으면 만료된 것으로 간주
+		return account.delDt == null
 	}
 
 	override fun isAccountNonLocked(): Boolean {
-		return true
+		// BLOCKED 상태가 아니면 잠기지 않은 것으로 간주
+		return account.status != "BLOCKED"
 	}
 
 	override fun isCredentialsNonExpired(): Boolean {
-		return true // 필요시 비밀번호 만료 로직 구현
+		// 비밀번호 업데이트 날짜 기준으로 90일 이내면 유효
+		return account.pwdUpdateDt?.let { updateDt ->
+			val now = java.time.LocalDateTime.now()
+			val daysSinceUpdate = java.time.Duration.between(updateDt, now).toDays()
+			daysSinceUpdate <= 90
+		} ?: true // 업데이트 날짜가 없으면 유효한 것으로 간주
 	}
 
 	override fun isEnabled(): Boolean {

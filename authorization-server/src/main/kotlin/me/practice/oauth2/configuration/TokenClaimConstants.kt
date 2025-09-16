@@ -3,7 +3,7 @@ package me.practice.oauth2.configuration
 /**
  * Security 관련 상수 정의
  */
-object SecurityConstants {
+object TokenClaimConstants {
     const val DEFAULT_ROLE = "STAFF"
     const val LEADER_ROLE = "LEADER"
     const val ADMIN_ROLE = "ADMIN"

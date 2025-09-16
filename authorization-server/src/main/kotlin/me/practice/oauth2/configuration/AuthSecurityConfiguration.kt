@@ -207,8 +207,8 @@ class AuthSecurityConfiguration(
 	fun jwtCustomizer(): OAuth2TokenCustomizer<JwtEncodingContext> {
 		return OAuth2TokenCustomizer { context ->
 			if (context.tokenType == OAuth2TokenType.ACCESS_TOKEN) {
-				// 인증된 사용자 정보 가져오기
-				val principal = context.getPrincipal<Authentication>()
+//				 인증된 사용자 정보 가져오기
+	 val principal = context.getPrincipal<Authentication>()
 				val customUserDetails = principal.principal as? CustomUserDetails
 
 				if (customUserDetails != null) {
@@ -216,13 +216,13 @@ class AuthSecurityConfiguration(
 
 					// JWT 클레임에 사용자 정보 추가
 					context.claims
-						.claim(SecurityConstants.CLAIM_ACCOUNT_ID, account.id)
-						.claim(SecurityConstants.CLAIM_SHOPL_CLIENT_ID, account.shoplClientId)
-						.claim(SecurityConstants.CLAIM_SHOPL_USER_ID, account.shoplUserId)
-						.claim(SecurityConstants.CLAIM_EMAIL, account.email)
-						.claim(SecurityConstants.CLAIM_NAME, account.name)
-						.claim(SecurityConstants.CLAIM_ROLE, SecurityConstants.DEFAULT_ROLE)
-						.claim(SecurityConstants.CLAIM_USERNAME, customUserDetails.username)
+						.claim(TokenClaimConstants.CLAIM_ACCOUNT_ID, account.id)
+						.claim(TokenClaimConstants.CLAIM_SHOPL_CLIENT_ID, account.shoplClientId)
+						.claim(TokenClaimConstants.CLAIM_SHOPL_USER_ID, account.shoplUserId)
+						.claim(TokenClaimConstants.CLAIM_EMAIL, account.email)
+						.claim(TokenClaimConstants.CLAIM_NAME, account.name)
+						.claim(TokenClaimConstants.CLAIM_ROLE, TokenClaimConstants.DEFAULT_ROLE)
+						.claim(TokenClaimConstants.CLAIM_USERNAME, customUserDetails.username)
 				}
 			}
 		}

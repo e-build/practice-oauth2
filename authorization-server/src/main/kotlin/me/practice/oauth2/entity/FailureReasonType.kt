@@ -10,10 +10,10 @@ enum class FailureReasonType {
     INVALID_CLIENT,            // 잘못된 클라이언트
     UNSUPPORTED_GRANT_TYPE,    // 지원하지 않는 Grant Type
     INVALID_SCOPE,             // 잘못된 Scope
-    SSO_ERROR,                 // SSO 연동 오류
+    SSO_ERROR,                 // SSO 연동 오류 (일반적인 오류)
+    SSO_PROVIDER_UNAVAILABLE,  // SSO 제공자 서버 오류
+    SSO_TOKEN_EXCHANGE_FAILED, // 토큰 교환 실패
     EXTERNAL_PROVIDER_ERROR,   // 외부 제공자 오류
-    SUSPICIOUS_LOCATION,       // 의심스러운 위치에서의 접근
-    BRUTE_FORCE_DETECTED,      // 무차별 대입 공격 탐지
     NETWORK_ERROR,             // 네트워크 오류
     SYSTEM_ERROR,              // 시스템 오류
     UNKNOWN                    // 알 수 없는 오류
