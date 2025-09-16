@@ -39,7 +39,7 @@
 - resource-server Security 설정: `.requestMatchers("/admin/**").permitAll()` - 모든 admin 페이지는 프론트엔드에서 권한 검증
 - JWT 토큰 기반 API 인증: Authorization Bearer 헤더 방식으로 API 보안 처리
 
-### 데이터 흐름
+### 인증/인가 데이터 흐름
 
 1. 사용자가 페이지 접근 → HTML 템플릿 반환 (권한 검증 없음)
 2. 프론트엔드 JavaScript가 localStorage에서 JWT 토큰 확인
@@ -51,6 +51,29 @@
 - **Bean Validation 사용 금지**: Bean Validation 어노테이션(@Valid, @NotNull 등) 사용하지 않음
 - **서비스 레이어 직접 검증**: 모든 유효성 검증을 서비스 레이어에서 조건문(if/else)으로 직접 구현
 - **검증 로직 명시성**: 검증 로직이 명확하게 보이도록 코드로 표현
+
+### Spring 프로퍼티 관리 전략
+
+- **@Value 어노테이션 사용 금지**: @Value("${property.name}") 어노테이션 사용하지 않음
+- **@ConfigurationProperties 사용**: 타입 안전한 프로퍼티 바인딩을 위해 data class 사용
+- **app prefix 통일**: 모든 커스텀 프로퍼티는 `app` prefix로 시작
+- **계층적 구조**: 관련 프로퍼티들을 nested data class로 그룹화
+- **예시**:
+  ```kotlin
+  @ConfigurationProperties(prefix = "app")
+  data class AppProperties(
+      val authorizationServer: AuthorizationServer,
+      val database: Database
+  ) {
+      data class AuthorizationServer(
+          val baseUrl: String
+      )
+      data class Database(
+          val host: String,
+          val port: Int
+      )
+  }
+  ```
 
 ## 주요기능
 
