@@ -55,6 +55,36 @@ class DefaultOAuth2UserRecoveryService(
             "(?:user[_-]?id|username|login[_-]?id|account[_-]?id)[\\s:=]+([a-zA-Z0-9._%+-]+)",
             Pattern.CASE_INSENSITIVE
         )
+
+        // Google OAuth2 특화 패턴들
+        private val GOOGLE_USER_PATTERN = Pattern.compile(
+            "(?:login_hint|user_id|hd)[\\s:=]+([a-zA-Z0-9._%+-]+(?:@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})?)",
+            Pattern.CASE_INSENSITIVE
+        )
+
+        // Kakao OAuth2 특화 패턴들
+        private val KAKAO_USER_PATTERN = Pattern.compile(
+            "(?:user_id|kakao_account\\.email|profile\\.nickname)[\":\\s]+([a-zA-Z0-9._%+-]+(?:@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})?)",
+            Pattern.CASE_INSENSITIVE
+        )
+
+        // Microsoft/Azure AD 특화 패턴들
+        private val MICROSOFT_USER_PATTERN = Pattern.compile(
+            "(?:upn|unique_name|preferred_username|email)[\":\\s]+([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})",
+            Pattern.CASE_INSENSITIVE
+        )
+
+        // GitHub OAuth2 특화 패턴들
+        private val GITHUB_USER_PATTERN = Pattern.compile(
+            "(?:login|email|name)[\":\\s]+([a-zA-Z0-9._%+-]+(?:@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})?)",
+            Pattern.CASE_INSENSITIVE
+        )
+
+        // 제공자별 오류 코드 매핑
+        private val GOOGLE_ERROR_CODES = setOf("access_denied", "invalid_request", "unauthorized_client", "invalid_grant")
+        private val KAKAO_ERROR_CODES = setOf("KOE101", "KOE320", "KOE401", "KOE403", "KOE010")
+        private val MICROSOFT_ERROR_CODES_PREFIX = "AADSTS"
+        private val GITHUB_ERROR_CODES = setOf("access_denied", "incorrect_client_credentials", "invalid_client")
     }
 
     override fun attemptUserRecovery(
@@ -142,37 +172,47 @@ class DefaultOAuth2UserRecoveryService(
     }
 
     /**
-     * 2단계: OAuth2 예외 분석 기반 복구
+     * 2단계: OAuth2 예외 분석 기반 복구 (DON-49 제공자별 특화 파싱)
      *
      * OAuth2AuthenticationException의 메시지나 세부 정보에서
-     * 사용자 식별 정보를 추출 시도
+     * 제공자별 API 응답 구조에 맞춤화된 사용자 식별 정보 추출
      */
     private fun attemptExceptionBasedRecovery(exception: OAuth2AuthenticationException): String? {
         return try {
             val errorMessage = exception.message ?: return null
+            val errorCode = exception.error?.errorCode
             val errorDescription = exception.error?.description
 
-            // 예외 메시지에서 이메일 패턴 찾기
-            var matcher = EMAIL_PATTERN.matcher(errorMessage)
-            if (matcher.find()) {
-                return extractUserIdFromEmail(matcher.group(1))
+            logger.debug("Attempting provider-specific error parsing: errorCode={}, message={}",
+                errorCode, errorMessage)
+
+            // 제공자 감지 및 특화 파싱 수행
+            val provider = detectProviderFromError(errorMessage, errorCode, errorDescription)
+            logger.debug("Detected OAuth2 provider: {}", provider)
+
+            val userIdentifier = when (provider) {
+                "google" -> attemptGoogleErrorParsing(errorMessage, errorCode, errorDescription)
+                "kakao" -> attemptKakaoErrorParsing(errorMessage, errorCode, errorDescription)
+                "microsoft" -> attemptMicrosoftErrorParsing(errorMessage, errorCode, errorDescription)
+                "github" -> attemptGitHubErrorParsing(errorMessage, errorCode, errorDescription)
+                else -> attemptGenericErrorParsing(errorMessage, errorDescription)
             }
 
-            // 오류 설명에서 이메일 패턴 찾기
-            if (errorDescription != null) {
-                matcher = EMAIL_PATTERN.matcher(errorDescription)
-                if (matcher.find()) {
-                    return extractUserIdFromEmail(matcher.group(1))
-                }
-
-                // 사용자 ID 패턴 찾기
-                val userIdMatcher = USER_ID_PATTERN.matcher(errorDescription)
-                if (userIdMatcher.find()) {
-                    return userIdMatcher.group(1)
-                }
+            if (userIdentifier != null) {
+                logger.debug("Provider-specific parsing successful: provider={}, userId={}",
+                    provider, maskUserIdentifier(userIdentifier))
+                return userIdentifier
             }
 
-            logger.debug("No user identifier found in exception: {}", errorMessage)
+            // 범용 패턴 파싱 fallback
+            val genericResult = attemptGenericErrorParsing(errorMessage, errorDescription)
+            if (genericResult != null) {
+                logger.debug("Generic parsing successful: userId={}", maskUserIdentifier(genericResult))
+                return genericResult
+            }
+
+            logger.debug("No user identifier found in exception: provider={}, errorCode={}",
+                provider, errorCode)
             null
         } catch (e: Exception) {
             logger.debug("Exception-based recovery failed", e)
@@ -282,6 +322,221 @@ class DefaultOAuth2UserRecoveryService(
             averageResponseTimeMs = lastResponseTime.get(),
             successRate = if (total > 0) successful.toDouble() / total.toDouble() else 0.0
         )
+    }
+
+    /**
+     * 오류 메시지에서 OAuth2 제공자 감지
+     */
+    private fun detectProviderFromError(errorMessage: String?, errorCode: String?, errorDescription: String?): String {
+        val allText = listOfNotNull(errorMessage, errorCode, errorDescription).joinToString(" ").lowercase()
+
+        return when {
+            allText.contains("google") || allText.contains("googleapis") -> "google"
+            allText.contains("kakao") || KAKAO_ERROR_CODES.any { allText.contains(it.lowercase()) } -> "kakao"
+            allText.contains("microsoft") || allText.contains("azure") ||
+            allText.contains(MICROSOFT_ERROR_CODES_PREFIX.lowercase()) -> "microsoft"
+            allText.contains("github") -> "github"
+            else -> "unknown"
+        }
+    }
+
+    /**
+     * Google OAuth2 오류 특화 파싱
+     *
+     * Google 특화 오류 처리:
+     * - access_denied: 사용자가 권한 거부 시 login_hint에서 사용자 정보 추출
+     * - invalid_request: 잘못된 요청 파라미터에서 사용자 정보 추출
+     * - error_description 필드 활용한 세밀한 분석
+     */
+    private fun attemptGoogleErrorParsing(errorMessage: String?, errorCode: String?, errorDescription: String?): String? {
+        val allText = listOfNotNull(errorMessage, errorDescription).joinToString(" ")
+
+        // Google 특화 패턴 매칭
+        var matcher = GOOGLE_USER_PATTERN.matcher(allText)
+        if (matcher.find()) {
+            val userInfo = matcher.group(1)
+            logger.debug("Google-specific pattern matched: {}", maskUserIdentifier(userInfo))
+            return if (userInfo.contains("@")) extractUserIdFromEmail(userInfo) else userInfo
+        }
+
+        // Google access_denied 특화 처리
+        if (errorCode == "access_denied") {
+            // 로그인 힌트나 도메인 정보 추출
+            val hintPattern = Pattern.compile("(?:login_hint|hd)[=:]([^&\\s]+)", Pattern.CASE_INSENSITIVE)
+            matcher = hintPattern.matcher(allText)
+            if (matcher.find()) {
+                val hint = java.net.URLDecoder.decode(matcher.group(1), "UTF-8")
+                logger.debug("Google access_denied hint extracted: {}", maskUserIdentifier(hint))
+                return if (hint.contains("@")) extractUserIdFromEmail(hint) else hint
+            }
+        }
+
+        // Google error_description에서 이메일 추출
+        if (errorDescription != null) {
+            val emailMatcher = EMAIL_PATTERN.matcher(errorDescription)
+            if (emailMatcher.find()) {
+                val email = emailMatcher.group(1)
+                logger.debug("Google error_description email extracted: {}", maskUserIdentifier(email))
+                return extractUserIdFromEmail(email)
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Kakao OAuth2 오류 특화 파싱
+     *
+     * Kakao 특화 오류 처리:
+     * - KOE101: 유효하지 않은 앱 키
+     * - KOE320: 계정 차단 상태에서 사용자 정보 추출
+     * - KOE401: 토큰 만료 시 사용자 정보 추출
+     * - error_code와 error_description 매핑
+     */
+    private fun attemptKakaoErrorParsing(errorMessage: String?, errorCode: String?, errorDescription: String?): String? {
+        val allText = listOfNotNull(errorMessage, errorDescription).joinToString(" ")
+
+        // Kakao 특화 패턴 매칭
+        var matcher = KAKAO_USER_PATTERN.matcher(allText)
+        if (matcher.find()) {
+            val userInfo = matcher.group(1).replace("\"", "").trim()
+            logger.debug("Kakao-specific pattern matched: {}", maskUserIdentifier(userInfo))
+            return if (userInfo.contains("@")) extractUserIdFromEmail(userInfo) else userInfo
+        }
+
+        // Kakao 오류 코드별 특화 처리
+        when (errorCode) {
+            "KOE320" -> {
+                // 계정 차단 상태 - 사용자 ID 추출 시도
+                val userIdPattern = Pattern.compile("user_id[\":\\s]+([0-9]+)", Pattern.CASE_INSENSITIVE)
+                matcher = userIdPattern.matcher(allText)
+                if (matcher.find()) {
+                    val userId = matcher.group(1)
+                    logger.debug("Kakao KOE320 user_id extracted: {}", maskUserIdentifier(userId))
+                    return userId
+                }
+            }
+            "KOE401" -> {
+                // 토큰 만료 - 카카오 계정 이메일 추출 시도
+                val emailPattern = Pattern.compile("kakao_account\\.email[\":\\s]+([^,\\}\\s]+)", Pattern.CASE_INSENSITIVE)
+                matcher = emailPattern.matcher(allText)
+                if (matcher.find()) {
+                    val email = matcher.group(1).replace("\"", "").trim()
+                    logger.debug("Kakao KOE401 email extracted: {}", maskUserIdentifier(email))
+                    return extractUserIdFromEmail(email)
+                }
+            }
+        }
+
+        // 일반적인 이메일 패턴 추출
+        val emailMatcher = EMAIL_PATTERN.matcher(allText)
+        if (emailMatcher.find()) {
+            val email = emailMatcher.group(1)
+            logger.debug("Kakao general email pattern extracted: {}", maskUserIdentifier(email))
+            return extractUserIdFromEmail(email)
+        }
+
+        return null
+    }
+
+    /**
+     * Microsoft/Azure AD OAuth2 오류 특화 파싱
+     *
+     * Microsoft 특화 오류 처리:
+     * - AADSTS* 패턴 (Azure AD 오류 코드)
+     * - UPN, preferred_username 등 Microsoft 특화 필드
+     */
+    private fun attemptMicrosoftErrorParsing(errorMessage: String?, errorCode: String?, errorDescription: String?): String? {
+        val allText = listOfNotNull(errorMessage, errorDescription).joinToString(" ")
+
+        // Microsoft 특화 패턴 매칭
+        var matcher = MICROSOFT_USER_PATTERN.matcher(allText)
+        if (matcher.find()) {
+            val userInfo = matcher.group(1)
+            logger.debug("Microsoft-specific pattern matched: {}", maskUserIdentifier(userInfo))
+            return extractUserIdFromEmail(userInfo)
+        }
+
+        // Azure AD 오류 코드 처리
+        if (errorCode != null && errorCode.startsWith(MICROSOFT_ERROR_CODES_PREFIX)) {
+            // AADSTS 오류에서 UPN 추출
+            val upnPattern = Pattern.compile("UPN[\":\\s]+([^,\\}\\s]+@[^,\\}\\s]+)", Pattern.CASE_INSENSITIVE)
+            matcher = upnPattern.matcher(allText)
+            if (matcher.find()) {
+                val upn = matcher.group(1).replace("\"", "").trim()
+                logger.debug("Microsoft AADSTS UPN extracted: {}", maskUserIdentifier(upn))
+                return extractUserIdFromEmail(upn)
+            }
+        }
+
+        // 일반적인 이메일 패턴 추출
+        val emailMatcher = EMAIL_PATTERN.matcher(allText)
+        if (emailMatcher.find()) {
+            val email = emailMatcher.group(1)
+            logger.debug("Microsoft general email pattern extracted: {}", maskUserIdentifier(email))
+            return extractUserIdFromEmail(email)
+        }
+
+        return null
+    }
+
+    /**
+     * GitHub OAuth2 오류 특화 파싱
+     *
+     * GitHub 특화 오류 처리:
+     * - access_denied, incorrect_client_credentials 등
+     * - login, email, name 필드에서 사용자 정보 추출
+     */
+    private fun attemptGitHubErrorParsing(errorMessage: String?, errorCode: String?, errorDescription: String?): String? {
+        val allText = listOfNotNull(errorMessage, errorDescription).joinToString(" ")
+
+        // GitHub 특화 패턴 매칭
+        var matcher = GITHUB_USER_PATTERN.matcher(allText)
+        if (matcher.find()) {
+            val userInfo = matcher.group(1).replace("\"", "").trim()
+            logger.debug("GitHub-specific pattern matched: {}", maskUserIdentifier(userInfo))
+            return if (userInfo.contains("@")) extractUserIdFromEmail(userInfo) else userInfo
+        }
+
+        // GitHub 로그인명 추출
+        val loginPattern = Pattern.compile("login[\":\\s]+([^,\\}\\s]+)", Pattern.CASE_INSENSITIVE)
+        matcher = loginPattern.matcher(allText)
+        if (matcher.find()) {
+            val login = matcher.group(1).replace("\"", "").trim()
+            logger.debug("GitHub login extracted: {}", maskUserIdentifier(login))
+            return login
+        }
+
+        // 일반적인 이메일 패턴 추출
+        val emailMatcher = EMAIL_PATTERN.matcher(allText)
+        if (emailMatcher.find()) {
+            val email = emailMatcher.group(1)
+            logger.debug("GitHub general email pattern extracted: {}", maskUserIdentifier(email))
+            return extractUserIdFromEmail(email)
+        }
+
+        return null
+    }
+
+    /**
+     * 범용 오류 파싱 (fallback)
+     */
+    private fun attemptGenericErrorParsing(errorMessage: String?, errorDescription: String?): String? {
+        val allText = listOfNotNull(errorMessage, errorDescription).joinToString(" ")
+
+        // 이메일 패턴 우선 검색
+        var matcher = EMAIL_PATTERN.matcher(allText)
+        if (matcher.find()) {
+            return extractUserIdFromEmail(matcher.group(1))
+        }
+
+        // 사용자 ID 패턴 검색
+        matcher = USER_ID_PATTERN.matcher(allText)
+        if (matcher.find()) {
+            return matcher.group(1)
+        }
+
+        return null
     }
 
     /**
