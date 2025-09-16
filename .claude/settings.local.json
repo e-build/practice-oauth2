@@ -65,7 +65,9 @@
       "mcp__linear-server__update_issue",
       "Bash(npx:*)",
       "Bash(claude mcp add:*)",
-      "mcp__playwright__browser_network_requests"
+      "mcp__playwright__browser_network_requests",
+      "mcp__linear-server__get_issue",
+      "Bash(AUTHORIZATION_SERVER_ISSUER_URL=http://localhost:9002 ./gradlew :authorization-server:bootRun --args=\"--server.port=9002\")"
     ],
     "deny": [],
     "ask": []
