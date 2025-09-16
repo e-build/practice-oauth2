@@ -12,7 +12,9 @@ import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.redis.serializer.StringRedisSerializer
+import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession
 
+@EnableRedisHttpSession
 @EnableConfigurationProperties(RedisAuthorizationProperties::class)
 @Configuration
 class RedisConfiguration(
