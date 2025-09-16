@@ -10,6 +10,8 @@ enum class FailureReasonType {
     INVALID_CLIENT,            // 잘못된 클라이언트
     UNSUPPORTED_GRANT_TYPE,    // 지원하지 않는 Grant Type
     INVALID_SCOPE,             // 잘못된 Scope
+    ACCESS_DENIED,             // 액세스 거부 (사용자 취소, 권한 거부)
+    RATE_LIMIT_EXCEEDED,       // 요청 한도 초과 (429)
     SSO_ERROR,                 // SSO 연동 오류 (일반적인 오류)
     SSO_PROVIDER_UNAVAILABLE,  // SSO 제공자 서버 오류
     SSO_TOKEN_EXCHANGE_FAILED, // 토큰 교환 실패
