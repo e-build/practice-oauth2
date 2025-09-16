@@ -114,10 +114,16 @@ class LoginHistoryController(
 		@Parameter(description = "사용자 ID", required = true, example = "user002") @PathVariable userId: String,
 		@Parameter(description = "조회할 시간 범위 (시간)", example = "24") @RequestParam(defaultValue = "24") hoursBack: Long,
 	): ResponseEntity<RecentFailuresResponse> {
-		val count = loginHistoryService.getRecentFailedLoginAttempts(userId, hoursBack)
+		val minutesBack: Long = hoursBack * 60
+		val count = loginHistoryService.getRecentFailedLoginAttempts(
+			shoplUserId = userId,
+			minutesBack = minutesBack
+		)
 		return ResponseEntity.ok(
 			RecentFailuresResponse(
-				userId = userId, failedAttempts = count, hoursBack = hoursBack
+				userId = userId,
+				failedAttempts = count,
+				hoursBack = hoursBack
 			)
 		)
 	}

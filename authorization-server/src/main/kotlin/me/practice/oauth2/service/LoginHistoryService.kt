@@ -177,9 +177,14 @@ class LoginHistoryService(
      * 최근 실패한 로그인 시도 횟수를 조회합니다.
      */
     @Transactional(readOnly = true)
-    fun getRecentFailedLoginAttempts(shoplUserId: String, hoursBack: Long = 24): Long {
-        val query = FailedLoginCountQuery(shoplUserId, hoursBack)
-        return statisticsService.getRecentFailedLoginAttempts(query)
+    fun getRecentFailedLoginAttempts(
+		shoplUserId: String,
+		minutesBack: Long,
+	): Long {
+        return statisticsService.getRecentFailedLoginAttempts(
+			shoplUserId = shoplUserId,
+			minutesBack = minutesBack
+		)
     }
 
     /**

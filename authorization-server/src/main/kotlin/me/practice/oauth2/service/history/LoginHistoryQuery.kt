@@ -39,17 +39,6 @@ data class DateRangeLoginHistoryQuery(
 )
 
 /**
- * 로그인 실패 횟수 조회 조건
- *
- * @property shoplUserId 사용자 ID
- * @property hoursBack 조회할 시간 범위 (시간 단위)
- */
-data class FailedLoginCountQuery(
-    val shoplUserId: String,
-    val hoursBack: Long = 24
-)
-
-/**
  * IP 기반 로그인 시도 조회 조건
  *
  * @property ipAddress IP 주소

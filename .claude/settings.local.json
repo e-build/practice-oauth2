@@ -56,7 +56,11 @@
       "Bash(AUTHORIZATION_SERVER_ISSUER_URL=http://localhost:9002 ./gradlew :resource-server:bootRun --args=\"--server.port=9005\")",
       "Bash(awk:*)",
       "Bash(xargs -r kill -9)",
-      "Bash(AUTHORIZATION_SERVER_ISSUER_URL=http://localhost:9002 RESOURCE_SERVER_BASE_URL=http://localhost:9003 ./gradlew :resource-server:bootRun --args=\"--server.port=9003\")"
+      "Bash(AUTHORIZATION_SERVER_ISSUER_URL=http://localhost:9002 RESOURCE_SERVER_BASE_URL=http://localhost:9003 ./gradlew :resource-server:bootRun --args=\"--server.port=9003\")",
+      "mcp__linear-server__list_teams",
+      "mcp__linear-server__list_projects",
+      "mcp__linear-server__create_issue",
+      "mcp__linear-server__list_issues"
     ],
     "deny": [],
     "ask": []

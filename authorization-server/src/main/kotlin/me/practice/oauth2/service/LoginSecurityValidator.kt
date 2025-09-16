@@ -2,7 +2,6 @@ package me.practice.oauth2.service
 
 import me.practice.oauth2.exception.TooManyAttemptsException
 import me.practice.oauth2.service.history.LoginHistoryStatisticsService
-import me.practice.oauth2.service.history.FailedLoginCountQuery
 import org.springframework.stereotype.Component
 
 /**
@@ -11,26 +10,25 @@ import org.springframework.stereotype.Component
  */
 @Component
 class LoginSecurityValidator(
-    private val statisticsService: LoginHistoryStatisticsService
+	private val statisticsService: LoginHistoryStatisticsService,
 ) {
 
-    companion object {
-        private const val MAX_FAILED_ATTEMPTS = 5L // 최대 실패 시도 횟수
-        private const val FAILED_ATTEMPTS_TIME_WINDOW = 24L // 실패 시도 횟수 확인 시간 윈도우 (시간)
-    }
+	companion object {
+		private const val MAX_FAILED_ATTEMPTS = 5L // 최대 실패 시도 횟수
+		private const val FAILED_ATTEMPTS_TIME_WINDOW = 5L // 실패 시도 횟수 확인 시간 윈도우 (분)
+	}
 
-    /**
-     * 로그인 시도 횟수를 검증합니다.
-     *
-     * @param shoplUserId 사용자 ID
-     * @throws TooManyAttemptsException 최대 시도 횟수 초과 시
-     */
-    fun validateLoginAttempts(shoplUserId: String) {
-        val query = FailedLoginCountQuery(shoplUserId, FAILED_ATTEMPTS_TIME_WINDOW)
-        val failedAttempts = statisticsService.getRecentFailedLoginAttempts(query)
+	/**
+	 * 로그인 시도 횟수를 검증합니다.
+	 *
+	 * @param shoplUserId 사용자 ID
+	 * @throws TooManyAttemptsException 최대 시도 횟수 초과 시
+	 */
+	fun validateLoginAttempts(shoplUserId: String) {
+		val failedAttempts = statisticsService.getRecentFailedLoginAttempts(shoplUserId, FAILED_ATTEMPTS_TIME_WINDOW)
 
-        if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
-            throw TooManyAttemptsException(shoplUserId, failedAttempts, FAILED_ATTEMPTS_TIME_WINDOW)
-        }
-    }
+		if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
+			throw TooManyAttemptsException(shoplUserId, failedAttempts, FAILED_ATTEMPTS_TIME_WINDOW)
+		}
+	}
 }

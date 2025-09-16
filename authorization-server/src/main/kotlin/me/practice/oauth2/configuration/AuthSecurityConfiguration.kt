@@ -210,7 +210,7 @@ class AuthSecurityConfiguration(
 	fun jwtCustomizer(): OAuth2TokenCustomizer<JwtEncodingContext> {
 		return OAuth2TokenCustomizer { context ->
 			if (context.tokenType == OAuth2TokenType.ACCESS_TOKEN) {
-//				 인증된 사용자 정보 가져오기
+				// 인증된 사용자 정보 가져오기
 	 val principal = context.getPrincipal<Authentication>()
 				val customUserDetails = principal.principal as? CustomUserDetails
 

@@ -3,7 +3,9 @@ package me.practice.oauth2.client.controller
 import me.practice.oauth2.client.api.dto.SsoConfigurationRequestDto
 import me.practice.oauth2.client.api.dto.SsoConfigurationResponseDto
 import me.practice.oauth2.client.api.dto.SsoConfigurationSummaryDto
+import me.practice.oauth2.client.api.dto.SsoConnectionTestRequest
 import me.practice.oauth2.client.api.dto.SsoConnectionTestRequestDto
+import me.practice.oauth2.client.api.dto.SsoConnectionTestResponse
 import me.practice.oauth2.client.api.dto.SsoConnectionTestResponseDto
 import me.practice.oauth2.client.service.SsoConfigurationService
 import me.practice.oauth2.client.service.SsoConnectionTestService
@@ -235,29 +237,27 @@ class SsoConfigurationController(
 
     /**
      * SSO 설정 연결 테스트
-     * POST /api/admin/sso/configuration/test
      */
-    @PostMapping("/test")
+    @PostMapping("/configuration/test")
     fun testSsoConnection(
-        @RequestBody testRequest: SsoConnectionTestRequest,
-        @AuthenticationPrincipal authentication: JwtAuthenticationToken
+		@RequestBody testRequest: SsoConnectionTestRequest,
+		@AuthenticationPrincipal jwt: Jwt
     ): ResponseEntity<ApiResponse<SsoConnectionTestResponse>> {
         logger.info("SSO 연결 테스트 요청: ${testRequest.providerType}")
 
         return try {
             val startTime = System.currentTimeMillis()
-            val jwt = authentication.token
 
             // 연결 테스트 실행
             val testResult = ssoConnectionTestService.testConnection(testRequest)
             val responseTime = System.currentTimeMillis() - startTime
 
             val response = SsoConnectionTestResponse(
-                success = testResult.success,
-                message = testResult.message,
-                responseTime = responseTime,
-                details = testResult.details
-            )
+				success = testResult.success,
+				message = testResult.message,
+				responseTime = responseTime,
+				details = testResult.details
+			)
 
             if (testResult.success) {
                 logger.info("SSO 연결 테스트 성공: ${testRequest.providerType}")

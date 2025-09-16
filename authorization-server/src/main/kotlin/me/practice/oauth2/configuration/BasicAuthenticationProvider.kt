@@ -42,10 +42,11 @@ class BasicAuthenticationProvider(
 
 		// 데이터베이스에서 사용자 정보 조회
 		val userDetails = userDetailsService.loadUserByUsername(username) as CustomUserDetails
+		val account: IoIdpAccount = userDetails.getAccount()
 
 		try {
 			// 보안 검증 (로그인 시도 횟수 등)
-			loginSecurityValidator.validateLoginAttempts(userDetails.getAccount().shoplUserId)
+			loginSecurityValidator.validateLoginAttempts(account.shoplUserId)
 
 			// 계정 상태 검증 (별도 클래스에서 처리)
 			accountValidator.validateAccountStatus(userDetails)
@@ -54,38 +55,38 @@ class BasicAuthenticationProvider(
 			passwordValidator.validatePassword(userDetails, rawPassword)
 
 			// 로그인 성공 처리
-			handleAuthenticationSuccess(userDetails.getAccount())
+			handleAuthenticationSuccess(account)
 		} catch (e: TooManyAttemptsException) {
 			// 로그인 시도 횟수 초과
-			handleAuthenticationFailure(userDetails.getAccount(), FailureReasonType.TOO_MANY_ATTEMPTS)
+			handleAuthenticationFailure(account, FailureReasonType.TOO_MANY_ATTEMPTS)
 			throw e
 		} catch (e: AccountExpiredException) {
 			// 계정 만료
-			handleAuthenticationFailure(userDetails.getAccount(), FailureReasonType.ACCOUNT_EXPIRED)
+			handleAuthenticationFailure(account, FailureReasonType.ACCOUNT_EXPIRED)
 			throw e
 		} catch (e: LockedException) {
 			// 계정 잠금
-			handleAuthenticationFailure(userDetails.getAccount(), FailureReasonType.ACCOUNT_LOCKED)
+			handleAuthenticationFailure(account, FailureReasonType.ACCOUNT_LOCKED)
 			throw e
 		} catch (e: DisabledException) {
 			// 계정 비활성화
-			handleAuthenticationFailure(userDetails.getAccount(), FailureReasonType.ACCOUNT_DISABLED)
+			handleAuthenticationFailure(account, FailureReasonType.ACCOUNT_DISABLED)
 			throw e
 		} catch (e: PasswordExpiredException) {
 			// 비밀번호 만료
-			handleAuthenticationFailure(userDetails.getAccount(), FailureReasonType.PASSWORD_EXPIRED)
+			handleAuthenticationFailure(account, FailureReasonType.PASSWORD_EXPIRED)
 			throw e
 		} catch (e: BadCredentialsException) {
 			// 잘못된 자격증명
-			handleAuthenticationFailure(userDetails.getAccount(), FailureReasonType.INVALID_CREDENTIALS)
+			handleAuthenticationFailure(account, FailureReasonType.INVALID_CREDENTIALS)
 			throw e
 		} catch (e: DataAccessException) {
 			// 데이터베이스 관련 시스템 오류
-			handleSystemException(e, userDetails.getAccount())
+			handleSystemException(e, account)
 			throw InternalAuthenticationServiceException("Database access error", e)
 		} catch (e: Exception) {
 			// 기타 시스템 오류
-			handleSystemException(e, userDetails.getAccount())
+			handleSystemException(e, account)
 			throw InternalAuthenticationServiceException("System error during authentication", e)
 		}
 

@@ -169,13 +169,13 @@ class InternalSsoApiController(
                 logger.info("SSO 설정 삭제 완료: shoplClientId=$shoplClientId")
 
                 ResponseEntity.ok(
-                    ApiResponse<Nothing>(
+                    ApiResponse(
                         message = "SSO 설정 삭제 완료"
                     )
                 )
             } else {
                 ResponseEntity.ok(
-                    ApiResponse<Nothing>(
+                    ApiResponse(
                         message = "삭제할 SSO 설정이 없습니다"
                     )
                 )
@@ -184,7 +184,7 @@ class InternalSsoApiController(
         } catch (e: Exception) {
             logger.error("SSO 설정 삭제 실패", e)
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                ApiResponse<Nothing>(
+                ApiResponse(
                     success = false,
                     message = "SSO 설정 삭제 실패: ${e.message}"
                 )
