@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
 
 /**
  * 관리자 API 컨트롤러
@@ -101,8 +102,8 @@ class AdminApiController(private val authorizationServerClient: AuthorizationSer
             sub = jwt.getClaimAsString("sub"),
             iss = jwt.getClaimAsString("iss"),
             aud = jwt.audience,
-            exp = jwt.getClaim<Long>("exp"),
-            iat = jwt.getClaim<Long>("iat"),
+            exp = jwt.getClaim<Instant>("exp").toEpochMilli(),
+            iat = jwt.getClaim<Instant>("iat").toEpochMilli(),
             scope = jwt.getClaimAsString("scope"),
             authenticated = true,
             allClaims = allClaims
