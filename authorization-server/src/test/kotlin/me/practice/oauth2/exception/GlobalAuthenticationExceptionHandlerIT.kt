@@ -3,7 +3,7 @@ package me.practice.oauth2.exception
 import jakarta.servlet.http.HttpServletRequest
 import me.practice.oauth2.entity.*
 import me.practice.oauth2.service.LoginHistoryService
-import me.practice.oauth2.testbase.IntegrationTestBase
+import me.practice.oauth2.testbase.AuthenticationIntegrationTestBase
 import me.practice.oauth2.testbase.AuthenticationTestUtils
 import me.practice.oauth2.domain.IdpClient
 import org.junit.jupiter.api.BeforeEach
@@ -28,52 +28,35 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
-@TestPropertySource(locations = ["classpath:application-test.properties"])
+@TestPropertySource(locations = ["classpath:application-test.yml"])
 @Import(GlobalAuthenticationExceptionHandler::class, LoginHistoryService::class)
 @Transactional
 @DisplayName("GlobalAuthenticationExceptionHandler 통합 테스트 - 실제 로그인 이력 기록")
-class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
+class GlobalAuthenticationExceptionHandlerIT : AuthenticationIntegrationTestBase() {
 
     @Autowired
     private lateinit var sut: GlobalAuthenticationExceptionHandler
 
     @Autowired
-    private lateinit var loginHistoryRepository: IoIdpLoginHistoryRepository
-
-    @Autowired
     private lateinit var dataSource: DataSource
-
-    @BeforeEach
-    override fun setUp() {
-        super.setUp()
-        loginHistoryRepository.deleteAll()
-    }
 
     @Test
     @DisplayName("EXTERNAL_PROVIDER_ERROR: RestClientException 처리 시 실제 로그인 이력이 기록된다")
     fun handleSystemException_RestClientException_ShouldRecordHistory() {
         // Given
         val exception = RestClientException("External OAuth provider is unavailable")
-        val shoplClientId = "CLIENT001"
-        val shoplUserId = "user123"
         val mockRequest = AuthenticationTestUtils.createMockRequest()
 
         // When
-        sut.handleSystemException(exception, mockRequest, shoplClientId, shoplUserId)
+        sut.handleSystemException(exception, mockRequest, "CLIENT001", "user123")
 
         // Then
-        val histories = loginHistoryRepository.findAll()
-        assertEquals(1, histories.size)
-
-        val history = histories[0]
-        assertEquals(shoplClientId, history.shoplClientId)
-        assertEquals(shoplUserId, history.shoplUserId)
-        assertEquals(IdpClient.Platform.DASHBOARD, history.platform)
-        assertEquals(LoginType.BASIC, history.loginType)
-        assertEquals(LoginResult.FAIL, history.result)
-        assertEquals(FailureReasonType.EXTERNAL_PROVIDER_ERROR, history.failureReason)
-        assertEquals(TEST_SESSION_ID, history.sessionId)
-        assertNotNull(history.regDt)
+        assertLoginHistory(
+            expectedResult = LoginResult.FAIL,
+            expectedFailureReason = FailureReasonType.EXTERNAL_PROVIDER_ERROR,
+            expectedShoplClientId = "CLIENT001",
+            expectedShoplUserId = "user123"
+        )
     }
 
     @Test
@@ -81,20 +64,18 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_DataAccessException_ShouldRecordHistory() {
         // Given
         val exception = DataIntegrityViolationException("Database constraint violation")
-        val shoplClientId = "CLIENT001"
-        val shoplUserId = "user123"
         val mockRequest = AuthenticationTestUtils.createMockRequest()
 
         // When
-        sut.handleSystemException(exception, mockRequest, shoplClientId, shoplUserId)
+        sut.handleSystemException(exception, mockRequest, "CLIENT001", "user123")
 
         // Then
-        val histories = loginHistoryRepository.findAll()
-        assertEquals(1, histories.size)
-
-        val history = histories[0]
-        assertEquals(FailureReasonType.SYSTEM_ERROR, history.failureReason)
-        assertEquals(LoginResult.FAIL, history.result)
+        assertLoginHistory(
+            expectedResult = LoginResult.FAIL,
+            expectedFailureReason = FailureReasonType.SYSTEM_ERROR,
+            expectedShoplClientId = "CLIENT001",
+            expectedShoplUserId = "user123"
+        )
     }
 
     @Test
@@ -102,20 +83,18 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_SQLException_ShouldRecordHistory() {
         // Given
         val exception = SQLException("Connection timeout", "08000", 1000)
-        val shoplClientId = "CLIENT001"
-        val shoplUserId = "user123"
         val mockRequest = AuthenticationTestUtils.createMockRequest()
 
         // When
-        sut.handleSystemException(exception, mockRequest, shoplClientId, shoplUserId)
+        sut.handleSystemException(exception, mockRequest, "CLIENT001", "user123")
 
         // Then
-        val histories = loginHistoryRepository.findAll()
-        assertEquals(1, histories.size)
-
-        val history = histories[0]
-        assertEquals(FailureReasonType.SYSTEM_ERROR, history.failureReason)
-        assertEquals(LoginResult.FAIL, history.result)
+        assertLoginHistory(
+            expectedResult = LoginResult.FAIL,
+            expectedFailureReason = FailureReasonType.SYSTEM_ERROR,
+            expectedShoplClientId = "CLIENT001",
+            expectedShoplUserId = "user123"
+        )
     }
 
     @Test
@@ -123,20 +102,18 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_ConnectException_ShouldRecordHistory() {
         // Given
         val exception = ConnectException("Connection refused: no further information")
-        val shoplClientId = "CLIENT001"
-        val shoplUserId = "user123"
         val mockRequest = AuthenticationTestUtils.createMockRequest()
 
         // When
-        sut.handleSystemException(exception, mockRequest, shoplClientId, shoplUserId)
+        sut.handleSystemException(exception, mockRequest, "CLIENT001", "user123")
 
         // Then
-        val histories = loginHistoryRepository.findAll()
-        assertEquals(1, histories.size)
-
-        val history = histories[0]
-        assertEquals(FailureReasonType.NETWORK_ERROR, history.failureReason)
-        assertEquals(LoginResult.FAIL, history.result)
+        assertLoginHistory(
+            expectedResult = LoginResult.FAIL,
+            expectedFailureReason = FailureReasonType.NETWORK_ERROR,
+            expectedShoplClientId = "CLIENT001",
+            expectedShoplUserId = "user123"
+        )
     }
 
     @Test
@@ -144,19 +121,18 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_SocketTimeoutException_ShouldRecordHistory() {
         // Given
         val exception = SocketTimeoutException("Read timed out")
-        val shoplClientId = "CLIENT001"
-        val shoplUserId = "user123"
         val mockRequest = AuthenticationTestUtils.createMockRequest()
 
         // When
-        sut.handleSystemException(exception, mockRequest, shoplClientId, shoplUserId)
+        sut.handleSystemException(exception, mockRequest, "CLIENT001", "user123")
 
         // Then
-        val histories = loginHistoryRepository.findAll()
-        assertEquals(1, histories.size)
-
-        val history = histories[0]
-        assertEquals(FailureReasonType.NETWORK_ERROR, history.failureReason)
+        assertLoginHistory(
+            expectedResult = LoginResult.FAIL,
+            expectedFailureReason = FailureReasonType.NETWORK_ERROR,
+            expectedShoplClientId = "CLIENT001",
+            expectedShoplUserId = "user123"
+        )
     }
 
     @Test
@@ -164,19 +140,18 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_UnknownHostException_ShouldRecordHistory() {
         // Given
         val exception = UnknownHostException("oauth.google.com")
-        val shoplClientId = "CLIENT001"
-        val shoplUserId = "user123"
         val mockRequest = AuthenticationTestUtils.createMockRequest()
 
         // When
-        sut.handleSystemException(exception, mockRequest, shoplClientId, shoplUserId)
+        sut.handleSystemException(exception, mockRequest, "CLIENT001", "user123")
 
         // Then
-        val histories = loginHistoryRepository.findAll()
-        assertEquals(1, histories.size)
-
-        val history = histories[0]
-        assertEquals(FailureReasonType.NETWORK_ERROR, history.failureReason)
+        assertLoginHistory(
+            expectedResult = LoginResult.FAIL,
+            expectedFailureReason = FailureReasonType.NETWORK_ERROR,
+            expectedShoplClientId = "CLIENT001",
+            expectedShoplUserId = "user123"
+        )
     }
 
     @Test
@@ -184,20 +159,18 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_UnexpectedException_ShouldRecordHistory() {
         // Given
         val exception = RuntimeException("Unexpected system error")
-        val shoplClientId = "CLIENT001"
-        val shoplUserId = "user123"
         val mockRequest = AuthenticationTestUtils.createMockRequest()
 
         // When
-        sut.handleSystemException(exception, mockRequest, shoplClientId, shoplUserId)
+        sut.handleSystemException(exception, mockRequest, "CLIENT001", "user123")
 
         // Then
-        val histories = loginHistoryRepository.findAll()
-        assertEquals(1, histories.size)
-
-        val history = histories[0]
-        assertEquals(FailureReasonType.UNKNOWN, history.failureReason)
-        assertEquals(LoginResult.FAIL, history.result)
+        assertLoginHistory(
+            expectedResult = LoginResult.FAIL,
+            expectedFailureReason = FailureReasonType.UNKNOWN,
+            expectedShoplClientId = "CLIENT001",
+            expectedShoplUserId = "user123"
+        )
     }
 
     @Test
@@ -205,18 +178,19 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_OAuth2Request_ShouldRecordSocialLoginType() {
         // Given
         val exception = RuntimeException("OAuth2 error")
-        val mockRequest = createMockRequestWithUri("/oauth2/authorization/google")
+        val mockRequest = AuthenticationTestUtils.createMockRequestWithUri("/oauth2/authorization/google")
 
         // When
         sut.handleSystemException(exception, mockRequest, "CLIENT001", "user123")
 
         // Then
-        val histories = loginHistoryRepository.findAll()
-        assertEquals(1, histories.size)
-
-        val history = histories[0]
-        assertEquals(LoginType.SOCIAL, history.loginType)
-        assertEquals(FailureReasonType.UNKNOWN, history.failureReason)
+        assertLoginHistory(
+            expectedResult = LoginResult.FAIL,
+            expectedFailureReason = FailureReasonType.UNKNOWN,
+            expectedShoplClientId = "CLIENT001",
+            expectedShoplUserId = "user123",
+            expectedLoginType = LoginType.SOCIAL
+        )
     }
 
     @Test
@@ -224,18 +198,19 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_SsoRequest_ShouldRecordSsoLoginType() {
         // Given
         val exception = RuntimeException("SSO error")
-        val mockRequest = createMockRequestWithUri("/sso/saml/login")
+        val mockRequest = AuthenticationTestUtils.createMockRequestWithUri("/sso/saml/login")
 
         // When
         sut.handleSystemException(exception, mockRequest, "CLIENT001", "user123")
 
         // Then
-        val histories = loginHistoryRepository.findAll()
-        assertEquals(1, histories.size)
-
-        val history = histories[0]
-        assertEquals(LoginType.SSO, history.loginType)
-        assertEquals(FailureReasonType.UNKNOWN, history.failureReason)
+        assertLoginHistory(
+            expectedResult = LoginResult.FAIL,
+            expectedFailureReason = FailureReasonType.UNKNOWN,
+            expectedShoplClientId = "CLIENT001",
+            expectedShoplUserId = "user123",
+            expectedLoginType = LoginType.SSO
+        )
     }
 
     @Test
@@ -243,17 +218,19 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_BasicRequest_ShouldRecordBasicLoginType() {
         // Given
         val exception = RuntimeException("Basic auth error")
-        val mockRequest = createMockRequestWithUri("/login")
+        val mockRequest = AuthenticationTestUtils.createMockRequestWithUri("/login")
 
         // When
         sut.handleSystemException(exception, mockRequest, "CLIENT001", "user123")
 
         // Then
-        val histories = loginHistoryRepository.findAll()
-        assertEquals(1, histories.size)
-
-        val history = histories[0]
-        assertEquals(LoginType.BASIC, history.loginType)
+        assertLoginHistory(
+            expectedResult = LoginResult.FAIL,
+            expectedFailureReason = FailureReasonType.UNKNOWN,
+            expectedShoplClientId = "CLIENT001",
+            expectedShoplUserId = "user123",
+            expectedLoginType = LoginType.BASIC
+        )
     }
 
     @Test
@@ -261,22 +238,19 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_NullRequest_ShouldUseDefaultValues() {
         // Given
         val exception = RuntimeException("System error")
-        val shoplClientId = "CLIENT001"
-        val shoplUserId = "user123"
 
         // When
-        sut.handleSystemException(exception, null, shoplClientId, shoplUserId)
+        sut.handleSystemException(exception, null, "CLIENT001", "user123")
 
         // Then
-        val histories = loginHistoryRepository.findAll()
-        assertEquals(1, histories.size)
-
-        val history = histories[0]
-        assertEquals(shoplClientId, history.shoplClientId)
-        assertEquals(shoplUserId, history.shoplUserId)
-        assertEquals(LoginType.BASIC, history.loginType)
-        assertEquals(FailureReasonType.UNKNOWN, history.failureReason)
-        assertEquals("unknown-session", history.sessionId)
+        assertLoginHistory(
+            expectedResult = LoginResult.FAIL,
+            expectedFailureReason = FailureReasonType.UNKNOWN,
+            expectedShoplClientId = "CLIENT001",
+            expectedShoplUserId = "user123",
+            expectedLoginType = LoginType.BASIC,
+            expectedSessionId = "unknown-session"
+        )
     }
 
     @Test
@@ -284,21 +258,18 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_DefaultParameters_ShouldUseUnknownValues() {
         // Given
         val exception = RuntimeException("System error")
-        val mockRequest = AuthenticationTestUtils.createMockRequest()
 
         // When
-        sut.handleSystemException(exception, mockRequest)
+        sut.handleSystemException(exception, AuthenticationTestUtils.createMockRequest())
 
         // Then
-        val histories = loginHistoryRepository.findAll()
-        assertEquals(1, histories.size)
-
-        val history = histories[0]
-        assertEquals("UNKNOWN", history.shoplClientId)
-        assertEquals("unknown", history.shoplUserId)
-        assertEquals(LoginType.BASIC, history.loginType)
-        assertEquals(FailureReasonType.UNKNOWN, history.failureReason)
-        assertEquals(TEST_SESSION_ID, history.sessionId)
+        assertLoginHistory(
+            expectedResult = LoginResult.FAIL,
+            expectedFailureReason = FailureReasonType.UNKNOWN,
+            expectedShoplClientId = "UNKNOWN",
+            expectedShoplUserId = "unknown",
+            expectedLoginType = LoginType.BASIC
+        )
     }
 
     @Test
@@ -306,9 +277,6 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_MultipleExceptions_ShouldRecordSeparateHistories() {
         // Given
         val mockRequest = AuthenticationTestUtils.createMockRequest()
-        val shoplClientId = "CLIENT001"
-        val shoplUserId = "user123"
-
         val exceptions = listOf(
             RestClientException("External error"),
             SQLException("DB error"),
@@ -318,12 +286,17 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
 
         // When
         exceptions.forEach { exception ->
-            sut.handleSystemException(exception, mockRequest, shoplClientId, shoplUserId)
+            sut.handleSystemException(exception, mockRequest, "CLIENT001", "user123")
         }
 
         // Then
         val histories = loginHistoryRepository.findAll()
         assertEquals(4, histories.size)
+
+        // 모든 이력이 실패로 기록되어야 함
+        assertTrue(histories.all { it.result == LoginResult.FAIL })
+        assertTrue(histories.all { it.shoplClientId == "CLIENT001" })
+        assertTrue(histories.all { it.shoplUserId == "user123" })
 
         val failureReasons = histories.map { it.failureReason }.toSet()
         val expectedReasons = setOf(
@@ -333,9 +306,6 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
             FailureReasonType.UNKNOWN
         )
         assertEquals(expectedReasons, failureReasons)
-
-        // 모든 이력이 실패로 기록되어야 함
-        assertTrue(histories.all { it.result == LoginResult.FAIL })
     }
 
     @Test
@@ -343,19 +313,16 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
     fun handleSystemException_SystemErrorTypes_ShouldMapCorrectly() {
         // Given
         val mockRequest = AuthenticationTestUtils.createMockRequest()
-        val shoplClientId = "CLIENT001"
-        val shoplUserId = "user123"
-
         val systemErrors = listOf(
             DataIntegrityViolationException("Constraint violation"),
             BadSqlGrammarException("Bad SQL", "sql", SQLException("syntax error")),
-            OutOfMemoryError("Java heap space"),
+            RuntimeException("Java heap space"),
             SecurityException("Security violation")
         )
 
         // When
         systemErrors.forEach { exception ->
-            sut.handleSystemException(exception, mockRequest, shoplClientId, shoplUserId)
+            sut.handleSystemException(exception, mockRequest, "CLIENT001", "user123")
         }
 
         // Then
@@ -365,11 +332,8 @@ class GlobalAuthenticationExceptionHandlerIT : IntegrationTestBase() {
         // 모든 시스템 오류는 SYSTEM_ERROR로 매핑되어야 함
         assertTrue(histories.all { it.failureReason == FailureReasonType.SYSTEM_ERROR })
         assertTrue(histories.all { it.result == LoginResult.FAIL })
+        assertTrue(histories.all { it.shoplClientId == "CLIENT001" })
+        assertTrue(histories.all { it.shoplUserId == "user123" })
     }
 
-    private fun createMockRequestWithUri(uri: String): HttpServletRequest {
-        val mockRequest = AuthenticationTestUtils.createMockRequest()
-        org.mockito.Mockito.`when`(mockRequest.requestURI).thenReturn(uri)
-        return mockRequest
-    }
 }

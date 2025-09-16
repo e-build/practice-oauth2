@@ -73,6 +73,21 @@ object AuthenticationTestUtils {
     }
 
     /**
+     * 특정 URI를 가진 모킹된 HttpServletRequest 생성
+     */
+    fun createMockRequestWithUri(
+        uri: String,
+        sessionId: String = IntegrationTestBase.TEST_SESSION_ID,
+        userAgent: String = IntegrationTestBase.TEST_USER_AGENT,
+        ipAddress: String = IntegrationTestBase.TEST_IP_ADDRESS,
+        clientId: String? = IntegrationTestBase.TEST_CLIENT_ID
+    ): HttpServletRequest {
+        val request = createMockRequest(sessionId, userAgent, ipAddress, clientId)
+        `when`(request.requestURI).thenReturn(uri)
+        return request
+    }
+
+    /**
      * 모킹된 OAuth2User 생성
      */
     fun createMockOAuth2User(
