@@ -25,8 +25,8 @@ spring:
             issuer-uri: http://localhost:8081/realms/shopl-sandbox
       authorizationserver:
         issuer: ${AUTHORIZATION_SERVER_ISSUER_URL:http://localhost:${server.port}}
-  session:
-    store-type: redis
+#  session:
+#    store-type: redis
   data:
     redis:
       host: localhost
@@ -60,7 +60,7 @@ springdoc:
       use-pkce-with-authorization-code-grant: true
   show-oauth2-endpoints: false
   swagger-ui-config:
-    otauth2-redirect-url: ${AUTHORIZATION_SERVER_ISSUER_URL:http://localhost:${server.port}}/swagger-ui/oauth2-redirect.html
+    oauth2-redirect-url: ${AUTHORIZATION_SERVER_ISSUER_URL:http://localhost:${server.port}}/swagger-ui/oauth2-redirect.html
   trim-kotlin-indent: true
 
 app:

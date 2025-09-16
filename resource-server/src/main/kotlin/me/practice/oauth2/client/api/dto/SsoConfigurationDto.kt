@@ -1,7 +1,6 @@
 package me.practice.oauth2.client.api.dto
 
-import me.practice.oauth2.client.entity.SamlBinding
-import me.practice.oauth2.client.entity.SsoType
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.LocalDateTime
 
 data class SsoConfigurationRequestDto(
@@ -30,15 +29,6 @@ data class SsoConfigurationRequestDto(
     val samlDigestAlgorithm: String? = null,
     val samlAttributeMapping: Map<String, String>? = null,
 
-    // OAuth2 설정
-    val oauth2ClientId: String? = null,
-    val oauth2ClientSecret: String? = null,
-    val oauth2AuthorizationUri: String? = null,
-    val oauth2TokenUri: String? = null,
-    val oauth2UserInfoUri: String? = null,
-    val oauth2Scopes: String? = null,
-    val oauth2UserNameAttribute: String? = null,
-
     // 공통 설정
     val redirectUris: List<String>? = null,
     val autoProvision: Boolean = true,
@@ -47,11 +37,12 @@ data class SsoConfigurationRequestDto(
 
 data class SsoConfigurationResponseDto(
     val id: String,
-    val clientId: String,
+    val shoplClientId: String,
     val ssoType: SsoType,
 
     // OIDC 설정
     val oidcClientId: String? = null,
+    val oidcClientSecret: String? = null,
     val oidcIssuer: String? = null,
     val oidcScopes: String? = null,
     val oidcResponseType: String? = null,
@@ -62,6 +53,7 @@ data class SsoConfigurationResponseDto(
     val samlEntityId: String? = null,
     val samlSsoUrl: String? = null,
     val samlSloUrl: String? = null,
+    val samlX509Cert: String? = null,
     val samlNameIdFormat: String? = null,
     val samlBindingSso: SamlBinding? = null,
     val samlBindingSlo: SamlBinding? = null,
@@ -71,14 +63,6 @@ data class SsoConfigurationResponseDto(
     val samlDigestAlgorithm: String? = null,
     val samlAttributeMapping: Map<String, String>? = null,
 
-    // OAuth2 설정
-    val oauth2ClientId: String? = null,
-    val oauth2AuthorizationUri: String? = null,
-    val oauth2TokenUri: String? = null,
-    val oauth2UserInfoUri: String? = null,
-    val oauth2Scopes: String? = null,
-    val oauth2UserNameAttribute: String? = null,
-
     // 공통 설정
     val redirectUris: List<String>? = null,
     val autoProvision: Boolean = true,
@@ -86,7 +70,8 @@ data class SsoConfigurationResponseDto(
 
     // 메타데이터
     val regDt: LocalDateTime,
-    val modDt: LocalDateTime? = null
+    val modDt: LocalDateTime? = null,
+    val delDt: LocalDateTime? = null
 )
 
 data class SsoConfigurationSummaryDto(
@@ -130,12 +115,31 @@ data class SsoConnectionTestRequest(
     val oidcDiscoveryUrl: String? = null,
     val oidcScope: String? = null,
 
-    // OAuth2 필드
-    val oauth2ClientId: String? = null,
-    val oauth2ClientSecret: String? = null,
-    val oauth2AuthUrl: String? = null,
-    val oauth2TokenUrl: String? = null,
-    val oauth2UserInfoUrl: String? = null
+)
+
+enum class SsoType {
+    OIDC, SAML
+}
+
+enum class SamlBinding {
+    @JsonProperty("HTTP-POST")
+    HTTP_POST,
+
+    @JsonProperty("HTTP-Redirect")
+    HTTP_REDIRECT
+}
+
+// AdminApiController에서 사용할 간단한 응답 DTO
+data class SimpleSsoConfigurationDto(
+    val id: Long,
+    val name: String,
+    val providerType: String,
+    val companyDomain: String,
+    val status: String,
+    val createdAt: String,
+    val updatedAt: String,
+    val companyId: String,
+    val notice: String? = null
 )
 
 /**

@@ -125,6 +125,7 @@ class AuthSecurityConfiguration(
 					.requestMatchers("/webjars/**").permitAll()
 					.requestMatchers("/login").permitAll()
 					.requestMatchers("/sso/**").permitAll() // SSO 관련 엔드포인트 허용
+					.requestMatchers("/api/sso/**").permitAll() // Internal SSO API 허용
 					.requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
 					.requestMatchers("/").permitAll() // 루트 경로 허용 추가
 					.anyRequest().authenticated()

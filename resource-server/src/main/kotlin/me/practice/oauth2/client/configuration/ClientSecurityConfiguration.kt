@@ -14,16 +14,17 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidator
 import org.springframework.security.oauth2.jwt.*
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.beans.factory.annotation.Value
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 class ResourceServerSecurityConfiguration(
 //	private val cacheManager: CacheManager,
-	@Value("\${authorization-server.base-url}")
-	private val authorizationServerBaseUrl: String
+	private val appProperties: AppProperties
 ) {
+
+	private val authorizationServerBaseUrl: String
+		get() = appProperties.authorizationServer.baseUrl
 
 	@Bean
 	fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {

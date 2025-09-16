@@ -1,6 +1,6 @@
 package me.practice.oauth2.client.api
 
-import org.springframework.beans.factory.annotation.Value
+import me.practice.oauth2.client.configuration.AppProperties
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
@@ -10,8 +10,7 @@ import jakarta.servlet.http.HttpServletRequest
 @Controller
 @RequestMapping("/admin")
 class AdminPageController(
-	@Value("\${authorization-server.base-url}")
-	private val authorizationServerBaseUrl: String
+	private val appProperties: AppProperties
 ) {
 
 	/**
@@ -20,7 +19,7 @@ class AdminPageController(
 	@GetMapping("/home")
 	fun adminHome(model: Model, request: HttpServletRequest): String {
 		val currentServerUrl = "${request.scheme}://${request.serverName}:${request.serverPort}"
-		model.addAttribute("authServerBaseUrl", authorizationServerBaseUrl)
+		model.addAttribute("authServerBaseUrl", appProperties.authorizationServer.baseUrl)
 		model.addAttribute("resourceServerBaseUrl", currentServerUrl)
 		return "admin/home"
 	}

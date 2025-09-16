@@ -1,28 +1,19 @@
-package me.practice.oauth2.client.controller
+package me.practice.oauth2.client.api
 
-import me.practice.oauth2.client.api.dto.SsoConfigurationRequestDto
-import me.practice.oauth2.client.api.dto.SsoConfigurationResponseDto
-import me.practice.oauth2.client.api.dto.SsoConfigurationSummaryDto
-import me.practice.oauth2.client.api.dto.SsoConnectionTestRequest
-import me.practice.oauth2.client.api.dto.SsoConnectionTestRequestDto
-import me.practice.oauth2.client.api.dto.SsoConnectionTestResponse
-import me.practice.oauth2.client.api.dto.SsoConnectionTestResponseDto
-import me.practice.oauth2.client.service.SsoConfigurationService
-import me.practice.oauth2.client.service.SsoConnectionTestService
+import me.practice.oauth2.client.api.dto.*
+import me.practice.oauth2.client.client.AuthorizationServerClient
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/api/admin/sso")
 class SsoConfigurationController(
-    private val ssoConfigurationService: SsoConfigurationService,
-    private val ssoConnectionTestService: SsoConnectionTestService
+    private val authorizationServerClient: AuthorizationServerClient
 ) {
 
     private val logger = LoggerFactory.getLogger(SsoConfigurationController::class.java)
@@ -50,31 +41,22 @@ class SsoConfigurationController(
      */
     @GetMapping("/configuration")
     fun getSsoConfiguration(@AuthenticationPrincipal jwt: Jwt?): ResponseEntity<ApiResponse<SsoConfigurationResponseDto?>> {
+        if (jwt == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error("인증이 필요합니다"))
+        }
+
         val clientId = extractClientId(jwt)
 
         return try {
-            val configuration = ssoConfigurationService.getSsoConfiguration(clientId)
+            val configuration = authorizationServerClient.getSsoConfiguration(jwt, clientId)
             ResponseEntity.ok(ApiResponse(data = configuration, message = "SSO 설정 조회 성공"))
         } catch (e: Exception) {
-            // 설정이 없는 경우에도 성공으로 처리하되 data는 null
+            logger.error("SSO 설정 조회 실패", e)
             ResponseEntity.ok(ApiResponse(data = null, message = "SSO 설정이 없습니다"))
         }
     }
 
-    /**
-     * 모든 SSO 설정 목록 조회 (요약 정보)
-     * GET /api/admin/sso/list
-     */
-    @GetMapping("/list")
-    fun getAllSsoConfigurations(@AuthenticationPrincipal jwt: Jwt?): ResponseEntity<ApiResponse<List<SsoConfigurationSummaryDto>>> {
-        val configurations = ssoConfigurationService.getAllSsoConfigurations()
-        return ResponseEntity.ok(
-            ApiResponse(
-                data = configurations,
-                message = "SSO 설정 목록 조회 성공"
-            )
-        )
-    }
 
     /**
      * SSO 설정 생성
@@ -85,15 +67,26 @@ class SsoConfigurationController(
         @AuthenticationPrincipal jwt: Jwt?,
         @RequestBody request: SsoConfigurationRequestDto
     ): ResponseEntity<ApiResponse<SsoConfigurationResponseDto>> {
+        if (jwt == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error("인증이 필요합니다"))
+        }
+
         val clientId = extractClientId(jwt)
 
-        val configuration = ssoConfigurationService.createSsoConfiguration(clientId, request)
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-            ApiResponse(
-                data = configuration,
-                message = "SSO 설정 생성 성공"
+        return try {
+            val configuration = authorizationServerClient.createSsoConfiguration(jwt, clientId, request)
+            ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponse(
+                    data = configuration,
+                    message = "SSO 설정 생성 성공"
+                )
             )
-        )
+        } catch (e: Exception) {
+            logger.error("SSO 설정 생성 실패", e)
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("SSO 설정 생성 실패: ${e.message}"))
+        }
     }
 
     /**
@@ -105,15 +98,26 @@ class SsoConfigurationController(
         @AuthenticationPrincipal jwt: Jwt?,
         @RequestBody request: SsoConfigurationRequestDto
     ): ResponseEntity<ApiResponse<SsoConfigurationResponseDto>> {
+        if (jwt == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error("인증이 필요합니다"))
+        }
+
         val clientId = extractClientId(jwt)
 
-        val configuration = ssoConfigurationService.updateSsoConfiguration(clientId, request)
-        return ResponseEntity.ok(
-            ApiResponse(
-                data = configuration,
-                message = "SSO 설정 수정 성공"
+        return try {
+            val configuration = authorizationServerClient.updateSsoConfiguration(jwt, clientId, request)
+            ResponseEntity.ok(
+                ApiResponse(
+                    data = configuration,
+                    message = "SSO 설정 수정 성공"
+                )
             )
-        )
+        } catch (e: Exception) {
+            logger.error("SSO 설정 수정 실패", e)
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("SSO 설정 수정 실패: ${e.message}"))
+        }
     }
 
     /**
@@ -122,14 +126,30 @@ class SsoConfigurationController(
      */
     @DeleteMapping("/configuration")
     fun deleteSsoConfiguration(@AuthenticationPrincipal jwt: Jwt?): ResponseEntity<ApiResponse<Nothing>> {
+        if (jwt == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error("인증이 필요합니다"))
+        }
+
         val clientId = extractClientId(jwt)
 
-        ssoConfigurationService.deleteSsoConfiguration(clientId)
-        return ResponseEntity.ok(
-            ApiResponse<Nothing>(
-                message = "SSO 설정 삭제 성공"
-            )
-        )
+        return try {
+            val success = authorizationServerClient.deleteSsoConfiguration(jwt, clientId)
+            if (success) {
+                ResponseEntity.ok(
+                    ApiResponse<Nothing>(
+                        message = "SSO 설정 삭제 성공"
+                    )
+                )
+            } else {
+                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("SSO 설정 삭제 실패"))
+            }
+        } catch (e: Exception) {
+            logger.error("SSO 설정 삭제 실패", e)
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("SSO 설정 삭제 실패: ${e.message}"))
+        }
     }
 
     /**
@@ -141,9 +161,12 @@ class SsoConfigurationController(
         @AuthenticationPrincipal jwt: Jwt?,
         @RequestBody request: SsoConnectionTestRequestDto
     ): ResponseEntity<ApiResponse<SsoConnectionTestResponseDto>> {
-        val clientId = extractClientId(jwt)
-
-        val testResult = ssoConfigurationService.testSsoConnection(clientId, request)
+        // TODO: SSO 연결 테스트는 추후 구현
+        val testResult = SsoConnectionTestResponseDto(
+            success = false,
+            message = "SSO 연결 테스트는 추후 구현 예정입니다",
+            details = emptyMap()
+        )
         return ResponseEntity.ok(
             ApiResponse(
                 data = testResult,
@@ -157,22 +180,35 @@ class SsoConfigurationController(
      * GET /api/admin/sso/status
      */
     @GetMapping("/status")
-    fun getSsoStatus(@AuthenticationPrincipal jwt: Jwt?): ResponseEntity<ApiResponse<Map<String, Any>>> {
+    fun getSsoStatus(@AuthenticationPrincipal jwt: Jwt?): ResponseEntity<ApiResponse<SsoStatusDto>> {
+        if (jwt == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error("인증이 필요합니다"))
+        }
+
         val clientId = extractClientId(jwt)
 
         return try {
-            val configuration = ssoConfigurationService.getSsoConfiguration(clientId)
-            val status = mapOf<String, Any>(
-                "enabled" to true,
-                "ssoType" to configuration.ssoType.name,
-                "configuredAt" to configuration.regDt.toString(),
-                "lastModified" to (configuration.modDt?.toString() ?: "")
-            )
-            ResponseEntity.ok(ApiResponse(data = status, message = "SSO 상태 조회 성공"))
+            val configuration = authorizationServerClient.getSsoConfiguration(jwt, clientId)
+            if (configuration != null) {
+                val status = SsoStatusDto(
+                    enabled = true,
+                    ssoType = configuration.ssoType.name,
+                    configuredAt = configuration.regDt.toString(),
+                    lastModified = configuration.modDt?.toString() ?: ""
+                )
+                ResponseEntity.ok(ApiResponse(data = status, message = "SSO 상태 조회 성공"))
+            } else {
+                val status = SsoStatusDto(
+                    enabled = false,
+                    message = "SSO 설정이 되어 있지 않습니다"
+                )
+                ResponseEntity.ok(ApiResponse(data = status, message = "SSO가 설정되지 않음"))
+            }
         } catch (e: Exception) {
-            val status = mapOf<String, Any>(
-                "enabled" to false,
-                "message" to "SSO 설정이 되어 있지 않습니다"
+            val status = SsoStatusDto(
+                enabled = false,
+                message = "SSO 설정이 되어 있지 않습니다"
             )
             ResponseEntity.ok(ApiResponse(data = status, message = "SSO가 설정되지 않음"))
         }
@@ -183,22 +219,17 @@ class SsoConfigurationController(
      * GET /api/admin/sso/supported-types
      */
     @GetMapping("/supported-types")
-    fun getSupportedSsoTypes(): ResponseEntity<ApiResponse<List<Map<String, String>>>> {
+    fun getSupportedSsoTypes(): ResponseEntity<ApiResponse<List<SsoTypeInfoDto>>> {
         val supportedTypes = listOf(
-            mapOf(
-                "type" to "OIDC",
-                "name" to "OpenID Connect",
-                "description" to "OAuth 2.0 확장 프로토콜로 인증과 사용자 정보 조회를 지원합니다"
+            SsoTypeInfoDto(
+                type = "OIDC",
+                name = "OpenID Connect",
+                description = "OAuth 2.0 확장 프로토콜로 인증과 사용자 정보 조회를 지원합니다"
             ),
-            mapOf(
-                "type" to "SAML",
-                "name" to "SAML 2.0",
-                "description" to "XML 기반 인증 프로토콜로 엔터프라이즈 환경에 최적화되어 있습니다"
-            ),
-            mapOf(
-                "type" to "OAUTH2",
-                "name" to "OAuth 2.0",
-                "description" to "표준 OAuth 2.0 프로토콜로 인가를 통한 사용자 정보 접근을 지원합니다"
+            SsoTypeInfoDto(
+                type = "SAML",
+                name = "SAML 2.0",
+                description = "XML 기반 인증 프로토콜로 엔터프라이즈 환경에 최적화되어 있습니다"
             )
         )
 
@@ -217,19 +248,19 @@ class SsoConfigurationController(
     @PostMapping("/validate")
     fun validateSsoConfiguration(
         @RequestBody request: SsoConfigurationRequestDto
-    ): ResponseEntity<ApiResponse<Map<String, Any>>> {
+    ): ResponseEntity<ApiResponse<SsoValidationDto>> {
         return try {
             // 실제 저장하지 않고 검증만 수행하기 위해 임시 서비스 메서드 호출
             // 여기서는 간단히 필수 필드들만 검증
-            val validationResult = mapOf(
-                "valid" to true,
-                "message" to "검증 통과"
+            val validationResult = SsoValidationDto(
+                valid = true,
+                message = "검증 통과"
             )
             ResponseEntity.ok(ApiResponse(data = validationResult, message = "검증 성공"))
         } catch (e: Exception) {
-            val validationResult = mapOf(
-                "valid" to false,
-                "message" to (e.message ?: "검증 실패")
+            val validationResult = SsoValidationDto(
+                valid = false,
+                message = e.message ?: "검증 실패"
             )
             ResponseEntity.ok(ApiResponse(data = validationResult, message = "검증 완료"))
         }
@@ -249,7 +280,12 @@ class SsoConfigurationController(
             val startTime = System.currentTimeMillis()
 
             // 연결 테스트 실행
-            val testResult = ssoConnectionTestService.testConnection(testRequest)
+            // TODO: SSO 연결 테스트 서비스는 추후 구현
+            val testResult = object {
+                val success = false
+                val message = "SSO 연결 테스트는 추후 구현 예정입니다"
+                val details = emptyMap<String, Any>()
+            }
             val responseTime = System.currentTimeMillis() - startTime
 
             val response = SsoConnectionTestResponse(

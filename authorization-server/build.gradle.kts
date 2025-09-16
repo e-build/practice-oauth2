@@ -19,7 +19,7 @@ dependencies {
 	// DB
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.session:spring-session-data-redis")
+//	implementation("org.springframework.session:spring-session-data-redis")
 	runtimeOnly("com.mysql:mysql-connector-j")
 
 	// Nimbus JOSE + JWT 라이브러리 (JWK, JWT 처리용)
