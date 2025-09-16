@@ -6,6 +6,7 @@ import me.practice.oauth2.entity.LoginType
 import me.practice.oauth2.entity.ProviderType
 import me.practice.oauth2.entity.FailureReasonType
 import me.practice.oauth2.service.LoginHistoryService
+import me.practice.oauth2.service.OAuth2UserRecoveryService
 import me.practice.oauth2.domain.IdpClient
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.AuthenticationException
@@ -16,10 +17,14 @@ import org.springframework.stereotype.Component
 /**
  * OAuth2/SSO 인증 실패 핸들러
  * OAuth2 로그인 실패 시 이력 기록 및 에러 페이지로 리다이렉트
+ *
+ * DON-49 개선: OAuth2UserRecoveryService 통합
+ * - 기존 "unknown" 하드코딩 → 4단계 복구 전략으로 사용자 식별률 향상
  */
 @Component
 class OAuth2AuthenticationFailureHandler(
-    private val loginHistoryService: LoginHistoryService
+    private val loginHistoryService: LoginHistoryService,
+    private val oAuth2UserRecoveryService: OAuth2UserRecoveryService
 ) : SimpleUrlAuthenticationFailureHandler() {
 
     private val logger = LoggerFactory.getLogger(OAuth2AuthenticationFailureHandler::class.java)
@@ -52,8 +57,17 @@ class OAuth2AuthenticationFailureHandler(
             val registrationId = extractRegistrationId(request)
             val providerType = determineProviderType(registrationId)
             
-            // OAuth2 실패의 경우 사용자 ID를 알 수 없으므로 unknown으로 처리
-            val shoplUserId = "unknown"
+            // DON-49: OAuth2UserRecoveryService를 통한 사용자 식별 시도
+            val shoplUserId = if (exception is OAuth2AuthenticationException) {
+                oAuth2UserRecoveryService.attemptUserRecovery(request, exception) ?: "unknown"
+            } else {
+                "unknown"
+            }
+
+            if (shoplUserId != "unknown") {
+                logger.info("Successfully recovered user ID during OAuth2 failure: {} -> {}",
+                    providerType, shoplUserId.take(3) + "***")
+            }
             val loginType = when (providerType) {
                 ProviderType.GOOGLE, ProviderType.KAKAO, ProviderType.NAVER,
                 ProviderType.APPLE, ProviderType.MICROSOFT, ProviderType.GITHUB -> LoginType.SOCIAL
