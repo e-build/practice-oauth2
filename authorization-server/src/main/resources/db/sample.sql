@@ -43,7 +43,7 @@ VALUES
     ('CLIENT_REG_001', 'oauth2-client', 'CLIENT001', 'DASHBOARD',NOW(), '{noop}secret', NULL, 'Test OAuth2 Client',
      'client_secret_basic,client_secret_post',
      'authorization_code,refresh_token',
-     'http://localhost:9001/dashboard,http://localhost:9001/callback,http://localhost:9001/login/oauth2/code/oauth2-client',
+     'http://localhost:9001/dashboard,http://localhost:9001/callback,http://localhost:9001/login/oauth2/code/oauth2-client,http://localhost:9003/admin/home',
      'http://localhost:9001/logout',
      'openid,profile,read,write',
      '{"@class":"java.util.Collections$UnmodifiableMap","settings.client.require-proof-key":false,"settings.client.require-authorization-consent":false}',

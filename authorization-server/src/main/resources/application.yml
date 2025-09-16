@@ -1,5 +1,5 @@
 server:
-  port: 9000
+  port: ${SERVER_PORT:9000}
 
 spring:
   application:
@@ -24,7 +24,7 @@ spring:
           keycloak-acme:
             issuer-uri: http://localhost:8081/realms/shopl-sandbox
       authorizationserver:
-        issuer: http://localhost:9000
+        issuer: ${AUTHORIZATION_SERVER_ISSUER_URL:http://localhost:${server.port}}
 #  session:
 #    store-type: redis
   data:
@@ -60,7 +60,7 @@ springdoc:
       use-pkce-with-authorization-code-grant: true
   show-oauth2-endpoints: false
   swagger-ui-config:
-    otauth2-redirect-url: http://localhost:9000/swagger-ui/oauth2-redirect.html
+    otauth2-redirect-url: ${AUTHORIZATION_SERVER_ISSUER_URL:http://localhost:${server.port}}/swagger-ui/oauth2-redirect.html
   trim-kotlin-indent: true
 
 app:

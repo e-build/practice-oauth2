@@ -2,6 +2,7 @@ package me.practice.oauth2.controller
 
 import me.practice.oauth2.entity.IoIdpShoplClientSsoSetting
 import me.practice.oauth2.entity.SsoType
+import me.practice.oauth2.entity.SamlBinding
 import me.practice.oauth2.service.SsoConfigurationService
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -246,8 +247,8 @@ class InternalSsoApiController(
             samlSloUrl = dto.samlSloUrl,
             samlX509Cert = dto.samlX509Cert,
             samlNameIdFormat = dto.samlNameIdFormat,
-            samlBindingSso = dto.samlBindingSso,
-            samlBindingSlo = dto.samlBindingSlo,
+            samlBindingSso = dto.samlBindingSso?.let { SamlBinding.valueOf(it) },
+            samlBindingSlo = dto.samlBindingSlo?.let { SamlBinding.valueOf(it) },
             samlWantAssertionsSigned = dto.samlWantAssertionsSigned,
             samlWantResponseSigned = dto.samlWantResponseSigned,
             samlSignatureAlgorithm = dto.samlSignatureAlgorithm,
@@ -286,8 +287,8 @@ class InternalSsoApiController(
             samlSloUrl = dto.samlSloUrl,
             samlX509Cert = dto.samlX509Cert,
             samlNameIdFormat = dto.samlNameIdFormat,
-            samlBindingSso = dto.samlBindingSso,
-            samlBindingSlo = dto.samlBindingSlo,
+            samlBindingSso = dto.samlBindingSso?.let { SamlBinding.valueOf(it) },
+            samlBindingSlo = dto.samlBindingSlo?.let { SamlBinding.valueOf(it) },
             samlWantAssertionsSigned = dto.samlWantAssertionsSigned,
             samlWantResponseSigned = dto.samlWantResponseSigned,
             samlSignatureAlgorithm = dto.samlSignatureAlgorithm,

@@ -44,7 +44,14 @@
       "Bash(git merge:*)",
       "Bash(git fetch:*)",
       "Bash(git pull:*)",
-      "mcp__playwright__browser_handle_dialog"
+      "mcp__playwright__browser_handle_dialog",
+      "mcp__playwright__browser_select_option",
+      "mcp__playwright__browser_console_messages",
+      "Bash(AUTHORIZATION_SERVER_ISSUER_URL=http://localhost:9002 ./gradlew :resource-server:bootRun --args=\"--server.port=9003\")",
+      "Bash(AUTHORIZATION_SERVER_ISSUER_URL=http://localhost:9002 ./gradlew :resource-server:bootRun --args=\"--server.port=9005\")",
+      "Bash(awk:*)",
+      "Bash(xargs -r kill -9)",
+      "Bash(AUTHORIZATION_SERVER_ISSUER_URL=http://localhost:9002 RESOURCE_SERVER_BASE_URL=http://localhost:9003 ./gradlew :resource-server:bootRun --args=\"--server.port=9003\")"
     ],
     "deny": [],
     "ask": []

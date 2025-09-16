@@ -416,7 +416,7 @@ class SsoConnectionTestService(
                     }
 
                     // Discovery URL 테스트
-                    val discoveryResult = testOidcDiscovery(request.oidcDiscoveryUrl)
+                    val discoveryResult = testOidcDiscoveryFromUrl(request.oidcDiscoveryUrl)
                     testResults["discovery_test"] = discoveryResult
 
                     val success = discoveryResult["success"] == true
@@ -482,7 +482,7 @@ class SsoConnectionTestService(
     /**
      * OIDC Discovery 엔드포인트 테스트
      */
-    private fun testOidcDiscovery(discoveryUrl: String): Map<String, Any> {
+    private fun testOidcDiscoveryFromUrl(discoveryUrl: String): Map<String, Any> {
         return try {
             logger.debug("OIDC Discovery URL 테스트: $discoveryUrl")
 

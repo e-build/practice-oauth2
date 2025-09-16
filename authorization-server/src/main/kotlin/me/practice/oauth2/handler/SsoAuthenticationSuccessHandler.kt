@@ -208,9 +208,12 @@ class SsoAuthenticationSuccessHandler(
             return authUrl
         }
         
-        // 4. 기본 대시보드로
-        logger.debug("No OAuth2 parameters found, redirecting to admin auth-dashboard")
-        return "http://localhost:9001/admin/home"
+        // 4. 기본 대시보드로 (환경변수 사용)
+        val resourceServerBaseUrl = System.getProperty("RESOURCE_SERVER_BASE_URL")
+            ?: System.getenv("RESOURCE_SERVER_BASE_URL")
+            ?: "http://localhost:9001"
+        logger.debug("No OAuth2 parameters found, redirecting to admin auth-dashboard: $resourceServerBaseUrl")
+        return "$resourceServerBaseUrl/admin/home"
     }
 
     /**

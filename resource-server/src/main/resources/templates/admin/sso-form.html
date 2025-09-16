@@ -249,11 +249,11 @@
             const providerType = document.getElementById('providerType').value;
             const allFields = document.querySelectorAll('.provider-fields');
 
-            // 모든 필드 숨기기 및 required 속성 제거
+            // 모든 필드 숨기기 및 required 속성 완전 제거
             allFields.forEach(field => {
                 field.classList.remove('active');
-                // 모든 input의 required 속성 제거
-                const allInputs = field.querySelectorAll('input');
+                // 모든 input, select, textarea의 required 속성 제거
+                const allInputs = field.querySelectorAll('input, select, textarea');
                 allInputs.forEach(input => {
                     if (input.hasAttribute('required')) {
                         input.removeAttribute('required');
@@ -268,13 +268,18 @@
                 if (targetField) {
                     targetField.classList.add('active');
                     // 원래 required였던 필드들만 required 속성 복원
-                    const originalRequiredInputs = targetField.querySelectorAll('input[data-original-required="true"]');
+                    const originalRequiredInputs = targetField.querySelectorAll('input[data-original-required="true"], select[data-original-required="true"], textarea[data-original-required="true"]');
                     originalRequiredInputs.forEach(input => {
                         input.setAttribute('required', 'required');
                     });
                 }
             }
         }
+
+        // 페이지 로드 시 즉시 실행하여 초기 상태 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProviderFields();
+        });
 
         document.getElementById('providerType').addEventListener('change', updateProviderFields);
 

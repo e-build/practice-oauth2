@@ -236,7 +236,7 @@ class SsoConfigurationController(
     @PostMapping("/test")
     fun testSsoConnection(
         @RequestBody testRequest: SsoConnectionTestRequest,
-        authentication: JwtAuthenticationToken
+        @AuthenticationPrincipal authentication: JwtAuthenticationToken
     ): ResponseEntity<ApiResponse<SsoConnectionTestResponse>> {
         logger.info("SSO 연결 테스트 요청: ${testRequest.providerType}")
 

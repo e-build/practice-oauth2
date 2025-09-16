@@ -4,6 +4,40 @@
  */
 
 const Auth = {
+    // 서버 URL 캐시
+    _urls: null,
+
+    /**
+     * 서버 URL 정보를 가져옵니다 (캐시 사용)
+     * @returns {Promise<Object>} URL 정보 객체
+     */
+    async getUrls() {
+        if (this._urls) {
+            return this._urls;
+        }
+
+        try {
+            const response = await fetch('/api/config/urls');
+            if (!response.ok) {
+                throw new Error('URL 정보를 가져올 수 없습니다');
+            }
+            this._urls = await response.json();
+            return this._urls;
+        } catch (error) {
+            console.error('URL 정보 로드 실패:', error);
+            // 폴백 URL 사용 - 현재 호스트 기반으로 추정
+            const currentPort = window.location.port;
+            const authPort = currentPort === '9003' ? '9002' :
+                            currentPort === '9001' ? '9000' :
+                            currentPort === '9005' ? '9002' : '9000';
+
+            this._urls = {
+                authorizationServerBaseUrl: `${window.location.protocol}//${window.location.hostname}:${authPort}`,
+                resourceServerBaseUrl: window.location.origin
+            };
+            return this._urls;
+        }
+    },
     /**
      * localStorage에서 access token을 가져옵니다
      * @returns {string|null} access token 또는 null
@@ -170,7 +204,8 @@ const Auth = {
     /**
      * 인증 페이지로 리다이렉트합니다
      */
-    redirectToAuth() {
+    async redirectToAuth() {
+        const urls = await this.getUrls();
         const currentUrl = window.location.href;
         const params = new URLSearchParams({
             response_type: "code",
@@ -180,15 +215,16 @@ const Auth = {
             state: crypto.randomUUID()
         });
 
-        window.location.href = `http://localhost:9000/oauth2/authorize?${params.toString()}`;
+        window.location.href = `${urls.authorizationServerBaseUrl}/oauth2/authorize?${params.toString()}`;
     },
 
     /**
      * 로그아웃을 수행합니다
      */
-    logout() {
+    async logout() {
+        const urls = await this.getUrls();
         this.clearTokens();
-        window.location.href = "http://localhost:9000/logout";
+        window.location.href = `${urls.authorizationServerBaseUrl}/logout`;
     },
 
     /**
