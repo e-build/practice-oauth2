@@ -5,13 +5,14 @@ import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet
 import com.nimbusds.jose.jwk.source.JWKSource
 import com.nimbusds.jose.proc.SecurityContext
+import me.practice.oauth2.handler.OAuth2AuthenticationFailureHandler
+import me.practice.oauth2.handler.SsoAuthenticationSuccessHandler
 import me.practice.oauth2.infrastructure.redis.AuthorizationJsonCodec
 import me.practice.oauth2.infrastructure.redis.RedisAuthorizationProperties
 import me.practice.oauth2.infrastructure.redis.RedisOAuth2AuthorizationService
 import me.practice.oauth2.service.CompositeClientRegistrationRepository
-import me.practice.oauth2.handler.SsoAuthenticationSuccessHandler
-import me.practice.oauth2.handler.OAuth2AuthenticationFailureHandler
 import org.springframework.boot.autoconfigure.security.oauth2.server.servlet.OAuth2AuthorizationServerProperties
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
@@ -32,8 +33,8 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
@@ -42,16 +43,15 @@ import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.util.*
-import org.springframework.beans.factory.annotation.Value
 
 @Configuration
 @EnableWebSecurity
+@EnableConfigurationProperties(AppProperties::class)
 class AuthSecurityConfiguration(
 	private val oAuth2AuthorizationServerProperties: OAuth2AuthorizationServerProperties,
 	private val basicAuthenticationProvider: BasicAuthenticationProvider,
 	private val customUserDetailsService: CustomUserDetailsService,
-	@Value("\${RESOURCE_SERVER_BASE_URL:http://localhost:9001}")
-	private val resourceServerBaseUrl: String,
+	private val appProperties: AppProperties,
 	private val registeredClientRepository: RegisteredClientRepository,
 	private val oAuth2AuthorizationConsentService: OAuth2AuthorizationConsentService,
 	private val stringRedisTemplate: StringRedisTemplate,
@@ -75,21 +75,22 @@ class AuthSecurityConfiguration(
 	fun authorizationServerSecurityFilterChain(
 		http: HttpSecurity,
 	): SecurityFilterChain {
-		OAuth2AuthorizationServerConfigurer.authorizationServer().let { authorizationServerConfigurer ->
-			http.securityMatcher(authorizationServerConfigurer.endpointsMatcher).cors(Customizer.withDefaults())
-				.authorizeHttpRequests {
-					it.anyRequest().authenticated()
-				}.csrf { csrf ->
-					// OAuth2 엔드포인트는 CSRF 보호에서 제외 (토큰 기반 인증이므로)
-					csrf.ignoringRequestMatchers(authorizationServerConfigurer.endpointsMatcher)
-				}.with(authorizationServerConfigurer) {
-					it.authorizationServerSettings(authorizationServerSettings())
-						.registeredClientRepository(registeredClientRepository)
-						.authorizationService(redisOAuth2AuthorizationService())
-						.authorizationConsentService(oAuth2AuthorizationConsentService)
-						.oidc(Customizer.withDefaults())
-				}
-		}
+		val authorizationServerConfigurer = OAuth2AuthorizationServerConfigurer.authorizationServer()
+
+		http.securityMatcher(authorizationServerConfigurer.endpointsMatcher)
+			.cors(Customizer.withDefaults())
+			.authorizeHttpRequests {
+				it.anyRequest().authenticated()
+			}.csrf { csrf ->
+				// OAuth2 엔드포인트는 CSRF 보호에서 제외 (토큰 기반 인증이므로)
+				csrf.ignoringRequestMatchers(authorizationServerConfigurer.endpointsMatcher)
+			}.with(authorizationServerConfigurer) {
+				it.authorizationServerSettings(authorizationServerSettings())
+					.registeredClientRepository(registeredClientRepository)
+					.authorizationService(redisOAuth2AuthorizationService())
+					.authorizationConsentService(oAuth2AuthorizationConsentService)
+					.oidc(Customizer.withDefaults())
+			}
 
 		// 사용자 인증을 위한 로그인 폼 설정
 		http.formLogin(Customizer.withDefaults())
@@ -133,7 +134,7 @@ class AuthSecurityConfiguration(
 					.anyRequest().authenticated()
 			}.formLogin { form ->
 				form.loginPage("/login") // 커스텀 로그인 페이지 경로
-					.defaultSuccessUrl("$resourceServerBaseUrl/admin/home", true) // 로그인 성공 시 리다이렉트 URL 명시적 설정
+					.defaultSuccessUrl("${appProperties.resourceServer.baseUrl}/admin/home", true) // 로그인 성공 시 리다이렉트 URL 명시적 설정
 					.permitAll()
 			}
 			.oauth2Login { oauth2 ->
@@ -147,7 +148,7 @@ class AuthSecurityConfiguration(
 			.logout {
 				it
 					.logoutUrl("/logout")
-					.logoutSuccessUrl("$resourceServerBaseUrl/admin/home")
+					.logoutSuccessUrl("${appProperties.resourceServer.baseUrl}/admin/home")
 					.invalidateHttpSession(true)
 					.clearAuthentication(true)
 					.deleteCookies("JSESSIONID")
@@ -178,7 +179,8 @@ class AuthSecurityConfiguration(
 	fun jwkSource(): JWKSource<SecurityContext> {
 		// RSA 키 페어 생성
 		val keyPair = generateRsaKey()
-		val rsaKey = RSAKey.Builder(keyPair.public as RSAPublicKey).privateKey(keyPair.private as RSAPrivateKey)
+		val rsaKey = RSAKey.Builder(keyPair.public as RSAPublicKey)
+			.privateKey(keyPair.private as RSAPrivateKey)
 			.keyID(UUID.randomUUID().toString()) // 키 식별자
 			.build()
 
@@ -216,7 +218,7 @@ class AuthSecurityConfiguration(
 		return OAuth2TokenCustomizer { context ->
 			if (context.tokenType == OAuth2TokenType.ACCESS_TOKEN) {
 				// 인증된 사용자 정보 가져오기
-	 val principal = context.getPrincipal<Authentication>()
+				val principal = context.getPrincipal<Authentication>()
 				val customUserDetails = principal.principal as? CustomUserDetails
 
 				if (customUserDetails != null) {

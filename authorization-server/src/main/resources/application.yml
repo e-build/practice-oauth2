@@ -64,6 +64,8 @@ springdoc:
   trim-kotlin-indent: true
 
 app:
+  resource-server:
+    base-url: ${RESOURCE_SERVER_BASE_URL:http://localhost:9001}
   auth:
     redis:
       key-prefix: "app:auth:"
