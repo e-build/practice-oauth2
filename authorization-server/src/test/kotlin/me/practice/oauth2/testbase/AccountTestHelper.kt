@@ -65,7 +65,6 @@ class AccountTestHelper {
     fun createTestLoginHistory(
         shoplClientId: String = AuthenticationIntegrationTestBase.TEST_CLIENT_ID,
         shoplUserId: String = AuthenticationIntegrationTestBase.TEST_USER_ID,
-        platform: IdpClient.Platform = IdpClient.Platform.DASHBOARD,
         loginType: LoginType = LoginType.BASIC,
         result: LoginResult = LoginResult.FAIL,
         failureReason: FailureReasonType = FailureReasonType.INVALID_CREDENTIALS,
@@ -75,7 +74,7 @@ class AccountTestHelper {
         return IoIdpUserLoginHistory(
             shoplClientId = shoplClientId,
             shoplUserId = shoplUserId,
-            platform = platform,
+            platform = IdpClient.Platform.DASHBOARD,
             loginType = loginType,
             result = result,
             failureReason = if (result == LoginResult.FAIL) failureReason else null,

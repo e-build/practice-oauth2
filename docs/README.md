@@ -151,14 +151,14 @@ authorization-server/
 
 - **[기본 OAuth2 로그인](./oauth2-basic-login.md)** - 표준 OAuth2 인증 플로우
 - **[SSO 통합 가이드](./sso-integration.md)** - 외부 IdP와의 SSO 연동
-- **[API 엔드포인트](./api-endpoints.md)** - REST API 문서
+- **[API 엔드포인트](oauth2-api-endpoints.md)** - REST API 문서
 - **[설정 가이드](./configuration.md)** - 환경 설정 및 배포
 
 ### 📖 읽는 순서
 
 1. **프로젝트 처음 시작**: [설정 가이드](./configuration.md) → [기본 OAuth2 로그인](./oauth2-basic-login.md)
 2. **SSO 추가 구현**: [SSO 통합 가이드](./sso-integration.md)
-3. **API 연동 개발**: [API 엔드포인트](./api-endpoints.md)
+3. **API 연동 개발**: [API 엔드포인트](oauth2-api-endpoints.md)
 
 ## 🚀 빠른 시작
 

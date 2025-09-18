@@ -5,6 +5,7 @@ import me.practice.oauth2.domain.IdpClient
 import me.practice.oauth2.entity.*
 import me.practice.oauth2.service.history.*
 import me.practice.oauth2.service.http.HttpRequestInfoExtractor
+import me.practice.oauth2.service.platform.PlatformDetectionService
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -31,6 +32,7 @@ class LoginHistoryService(
     private val loginHistoryRepository: IoIdpLoginHistoryRepository,
     private val httpRequestInfoExtractor: HttpRequestInfoExtractor,
     private val statisticsService: LoginHistoryStatisticsService,
+    private val platformDetectionService: PlatformDetectionService,
 ) {
 
     private val logger = LoggerFactory.getLogger(LoginHistoryService::class.java)
@@ -40,30 +42,31 @@ class LoginHistoryService(
      *
      * 사용자가 성공적으로 로그인했을 때 호출되어 이력을 데이터베이스에 기록합니다.
      * IP 주소, User-Agent 등의 부가 정보도 함께 저장됩니다.
+     * 플랫폼은 HTTP 요청을 분석하여 자동으로 감지됩니다.
      *
      * @param shoplClientId 클라이언트 ID
      * @param shoplUserId 사용자 ID
-     * @param platform 플랫폼 (DASHBOARD, APP)
      * @param loginType 로그인 타입 (BASIC, SOCIAL, SSO)
      * @param provider 소셜 로그인 제공자 (optional)
      * @param sessionId 세션 ID
-     * @param request HTTP 요청 객체 (IP, User-Agent 추출용)
+     * @param request HTTP 요청 객체 (IP, User-Agent 추출용 및 플랫폼 감지용)
      * @return 저장된 로그인 이력 엔티티
      */
     fun recordSuccessfulLogin(
         shoplClientId: String,
         shoplUserId: String,
-        platform: IdpClient.Platform,
         loginType: LoginType,
         provider: String? = null,
         sessionId: String,
         request: HttpServletRequest? = null,
     ): IoIdpUserLoginHistory {
         val requestSource = httpRequestInfoExtractor.extract(request)
+        val detectedPlatform = platformDetectionService.detectPlatform(request)
+
         val history = IoIdpUserLoginHistory(
             shoplClientId = shoplClientId,
             shoplUserId = shoplUserId,
-            platform = platform,
+            platform = detectedPlatform,
             loginType = loginType,
             provider = provider,
             result = LoginResult.SUCCESS,
@@ -74,8 +77,8 @@ class LoginHistoryService(
 
         val savedHistory = loginHistoryRepository.save(history)
         logger.info(
-            "Recorded successful login: userId={}, clientId={}, type={}, provider={}",
-            shoplUserId, shoplClientId, loginType, provider
+            "Recorded successful login: userId={}, clientId={}, platform={}, type={}, provider={}",
+            shoplUserId, shoplClientId, detectedPlatform, loginType, provider
         )
 
         return savedHistory
@@ -86,21 +89,20 @@ class LoginHistoryService(
      *
      * 사용자의 로그인 시도가 실패했을 때 호출되어 실패 이력과 원인을 데이터베이스에 기록합니다.
      * 보안 모니터링과 분석을 위해 실패 원인도 함께 저장됩니다.
+     * 플랫폼은 HTTP 요청을 분석하여 자동으로 감지됩니다.
      *
      * @param shoplClientId 클라이언트 ID
      * @param shoplUserId 사용자 ID
-     * @param platform 플랫폼 (DASHBOARD, APP)
      * @param loginType 로그인 타입 (BASIC, SOCIAL, SSO)
      * @param provider 소셜 로그인 제공자 (optional)
      * @param failureReason 로그인 실패 원인
      * @param sessionId 세션 ID
-     * @param request HTTP 요청 객체 (IP, User-Agent 추출용)
+     * @param request HTTP 요청 객체 (IP, User-Agent 추출용 및 플랫폼 감지용)
      * @return 저장된 로그인 실패 이력 엔티티
      */
     fun recordFailedLogin(
         shoplClientId: String,
         shoplUserId: String,
-        platform: IdpClient.Platform,
         loginType: LoginType,
         provider: String? = null,
         failureReason: FailureReasonType,
@@ -108,10 +110,12 @@ class LoginHistoryService(
         request: HttpServletRequest? = null,
     ): IoIdpUserLoginHistory {
         val clientInfo = httpRequestInfoExtractor.extract(request)
+        val detectedPlatform = platformDetectionService.detectPlatform(request)
+
         val history = IoIdpUserLoginHistory(
             shoplClientId = shoplClientId,
             shoplUserId = shoplUserId,
-            platform = platform,
+            platform = detectedPlatform,
             loginType = loginType,
             provider = provider,
             result = LoginResult.FAIL,
@@ -123,8 +127,8 @@ class LoginHistoryService(
 
         val savedHistory = loginHistoryRepository.save(history)
         logger.warn(
-            "Recorded failed login: userId={}, clientId={}, type={}, reason={}",
-            shoplUserId, shoplClientId, loginType, failureReason
+            "Recorded failed login: userId={}, clientId={}, platform={}, type={}, reason={}",
+            shoplUserId, shoplClientId, detectedPlatform, loginType, failureReason
         )
 
         return savedHistory

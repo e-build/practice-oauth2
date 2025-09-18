@@ -48,6 +48,13 @@ springdoc:
     operations-sorter: method
     tags-sorter: alpha
     try-it-out-enabled: true
+
+# 플랫폼 감지 설정 (기본 플랫폼만 설정 가능)
+shopl:
+  oauth2:
+    platform:
+      detection:
+        default-platform: "DASHBOARD"
     filter: true
     oauth:
       client-id: dashboard-client-1

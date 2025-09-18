@@ -40,7 +40,6 @@ class GlobalAuthenticationExceptionHandler(
             loginHistoryService.recordFailedLogin(
                 shoplClientId = shoplClientId,
                 shoplUserId = shoplUserId,
-                platform = IdpClient.Platform.DASHBOARD,
                 loginType = determineLoginType(request),
                 failureReason = failureReason,
                 sessionId = sessionId,

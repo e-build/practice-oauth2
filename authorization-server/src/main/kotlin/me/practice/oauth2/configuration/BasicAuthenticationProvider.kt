@@ -113,7 +113,6 @@ class BasicAuthenticationProvider(
 			loginHistoryService.recordSuccessfulLogin(
 				shoplClientId = account.shoplClientId,
 				shoplUserId = account.shoplUserId,
-				platform = IdpClient.Platform.DASHBOARD,
 				loginType = LoginType.BASIC,
 				sessionId = sessionId,
 				request = request
@@ -136,7 +135,6 @@ class BasicAuthenticationProvider(
 			loginHistoryService.recordFailedLogin(
 				shoplClientId = account.shoplClientId,
 				shoplUserId = account.shoplUserId,
-				platform = IdpClient.Platform.DASHBOARD,
 				loginType = LoginType.BASIC,
 				failureReason = failureReason,
 				sessionId = sessionId,

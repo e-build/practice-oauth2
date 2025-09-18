@@ -31,6 +31,9 @@ dependencies {
 	// SpringDoc OpenAPI (Swagger)
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui")
 
+	// 캐싱 (플랫폼 감지 성능 최적화)
+	implementation("com.github.ben-manes.caffeine:caffeine")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")

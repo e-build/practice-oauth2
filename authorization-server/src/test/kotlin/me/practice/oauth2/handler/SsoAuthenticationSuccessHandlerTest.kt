@@ -1,7 +1,6 @@
 package me.practice.oauth2.handler
 
 import io.mockk.*
-import me.practice.oauth2.domain.IdpClient
 import me.practice.oauth2.entity.IoIdpAccount
 import me.practice.oauth2.entity.LoginType
 import me.practice.oauth2.entity.ProviderType
@@ -72,7 +71,6 @@ class SsoAuthenticationSuccessHandlerTest {
             loginHistoryService.recordSuccessfulLogin(
                 shoplClientId = "CLIENT001",
                 shoplUserId = "user123",
-                platform = IdpClient.Platform.DASHBOARD,
                 loginType = LoginType.SOCIAL, // Google은 SOCIAL 타입
                 provider = "GOOGLE",
                 sessionId = any(),
@@ -107,7 +105,6 @@ class SsoAuthenticationSuccessHandlerTest {
             loginHistoryService.recordSuccessfulLogin(
                 shoplClientId = "CLIENT001",
                 shoplUserId = "user123",
-                platform = IdpClient.Platform.DASHBOARD,
                 loginType = LoginType.SSO, // OIDC는 SSO 타입
                 provider = "OIDC",
                 sessionId = any(),
@@ -137,7 +134,7 @@ class SsoAuthenticationSuccessHandlerTest {
 
         // Then - 이력이 기록되지 않았는지 확인
         verify(exactly = 0) {
-            loginHistoryService.recordSuccessfulLogin(any(), any(), any(), any(), any(), any(), any())
+            loginHistoryService.recordSuccessfulLogin(any(), any(), any(), any(), any(), any())
         }
     }
 
@@ -156,7 +153,7 @@ class SsoAuthenticationSuccessHandlerTest {
         } returns mockAccount
         
         every { 
-            loginHistoryService.recordSuccessfulLogin(any(), any(), any(), any(), any(), any(), any()) 
+            loginHistoryService.recordSuccessfulLogin(any(), any(), any(), any(), any(), any())
         } throws RuntimeException("DB Error")
 
         // When
@@ -169,7 +166,7 @@ class SsoAuthenticationSuccessHandlerTest {
         
         // 이력 기록 시도는 했는지 확인
         verify(exactly = 1) {
-            loginHistoryService.recordSuccessfulLogin(any(), any(), any(), any(), any(), any(), any())
+            loginHistoryService.recordSuccessfulLogin(any(), any(), any(), any(), any(), any())
         }
     }
 }

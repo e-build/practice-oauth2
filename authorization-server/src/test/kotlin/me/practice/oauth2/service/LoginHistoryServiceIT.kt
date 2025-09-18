@@ -42,7 +42,6 @@ class LoginHistoryServiceIT(
 	private fun createTestSuccessLogin(
 		clientId: String = TEST_CLIENT_ID,
 		userId: String = TEST_USER_ID,
-		platform: IdpClient.Platform = IdpClient.Platform.DASHBOARD,
 		loginType: LoginType = LoginType.BASIC,
 		sessionId: String = TEST_SESSION_ID,
 		provider: String? = null,
@@ -50,7 +49,6 @@ class LoginHistoryServiceIT(
 		return loginHistoryService.recordSuccessfulLogin(
 			shoplClientId = clientId,
 			shoplUserId = userId,
-			platform = platform,
 			loginType = loginType,
 			sessionId = sessionId,
 			provider = provider
@@ -60,7 +58,6 @@ class LoginHistoryServiceIT(
 	private fun createTestFailedLogin(
 		clientId: String = TEST_CLIENT_ID,
 		userId: String = TEST_USER_ID,
-		platform: IdpClient.Platform = IdpClient.Platform.DASHBOARD,
 		loginType: LoginType = LoginType.BASIC,
 		failureReason: FailureReasonType = FailureReasonType.INVALID_CREDENTIALS,
 		sessionId: String = TEST_SESSION_ID,
@@ -69,7 +66,6 @@ class LoginHistoryServiceIT(
 		return loginHistoryService.recordFailedLogin(
 			shoplClientId = clientId,
 			shoplUserId = userId,
-			platform = platform,
 			loginType = loginType,
 			provider = provider,
 			failureReason = failureReason,
@@ -91,7 +87,6 @@ class LoginHistoryServiceIT(
 
 			// When
 			val savedHistory = createTestSuccessLogin(
-				platform = platform,
 				loginType = loginType,
 				sessionId = sessionId
 			)
@@ -142,14 +137,13 @@ class LoginHistoryServiceIT(
 		@DisplayName("실패한 로그인 이력이 올바르게 저장된다")
 		fun recordFailedLogin() {
 			// Given
-			val platform = IdpClient.Platform.APP
+			val platform = IdpClient.Platform.MOBILE
 			val loginType = LoginType.BASIC
 			val failureReason = FailureReasonType.INVALID_CREDENTIALS
 			val sessionId = "FAILED_SESSION_001"
 
 			// When
 			val savedHistory = createTestFailedLogin(
-				platform = platform,
 				loginType = loginType,
 				failureReason = failureReason,
 				sessionId = sessionId
@@ -286,7 +280,6 @@ class LoginHistoryServiceIT(
 				createTestSuccessLogin(
 					clientId = clientId2,
 					userId = userId,
-					platform = IdpClient.Platform.APP,
 					loginType = LoginType.SSO,
 					sessionId = "SESSION_C2_$i"
 				)
@@ -309,7 +302,7 @@ class LoginHistoryServiceIT(
 			result2.content.forEach {
 				assertEquals(clientId2, it.shoplClientId)
 				assertEquals(LoginType.SSO, it.loginType)
-				assertEquals(IdpClient.Platform.APP, it.platform)
+				assertEquals(IdpClient.Platform.MOBILE, it.platform)
 			}
 		}
 
@@ -525,7 +518,6 @@ class LoginHistoryServiceIT(
 				createTestSuccessLogin(
 					clientId = clientId,
 					userId = "${TEST_USER_ID}_social_$i",
-					platform = IdpClient.Platform.APP,
 					loginType = LoginType.SOCIAL,
 					provider = "GOOGLE",
 					sessionId = "SOCIAL_SUCCESS_$i"
@@ -535,7 +527,6 @@ class LoginHistoryServiceIT(
 			createTestFailedLogin(
 				clientId = clientId,
 				userId = "${TEST_USER_ID}_social_fail",
-				platform = IdpClient.Platform.APP,
 				loginType = LoginType.SOCIAL,
 				provider = "GOOGLE",
 				failureReason = FailureReasonType.SSO_ERROR,

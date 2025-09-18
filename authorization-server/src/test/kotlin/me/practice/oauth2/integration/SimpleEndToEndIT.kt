@@ -35,7 +35,6 @@ class SimpleEndToEndIT(
         val successHistory = loginHistoryService.recordSuccessfulLogin(
             shoplClientId = clientId,
             shoplUserId = userId1,
-            platform = IdpClient.Platform.DASHBOARD,
             loginType = LoginType.BASIC,
             provider = null,
             sessionId = "SUCCESS_SESSION"
@@ -45,7 +44,6 @@ class SimpleEndToEndIT(
         val failureHistory = loginHistoryService.recordFailedLogin(
             shoplClientId = clientId,
             shoplUserId = userId2,
-            platform = IdpClient.Platform.DASHBOARD,
             loginType = LoginType.SOCIAL,
             provider = "GOOGLE",
             failureReason = FailureReasonType.INVALID_CREDENTIALS,
@@ -87,7 +85,6 @@ class SimpleEndToEndIT(
             loginHistoryService.recordSuccessfulLogin(
                 shoplClientId = clientId,
                 shoplUserId = "USER${i % 10}",
-                platform = IdpClient.Platform.DASHBOARD,
                 loginType = LoginType.values()[i % 3],
                 provider = if (i % 2 == 0) "GOOGLE" else null,
                 sessionId = "SESSION_$i"

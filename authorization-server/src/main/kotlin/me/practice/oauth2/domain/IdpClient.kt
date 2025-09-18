@@ -234,7 +234,72 @@ class IdpClient(
 		}
 	}
 
+	/**
+	 * 플랫폼 타입 정의
+	 *
+	 * 사용자가 로그인하는 플랫폼을 구분하여 통계 및 보안 분석에 활용합니다.
+	 * 각 플랫폼별로 다른 보안 정책이나 인증 방식을 적용할 수 있습니다.
+	 */
 	enum class Platform {
-		DASHBOARD, APP
+		/**
+		 * 웹 대시보드 (관리자/일반 사용자 웹 인터페이스)
+		 * - User-Agent: 일반적인 브라우저 패턴
+		 * - 용도: 관리 작업, 대시보드 조회
+		 */
+		DASHBOARD,
+
+		/**
+		 * 모바일 애플리케이션 (iOS/Android 네이티브 앱)
+		 * - User-Agent: 모바일 앱 식별자 포함
+		 * - 용도: 모바일 전용 기능
+		 */
+		MOBILE,
+
+		/**
+		 * 웹 애플리케이션 (일반 웹 서비스)
+		 * - User-Agent: 브라우저이지만 대시보드가 아닌 일반 웹
+		 * - 용도: 공개 웹 서비스
+		 */
+		WEB,
+
+		/**
+		 * API 직접 호출 (서버-투-서버, 써드파티 통합)
+		 * - User-Agent: API 클라이언트, 없음, 또는 특수 식별자
+		 * - 용도: API 키 기반 인증, 시스템 통합
+		 */
+		API,
+
+		/**
+		 * 미확인 플랫폼 (감지 실패 시 기본값)
+		 * - 플랫폼 감지에 실패했거나 새로운 타입
+		 * - 용도: 로깅 및 분석을 통한 패턴 발견
+		 */
+		UNKNOWN;
+
+		/**
+		 * 플랫폼 이름의 한글 표시명
+		 */
+		fun getDisplayName(): String = when (this) {
+			DASHBOARD -> "웹 대시보드"
+			MOBILE -> "모바일 앱"
+			WEB -> "웹 애플리케이션"
+			API -> "API 직접 호출"
+			UNKNOWN -> "미확인 플랫폼"
+		}
+
+		/**
+		 * 플랫폼이 모바일 계열인지 확인
+		 */
+		fun isMobile(): Boolean = this == MOBILE
+
+		/**
+		 * 플랫폼이 웹 브라우저 계열인지 확인
+		 */
+		fun isWebBased(): Boolean = this == DASHBOARD || this == WEB
+
+		/**
+		 * 플랫폼이 시스템 간 통신용인지 확인
+		 */
+		fun isSystemLevel(): Boolean = this == API
 	}
 }

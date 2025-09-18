@@ -85,7 +85,6 @@ class OAuth2AuthenticationFailureHandler(
             loginHistoryService.recordFailedLogin(
                 shoplClientId = shoplClientId,
                 shoplUserId = shoplUserId,
-                platform = IdpClient.Platform.DASHBOARD,
                 loginType = loginType,
                 provider = providerType.name,
                 failureReason = failureReason,

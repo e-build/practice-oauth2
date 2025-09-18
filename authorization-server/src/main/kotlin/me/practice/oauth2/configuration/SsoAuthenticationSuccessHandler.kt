@@ -237,7 +237,6 @@ class SsoAuthenticationSuccessHandler(
             loginHistoryService.recordSuccessfulLogin(
                 shoplClientId = account.shoplClientId,
                 shoplUserId = account.shoplUserId,
-                platform = IdpClient.Platform.DASHBOARD, // SSO는 주로 DASHBOARD 플랫폼에서 사용
                 loginType = loginType,
                 provider = providerType.name,
                 sessionId = sessionId,
