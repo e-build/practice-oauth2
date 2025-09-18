@@ -2,11 +2,11 @@ package me.practice.oauth2.handler
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import me.practice.oauth2.configuration.AppProperties
 import me.practice.oauth2.entity.ProviderType
 import me.practice.oauth2.entity.LoginType
 import me.practice.oauth2.service.UserProvisioningService
 import me.practice.oauth2.service.LoginHistoryService
-import me.practice.oauth2.domain.IdpClient
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
@@ -24,7 +24,8 @@ import org.springframework.stereotype.Component
 @Component
 class SsoAuthenticationSuccessHandler(
     private val userProvisioningService: UserProvisioningService,
-    private val loginHistoryService: LoginHistoryService
+    private val loginHistoryService: LoginHistoryService,
+	private val appProperties: AppProperties,
 ) : SimpleUrlAuthenticationSuccessHandler() {
 
     private val logger = LoggerFactory.getLogger(SsoAuthenticationSuccessHandler::class.java)
@@ -209,9 +210,7 @@ class SsoAuthenticationSuccessHandler(
         }
         
         // 4. 기본 대시보드로 (환경변수 사용)
-        val resourceServerBaseUrl = System.getProperty("RESOURCE_SERVER_BASE_URL")
-            ?: System.getenv("RESOURCE_SERVER_BASE_URL")
-            ?: "http://localhost:9001"
+        val resourceServerBaseUrl = appProperties.resourceServer.baseUrl
         logger.debug("No OAuth2 parameters found, redirecting to admin auth-dashboard: $resourceServerBaseUrl")
         return "$resourceServerBaseUrl/admin/home"
     }
@@ -238,7 +237,7 @@ class SsoAuthenticationSuccessHandler(
                 shoplClientId = account.shoplClientId,
                 shoplUserId = account.shoplUserId,
                 loginType = loginType,
-                provider = providerType.name,
+                providerType = providerType,
                 sessionId = sessionId,
                 request = request
             )

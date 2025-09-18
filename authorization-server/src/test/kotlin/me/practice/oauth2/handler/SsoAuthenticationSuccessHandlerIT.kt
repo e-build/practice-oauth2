@@ -76,7 +76,7 @@ class SsoAuthenticationSuccessHandlerIT(
 		assertEquals(TEST_USER_ID, history.shoplUserId)
 		assertEquals(IdpClient.Platform.DASHBOARD, history.platform)
 		assertEquals(LoginType.SOCIAL, history.loginType)
-		assertEquals("GOOGLE", history.provider)
+		assertEquals(ProviderType.GOOGLE, history.providerType)
 		assertEquals(LoginResult.SUCCESS, history.result)
 		assertNotNull(history.sessionId)
 		assertNull(history.failureReason)
@@ -118,7 +118,7 @@ class SsoAuthenticationSuccessHandlerIT(
 		assertEquals(TEST_USER_ID, history.shoplUserId)
 		assertEquals(IdpClient.Platform.DASHBOARD, history.platform)
 		assertEquals(LoginType.SSO, history.loginType)
-		assertEquals("OIDC", history.provider)
+		assertEquals(ProviderType.OIDC, history.providerType)
 		assertEquals(LoginResult.SUCCESS, history.result)
 		assertNotNull(history.sessionId)
 		assertNull(history.failureReason)
@@ -164,7 +164,7 @@ class SsoAuthenticationSuccessHandlerIT(
 		assertEquals(clientIdFromSession, history.shoplClientId)
 		assertEquals(TEST_USER_ID, history.shoplUserId)
 		assertEquals(LoginType.SOCIAL, history.loginType)
-		assertEquals("KAKAO", history.provider)
+		assertEquals(ProviderType.KAKAO, history.providerType)
 	}
 
 	@Test
@@ -211,7 +211,7 @@ class SsoAuthenticationSuccessHandlerIT(
 			assertEquals(1, histories.size, "Failed for provider: $registrationId")
 
 			val history = histories[0]
-			assertEquals(expectedProviderType.name, history.provider, "Failed for provider: $registrationId")
+			assertEquals(expectedProviderType, history.providerType, "Failed for provider: $registrationId")
 
 			val expectedLoginType = if (expectedProviderType in listOf(
 					ProviderType.GOOGLE, ProviderType.KAKAO, ProviderType.NAVER,

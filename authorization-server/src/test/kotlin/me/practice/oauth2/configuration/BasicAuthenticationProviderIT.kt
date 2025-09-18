@@ -2,7 +2,6 @@ package me.practice.oauth2.configuration
 
 import me.practice.oauth2.entity.*
 import me.practice.oauth2.service.LoginHistoryService
-import me.practice.oauth2.service.history.LoginHistoryStatisticsService
 import me.practice.oauth2.testbase.AuthenticationIntegrationTestBase
 import me.practice.oauth2.testbase.AuthenticationTestUtils
 import me.practice.oauth2.testbase.AccountTestHelper
@@ -172,6 +171,7 @@ class BasicAuthenticationProviderIT : AuthenticationIntegrationTestBase() {
         // 5번의 실패 이력을 먼저 생성하여 시도 횟수 초과 상황 만들기
         repeat(5) {
             val failHistory = IoIdpUserLoginHistory(
+				idpClientId = "",
                 shoplClientId = account.shoplClientId,
                 shoplUserId = account.shoplUserId,
                 platform = IdpClient.Platform.DASHBOARD,

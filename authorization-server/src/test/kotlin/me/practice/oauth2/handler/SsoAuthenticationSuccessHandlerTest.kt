@@ -1,6 +1,7 @@
 package me.practice.oauth2.handler
 
 import io.mockk.*
+import me.practice.oauth2.configuration.AppProperties
 import me.practice.oauth2.entity.IoIdpAccount
 import me.practice.oauth2.entity.LoginType
 import me.practice.oauth2.entity.ProviderType
@@ -23,7 +24,8 @@ class SsoAuthenticationSuccessHandlerTest {
     private lateinit var sut: SsoAuthenticationSuccessHandler
     private lateinit var userProvisioningService: UserProvisioningService
     private lateinit var loginHistoryService: LoginHistoryService
-    
+    private lateinit var appProperties: AppProperties
+
     private lateinit var mockAccount: IoIdpAccount
 
     @BeforeEach
@@ -31,15 +33,18 @@ class SsoAuthenticationSuccessHandlerTest {
         // 핵심 의존성만 mock 처리
         userProvisioningService = mockk()
         loginHistoryService = mockk(relaxed = true)
+		appProperties = mockk(relaxed = true)
         mockAccount = mockk(relaxed = true)
         
         every { mockAccount.shoplClientId } returns "CLIENT001"
         every { mockAccount.shoplUserId } returns "user123"
         every { mockAccount.id } returns "account-id-123"
-        
+//        every { appProperties.resourceServer.baseUrl } returns "http://localhost:9001"
+
         sut = SsoAuthenticationSuccessHandler(
             userProvisioningService,
-            loginHistoryService
+            loginHistoryService,
+			appProperties
         )
     }
 
@@ -72,7 +77,7 @@ class SsoAuthenticationSuccessHandlerTest {
                 shoplClientId = "CLIENT001",
                 shoplUserId = "user123",
                 loginType = LoginType.SOCIAL, // Google은 SOCIAL 타입
-                provider = "GOOGLE",
+                providerType = ProviderType.GOOGLE,
                 sessionId = any(),
                 request = request
             )
@@ -106,7 +111,7 @@ class SsoAuthenticationSuccessHandlerTest {
                 shoplClientId = "CLIENT001",
                 shoplUserId = "user123",
                 loginType = LoginType.SSO, // OIDC는 SSO 타입
-                provider = "OIDC",
+                providerType = ProviderType.OIDC,
                 sessionId = any(),
                 request = request
             )

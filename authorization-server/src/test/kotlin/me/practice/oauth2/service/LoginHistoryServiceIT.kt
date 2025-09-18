@@ -44,14 +44,14 @@ class LoginHistoryServiceIT(
 		userId: String = TEST_USER_ID,
 		loginType: LoginType = LoginType.BASIC,
 		sessionId: String = TEST_SESSION_ID,
-		provider: String? = null,
+		providerType: ProviderType? = null,
 	): IoIdpUserLoginHistory {
 		return loginHistoryService.recordSuccessfulLogin(
 			shoplClientId = clientId,
 			shoplUserId = userId,
 			loginType = loginType,
 			sessionId = sessionId,
-			provider = provider
+			providerType = providerType
 		)
 	}
 
@@ -61,13 +61,13 @@ class LoginHistoryServiceIT(
 		loginType: LoginType = LoginType.BASIC,
 		failureReason: FailureReasonType = FailureReasonType.INVALID_CREDENTIALS,
 		sessionId: String = TEST_SESSION_ID,
-		provider: String? = null,
+		providerType: ProviderType? = null,
 	): IoIdpUserLoginHistory {
 		return loginHistoryService.recordFailedLogin(
 			shoplClientId = clientId,
 			shoplUserId = userId,
 			loginType = loginType,
-			provider = provider,
+			providerType = providerType,
 			failureReason = failureReason,
 			sessionId = sessionId
 		)
@@ -101,7 +101,7 @@ class LoginHistoryServiceIT(
 				assertEquals(LoginResult.SUCCESS, result)
 				assertEquals(sessionId, this.sessionId)
 				assertNull(failureReason)
-				assertNull(provider)
+				assertNull(providerType)
 				assertNotNull(regDt)
 			}
 
@@ -115,13 +115,13 @@ class LoginHistoryServiceIT(
 		@DisplayName("소셜 로그인 성공 이력이 provider와 함께 저장된다")
 		fun recordSuccessfulSocialLogin() {
 			// Given
-			val provider = "GOOGLE"
+			val providerType = ProviderType.GOOGLE
 			val loginType = LoginType.SOCIAL
 
 			// When
 			val savedHistory = createTestSuccessLogin(
 				loginType = loginType,
-				provider = provider,
+				providerType = providerType,
 				sessionId = "SOCIAL_SUCCESS_001"
 			)
 
@@ -129,7 +129,7 @@ class LoginHistoryServiceIT(
 			with(savedHistory) {
 				assertEquals(LoginResult.SUCCESS, result)
 				assertEquals(loginType, this.loginType)
-				assertEquals(provider, this.provider)
+				assertEquals(providerType, this.providerType)
 			}
 		}
 
@@ -173,14 +173,14 @@ class LoginHistoryServiceIT(
 		@DisplayName("소셜 로그인 실패 이력이 provider와 함께 저장된다")
 		fun recordFailedSocialLogin() {
 			// Given
-			val provider = "GOOGLE"
+			val providerType = ProviderType.GOOGLE
 			val loginType = LoginType.SOCIAL
 			val failureReason = FailureReasonType.SSO_ERROR
 
 			// When
 			val savedHistory = createTestFailedLogin(
 				loginType = loginType,
-				provider = provider,
+				providerType = providerType,
 				failureReason = failureReason,
 				sessionId = "SOCIAL_FAIL_001"
 			)
@@ -189,7 +189,7 @@ class LoginHistoryServiceIT(
 			with(savedHistory) {
 				assertEquals(LoginResult.FAIL, result)
 				assertEquals(loginType, this.loginType)
-				assertEquals(provider, this.provider)
+				assertEquals(providerType, this.providerType)
 				assertEquals(failureReason, this.failureReason)
 			}
 		}
@@ -519,7 +519,7 @@ class LoginHistoryServiceIT(
 					clientId = clientId,
 					userId = "${TEST_USER_ID}_social_$i",
 					loginType = LoginType.SOCIAL,
-					provider = "GOOGLE",
+					providerType = ProviderType.GOOGLE,
 					sessionId = "SOCIAL_SUCCESS_$i"
 				)
 			}
@@ -528,7 +528,7 @@ class LoginHistoryServiceIT(
 				clientId = clientId,
 				userId = "${TEST_USER_ID}_social_fail",
 				loginType = LoginType.SOCIAL,
-				provider = "GOOGLE",
+				providerType = ProviderType.GOOGLE,
 				failureReason = FailureReasonType.SSO_ERROR,
 				sessionId = "SOCIAL_FAIL"
 			)

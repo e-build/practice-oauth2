@@ -2,6 +2,7 @@ package me.practice.oauth2.exception
 
 import me.practice.oauth2.entity.FailureReasonType
 import me.practice.oauth2.entity.LoginType
+import me.practice.oauth2.entity.ProviderType
 import me.practice.oauth2.service.LoginHistoryService
 import me.practice.oauth2.domain.IdpClient
 import jakarta.servlet.http.HttpServletRequest
@@ -38,9 +39,10 @@ class GlobalAuthenticationExceptionHandler(
             val sessionId = request?.session?.id ?: "unknown-session"
 
             loginHistoryService.recordFailedLogin(
-                shoplClientId = shoplClientId,
-                shoplUserId = shoplUserId,
+                shoplClientId = if (shoplClientId == "UNKNOWN") null else shoplClientId,
+                shoplUserId = if (shoplUserId == "unknown") null else shoplUserId,
                 loginType = determineLoginType(request),
+                providerType = ProviderType.BASIC, // 시스템 예외는 기본적으로 BASIC으로 처리
                 failureReason = failureReason,
                 sessionId = sessionId,
                 request = request

@@ -83,10 +83,10 @@ class OAuth2AuthenticationFailureHandler(
             val failureReason = mapOAuth2ExceptionToFailureReason(exception, providerType)
             
             loginHistoryService.recordFailedLogin(
-                shoplClientId = shoplClientId,
-                shoplUserId = shoplUserId,
+                shoplClientId = if (shoplClientId == "UNKNOWN") null else shoplClientId,
+                shoplUserId = if (shoplUserId == "unknown") null else shoplUserId,
                 loginType = loginType,
-                provider = providerType.name,
+                providerType = providerType,
                 failureReason = failureReason,
                 sessionId = sessionId,
                 request = request

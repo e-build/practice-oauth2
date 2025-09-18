@@ -11,11 +11,14 @@ data class IoIdpUserLoginHistory(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-	@Column(name = "shopl_client_id", length = 20, nullable = false)
-    val shoplClientId: String,
+	@Column(name = "idp_client_id", length = 50, nullable = false)
+    val idpClientId: String,
 
-	@Column(name = "shopl_user_id", length = 20, nullable = false)
-    val shoplUserId: String,
+	@Column(name = "shopl_client_id", length = 20, nullable = true)
+    val shoplClientId: String? = null,
+
+	@Column(name = "shopl_user_id", length = 20, nullable = true)
+    val shoplUserId: String? = null,
 
 	@Enumerated(EnumType.STRING)
     @Column(name = "platform", nullable = false)
@@ -25,8 +28,9 @@ data class IoIdpUserLoginHistory(
     @Column(name = "login_type", nullable = false)
     val loginType: LoginType,
 
-	@Column(name = "provider", length = 64)
-    val provider: String? = null,
+	@Enumerated(EnumType.STRING)
+    @Column(name = "provider_type", length = 20)
+    val providerType: ProviderType? = null,
 
 	@Enumerated(EnumType.STRING)
     @Column(name = "result", nullable = false)

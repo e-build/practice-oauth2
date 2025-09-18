@@ -53,7 +53,3 @@ data class IoIdpAccountOauthLink(
 	)
 	val account: IoIdpAccount? = null,
 )
-
-enum class ProviderType {
-	GOOGLE, NAVER, KAKAO, APPLE, MICROSOFT, GITHUB, SAML, OIDC
-}

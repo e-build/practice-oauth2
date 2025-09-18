@@ -177,28 +177,32 @@ class UserProvisioningService(
      */
     private fun extractProviderUserId(oauth2User: OAuth2User, providerType: ProviderType): String {
         return when (providerType) {
-            ProviderType.GOOGLE -> oauth2User.getAttribute<String>("sub") 
-                ?: oauth2User.getAttribute<String>("id") 
+            ProviderType.GOOGLE -> oauth2User.getAttribute<String>("sub")
+                ?: oauth2User.getAttribute<String>("id")
                 ?: throw IllegalArgumentException("Google user ID not found")
-            ProviderType.KAKAO -> oauth2User.getAttribute<Any>("id")?.toString() 
+            ProviderType.KAKAO -> oauth2User.getAttribute<Any>("id")?.toString()
                 ?: throw IllegalArgumentException("Kakao user ID not found")
             ProviderType.NAVER -> {
                 val response = oauth2User.getAttribute<Map<String, Any>>("response")
-                response?.get("id")?.toString() 
+                response?.get("id")?.toString()
                     ?: throw IllegalArgumentException("Naver user ID not found")
             }
-            ProviderType.APPLE -> oauth2User.getAttribute<String>("sub") 
+            ProviderType.APPLE -> oauth2User.getAttribute<String>("sub")
                 ?: throw IllegalArgumentException("Apple user ID not found")
-            ProviderType.MICROSOFT -> oauth2User.getAttribute<String>("oid") 
-                ?: oauth2User.getAttribute<String>("id") 
+            ProviderType.MICROSOFT -> oauth2User.getAttribute<String>("oid")
+                ?: oauth2User.getAttribute<String>("id")
                 ?: throw IllegalArgumentException("Microsoft user ID not found")
-            ProviderType.GITHUB -> oauth2User.getAttribute<Any>("id")?.toString() 
+            ProviderType.GITHUB -> oauth2User.getAttribute<Any>("id")?.toString()
                 ?: throw IllegalArgumentException("GitHub user ID not found")
-            ProviderType.OIDC -> oauth2User.getAttribute<String>("sub") 
+            ProviderType.OIDC -> oauth2User.getAttribute<String>("sub")
                 ?: throw IllegalArgumentException("OIDC user ID not found")
-            ProviderType.SAML -> oauth2User.getAttribute<String>("nameID") 
-                ?: oauth2User.getAttribute<String>("subject") 
+            ProviderType.SAML -> oauth2User.getAttribute<String>("nameID")
+                ?: oauth2User.getAttribute<String>("subject")
                 ?: throw IllegalArgumentException("SAML user ID not found")
+            ProviderType.OAUTH2 -> oauth2User.getAttribute<String>("id")
+                ?: oauth2User.getAttribute<String>("sub")
+                ?: throw IllegalArgumentException("OAuth2 user ID not found")
+            ProviderType.BASIC -> throw IllegalArgumentException("BASIC provider does not support OAuth2 user extraction")
         }
     }
 

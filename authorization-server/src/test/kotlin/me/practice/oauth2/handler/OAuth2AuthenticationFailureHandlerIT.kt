@@ -1,10 +1,7 @@
 package me.practice.oauth2.handler
 
 import me.practice.oauth2.domain.IdpClient
-import me.practice.oauth2.entity.FailureReasonType
-import me.practice.oauth2.entity.IoIdpLoginHistoryRepository
-import me.practice.oauth2.entity.LoginResult
-import me.practice.oauth2.entity.LoginType
+import me.practice.oauth2.entity.*
 import me.practice.oauth2.service.LoginHistoryService
 import me.practice.oauth2.testbase.IntegrationTestBase
 import org.junit.jupiter.api.BeforeEach
@@ -56,7 +53,7 @@ class OAuth2AuthenticationFailureHandlerIT(
 		assertEquals("unknown", history.shoplUserId) // 실패 시에는 사용자 ID를 알 수 없음
 		assertEquals(IdpClient.Platform.DASHBOARD, history.platform)
 		assertEquals(LoginType.SOCIAL, history.loginType)
-		assertEquals("GOOGLE", history.provider)
+		assertEquals(ProviderType.GOOGLE, history.providerType)
 		assertEquals(LoginResult.FAIL, history.result)
 		assertEquals(FailureReasonType.SSO_ERROR, history.failureReason)
 		assertNotNull(history.sessionId)
@@ -88,7 +85,7 @@ class OAuth2AuthenticationFailureHandlerIT(
 		assertEquals("unknown", history.shoplUserId)
 		assertEquals(IdpClient.Platform.DASHBOARD, history.platform)
 		assertEquals(LoginType.SSO, history.loginType)
-		assertEquals("OIDC", history.provider)
+		assertEquals(ProviderType.OIDC, history.providerType)
 		assertEquals(LoginResult.FAIL, history.result)
 		assertEquals(FailureReasonType.SSO_ERROR, history.failureReason)
 	}
@@ -156,7 +153,7 @@ class OAuth2AuthenticationFailureHandlerIT(
 
 		val history = histories[0]
 		assertEquals(clientIdFromSession, history.shoplClientId)
-		assertEquals("NAVER", history.provider)
+		assertEquals(ProviderType.NAVER, history.providerType)
 		assertEquals(LoginType.SOCIAL, history.loginType)
 	}
 
@@ -165,15 +162,15 @@ class OAuth2AuthenticationFailureHandlerIT(
 	fun onAuthenticationFailure_VariousProviders_ShouldDetermineCorrectProviderType() {
 		// Given
 		val testCases = listOf(
-			"/oauth2/authorization/google" to ("GOOGLE" to LoginType.SOCIAL),
-			"/oauth2/authorization/kakao" to ("KAKAO" to LoginType.SOCIAL),
-			"/oauth2/authorization/naver" to ("NAVER" to LoginType.SOCIAL),
-			"/oauth2/authorization/github" to ("GITHUB" to LoginType.SOCIAL),
-			"/oauth2/authorization/microsoft" to ("MICROSOFT" to LoginType.SOCIAL),
-			"/oauth2/authorization/apple" to ("APPLE" to LoginType.SOCIAL),
-			"/oauth2/authorization/saml-provider" to ("SAML" to LoginType.SSO),
-			"/oauth2/authorization/oidc-provider" to ("OIDC" to LoginType.SSO),
-			"/oauth2/authorization/keycloak" to ("OIDC" to LoginType.SSO)
+			"/oauth2/authorization/google" to (ProviderType.GOOGLE to LoginType.SOCIAL),
+			"/oauth2/authorization/kakao" to (ProviderType.KAKAO to LoginType.SOCIAL),
+			"/oauth2/authorization/naver" to (ProviderType.NAVER to LoginType.SOCIAL),
+			"/oauth2/authorization/github" to (ProviderType.GITHUB to LoginType.SOCIAL),
+			"/oauth2/authorization/microsoft" to (ProviderType.MICROSOFT to LoginType.SOCIAL),
+			"/oauth2/authorization/apple" to (ProviderType.APPLE to LoginType.SOCIAL),
+			"/oauth2/authorization/saml-provider" to (ProviderType.SAML to LoginType.SSO),
+			"/oauth2/authorization/oidc-provider" to (ProviderType.OIDC to LoginType.SSO),
+			"/oauth2/authorization/keycloak" to (ProviderType.OIDC to LoginType.SSO)
 		)
 
 		testCases.forEachIndexed { index, (requestUri, expectedData) ->
@@ -197,7 +194,7 @@ class OAuth2AuthenticationFailureHandlerIT(
 			assertEquals(1, histories.size, "Failed for URI: $requestUri")
 
 			val history = histories[0]
-			assertEquals(expectedProvider, history.provider, "Failed for URI: $requestUri")
+			assertEquals(expectedProvider, history.providerType, "Failed for URI: $requestUri")
 			assertEquals(expectedLoginType, history.loginType, "Failed for URI: $requestUri")
 		}
 	}
@@ -223,7 +220,7 @@ class OAuth2AuthenticationFailureHandlerIT(
 		assertEquals(1, histories.size)
 
 		val history = histories[0]
-		assertEquals("GITHUB", history.provider)
+		assertEquals(ProviderType.GITHUB, history.providerType)
 		assertEquals(LoginType.SOCIAL, history.loginType)
 	}
 
@@ -247,7 +244,7 @@ class OAuth2AuthenticationFailureHandlerIT(
 		assertEquals(1, histories.size)
 
 		val history = histories[0]
-		assertEquals("OIDC", history.provider) // 기본값
+		assertEquals(ProviderType.OIDC, history.providerType) // 기본값
 		assertEquals(LoginType.SSO, history.loginType) // OIDC는 SSO 타입
 		assertEquals(FailureReasonType.SSO_ERROR, history.failureReason)
 	}
@@ -273,7 +270,7 @@ class OAuth2AuthenticationFailureHandlerIT(
 
 		val history = histories[0]
 		assertEquals("CLIENT001", history.shoplClientId) // 기본값
-		assertEquals("GOOGLE", history.provider)
+		assertEquals(ProviderType.GOOGLE, history.providerType)
 		assertEquals(LoginType.SOCIAL, history.loginType)
 	}
 

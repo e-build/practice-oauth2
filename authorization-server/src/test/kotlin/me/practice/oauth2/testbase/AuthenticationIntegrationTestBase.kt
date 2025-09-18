@@ -29,6 +29,7 @@ import kotlin.test.assertNotNull
 abstract class AuthenticationIntegrationTestBase {
 
     companion object {
+        const val TEST_IDP_CLIENT_ID = "OAUTH2_CLIENT"
         const val TEST_CLIENT_ID = "CLIENT001"
         const val TEST_USER_ID = "USER001"
         const val TEST_SESSION_ID = "SESSION001"
