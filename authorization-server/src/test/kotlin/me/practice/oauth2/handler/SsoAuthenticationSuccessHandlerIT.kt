@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.reset
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.context.annotation.Import
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
@@ -23,7 +22,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-@Import(SsoAuthenticationSuccessHandler::class, LoginHistoryService::class)
 class SsoAuthenticationSuccessHandlerIT(
 	private val sut: SsoAuthenticationSuccessHandler,
 	private val loginHistoryService: LoginHistoryService,

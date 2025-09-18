@@ -6,10 +6,8 @@ import me.practice.oauth2.testbase.IntegrationTestBase
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.springframework.context.annotation.Import
 import kotlin.test.*
 
-@Import(LoginHistoryService::class)
 class SimpleEndToEndIT(
 	private val loginHistoryService: LoginHistoryService,
 	private val loginHistoryRepository: IoIdpLoginHistoryRepository,

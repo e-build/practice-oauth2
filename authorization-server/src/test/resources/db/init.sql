@@ -114,25 +114,43 @@ create table shopl_authorization.io_idp_shopl_client_sso_setting
 CREATE TABLE io_idp_user_login_history
 (
     id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
-    shopl_client_id     VARCHAR(20) NOT NULL,
-    shopl_user_id       VARCHAR(20) NOT NULL,
-    platform            ENUM('DASHBOARD', 'APP') NOT NULL,
+    idp_client_id       VARCHAR(50) NOT NULL COMMENT 'IDP Client ID for minimum client tracking',
+    shopl_client_id     VARCHAR(20) NULL COMMENT 'Shopl Client ID - nullable for invalid login attempts',
+    shopl_user_id       VARCHAR(20) NULL COMMENT 'Shopl User ID - nullable for invalid login attempts',
+    platform            ENUM('DASHBOARD', 'MOBILE', 'APP') NOT NULL COMMENT 'Platform type',
 
-    login_type          ENUM('BASIC', 'SOCIAL', 'SSO') NOT NULL,
-    provider            VARCHAR(64) NULL,
+    login_type          ENUM('BASIC', 'SOCIAL', 'SSO') NOT NULL COMMENT 'Login type',
+    provider_type       ENUM('BASIC', 'GOOGLE', 'KAKAO', 'NAVER', 'APPLE', 'MICROSOFT', 'GITHUB', 'SAML', 'OIDC') NULL COMMENT 'Provider type',
 
-    result              ENUM('SUCCESS', 'FAIL') NOT NULL,
-    failure_reason      VARCHAR(100) NULL,
+    result              ENUM('SUCCESS', 'FAIL') NOT NULL COMMENT 'Login result',
+    failure_reason      ENUM(
+        'INVALID_CREDENTIALS',
+        'ACCOUNT_LOCKED',
+        'ACCOUNT_DISABLED',
+        'PASSWORD_EXPIRED',
+        'SSO_ERROR',
+        'SSO_TOKEN_EXCHANGE_FAILED',
+        'SSO_PROVIDER_UNAVAILABLE',
+        'NETWORK_ERROR',
+        'SYSTEM_ERROR',
+        'EXTERNAL_PROVIDER_ERROR',
+        'ACCESS_DENIED',
+        'INVALID_CLIENT',
+        'INVALID_SCOPE',
+        'RATE_LIMIT_EXCEEDED',
+        'UNKNOWN'
+    ) NULL COMMENT 'Failure reason type',
 
-    ip_address          VARCHAR(45) NULL,
-    user_agent          TEXT NULL,
+    ip_address          VARCHAR(45) NULL COMMENT 'Client IP address',
+    user_agent          TEXT NULL COMMENT 'User agent string',
 
-    session_id          VARCHAR(128) NOT NULL,
+    session_id          VARCHAR(128) NOT NULL COMMENT 'Session ID',
 
-    reg_dt          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    reg_dt              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Registration timestamp',
 
     INDEX idx_user_client_time (shopl_user_id, shopl_client_id, reg_dt),
     INDEX idx_result_time (result, reg_dt),
-    INDEX idx_client_time (shopl_client_id, reg_dt)
+    INDEX idx_client_time (shopl_client_id, reg_dt),
+    INDEX idx_idp_client_time (idp_client_id, reg_dt)
 )
 ;

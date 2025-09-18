@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.context.annotation.Import
 import org.springframework.data.domain.PageRequest
 import org.springframework.test.context.TestPropertySource
 import java.time.Clock
@@ -18,7 +17,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@Import(LoginHistoryService::class)
 @TestPropertySource(properties = ["spring.jpa.show-sql=false"])
 class LoginHistoryServiceIT(
 	private val loginHistoryService: LoginHistoryService,
@@ -137,7 +135,7 @@ class LoginHistoryServiceIT(
 		@DisplayName("실패한 로그인 이력이 올바르게 저장된다")
 		fun recordFailedLogin() {
 			// Given
-			val platform = IdpClient.Platform.MOBILE
+			val expectedPlatform = IdpClient.Platform.DASHBOARD  // Default platform when no request context
 			val loginType = LoginType.BASIC
 			val failureReason = FailureReasonType.INVALID_CREDENTIALS
 			val sessionId = "FAILED_SESSION_001"
@@ -154,7 +152,7 @@ class LoginHistoryServiceIT(
 				assertNotNull(id)
 				assertEquals(TEST_CLIENT_ID, shoplClientId)
 				assertEquals(TEST_USER_ID, shoplUserId)
-				assertEquals(platform, this.platform)
+				assertEquals(expectedPlatform, this.platform)
 				assertEquals(loginType, this.loginType)
 				assertEquals(LoginResult.FAIL, result)
 				assertEquals(failureReason, this.failureReason)
@@ -302,7 +300,7 @@ class LoginHistoryServiceIT(
 			result2.content.forEach {
 				assertEquals(clientId2, it.shoplClientId)
 				assertEquals(LoginType.SSO, it.loginType)
-				assertEquals(IdpClient.Platform.MOBILE, it.platform)
+				assertEquals(IdpClient.Platform.DASHBOARD, it.platform)  // Default platform when no request context
 			}
 		}
 

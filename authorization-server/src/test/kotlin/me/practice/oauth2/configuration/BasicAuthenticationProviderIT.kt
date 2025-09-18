@@ -11,12 +11,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Import
 import org.springframework.security.authentication.*
 import java.time.LocalDateTime
 import kotlin.test.*
 
-@Import(BasicAuthenticationProvider::class, LoginHistoryService::class, AccountTestHelper::class)
 @DisplayName("BasicAuthenticationProvider 통합 테스트 - 실제 DB 상태 조작")
 class BasicAuthenticationProviderIT : AuthenticationIntegrationTestBase() {
 

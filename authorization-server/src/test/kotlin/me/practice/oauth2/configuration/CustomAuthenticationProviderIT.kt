@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.mockito.Mockito.*
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.context.annotation.Import
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -19,7 +18,6 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import kotlin.test.*
 
-@Import(BasicAuthenticationProvider::class, LoginHistoryService::class)
 class CustomAuthenticationProviderIT(
 	private val sut: BasicAuthenticationProvider,
 	private val loginHistoryService: LoginHistoryService,

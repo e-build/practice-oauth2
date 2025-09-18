@@ -7,7 +7,6 @@ import me.practice.oauth2.testbase.IntegrationTestBase
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.springframework.context.annotation.Import
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException
@@ -15,7 +14,6 @@ import org.springframework.security.oauth2.core.OAuth2Error
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-@Import(OAuth2AuthenticationFailureHandler::class, LoginHistoryService::class)
 class OAuth2AuthenticationFailureHandlerIT(
 	private val sut: OAuth2AuthenticationFailureHandler,
 	private val loginHistoryService: LoginHistoryService,

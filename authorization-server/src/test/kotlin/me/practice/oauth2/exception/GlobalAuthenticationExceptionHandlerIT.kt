@@ -11,7 +11,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
 import org.springframework.dao.DataAccessException
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.jdbc.BadSqlGrammarException
@@ -29,7 +28,6 @@ import kotlin.test.assertTrue
 
 @SpringBootTest
 @TestPropertySource(locations = ["classpath:application-test.yml"])
-@Import(GlobalAuthenticationExceptionHandler::class, LoginHistoryService::class)
 @Transactional
 @DisplayName("GlobalAuthenticationExceptionHandler 통합 테스트 - 실제 로그인 이력 기록")
 class GlobalAuthenticationExceptionHandlerIT : AuthenticationIntegrationTestBase() {

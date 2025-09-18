@@ -1,7 +1,7 @@
 package me.practice.oauth2.testbase
 
 import org.junit.jupiter.api.BeforeEach
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestConstructor
@@ -14,7 +14,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
  * 통합 테스트용 공통 베이스 클래스
  * 테스트 컨테이너 및 공통 설정을 포함
  */
-@DataJpaTest
+@SpringBootTest
 @ActiveProfiles("test")
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 @Testcontainers
