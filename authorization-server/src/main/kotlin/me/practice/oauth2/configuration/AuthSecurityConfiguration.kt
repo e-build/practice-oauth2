@@ -50,7 +50,7 @@ import java.util.*
 class AuthSecurityConfiguration(
 	private val oAuth2AuthorizationServerProperties: OAuth2AuthorizationServerProperties,
 	private val basicAuthenticationProvider: BasicAuthenticationProvider,
-	private val customUserDetailsService: CustomUserDetailsService,
+	private val basicLoginUserDetailsService: BasicLoginUserDetailsService,
 	private val appProperties: AppProperties,
 	private val registeredClientRepository: RegisteredClientRepository,
 	private val oAuth2AuthorizationConsentService: OAuth2AuthorizationConsentService,
@@ -243,7 +243,7 @@ class AuthSecurityConfiguration(
 	 */
 	@Bean
 	fun userDetailsService(): UserDetailsService {
-		return customUserDetailsService
+		return basicLoginUserDetailsService
 	}
 
 	/**

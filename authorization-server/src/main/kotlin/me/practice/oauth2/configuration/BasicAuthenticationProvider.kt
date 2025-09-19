@@ -7,7 +7,6 @@ import me.practice.oauth2.service.AccountValidator
 import me.practice.oauth2.service.PasswordValidator
 import me.practice.oauth2.service.RequestContextService
 import me.practice.oauth2.service.LoginSecurityValidator
-import me.practice.oauth2.domain.IdpClient
 import me.practice.oauth2.exception.AccountExpiredException
 import me.practice.oauth2.exception.PasswordExpiredException
 import me.practice.oauth2.exception.TooManyAttemptsException
@@ -25,7 +24,7 @@ import org.slf4j.LoggerFactory
  */
 @Component
 class BasicAuthenticationProvider(
-	private val userDetailsService: CustomUserDetailsService,
+	private val userDetailsService: BasicLoginUserDetailsService,
 	private val accountValidator: AccountValidator,
 	private val passwordValidator: PasswordValidator,
 	private val loginHistoryService: LoginHistoryService,

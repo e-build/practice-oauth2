@@ -25,7 +25,7 @@ class CustomAuthenticationProviderIT(
 ) : IntegrationTestBase() {
 
     @MockBean
-    private lateinit var userDetailsService: CustomUserDetailsService
+    private lateinit var userDetailsService: BasicLoginUserDetailsService
 
     @MockBean
     private lateinit var passwordEncoder: PasswordEncoder

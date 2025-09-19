@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional
  * email과 phone 모두를 username으로 지원
  */
 @Service
-class CustomUserDetailsService(
+class BasicLoginUserDetailsService(
 	private val accountRepository: IoIdpAccountRepository,
 	private val ioIdpClientRepository: IoIdpClientRepository,
 	private val accountIdentifierParser: AccountIdentifierParser,

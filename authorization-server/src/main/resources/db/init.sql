@@ -31,25 +31,26 @@ create table shopl_authorization.io_idp_authorization_consent
 create table shopl_authorization.io_idp_account
 (
     id              VARCHAR(20) PRIMARY KEY comment 'PK, 내부 계정 식별자',
-    shopl_client_id VARCHAR(20)  NOT NULL comment '고객사 ID',
-    shopl_user_id   VARCHAR(20)  NOT NULL comment '내부 사용자 ID',
-    shopl_login_id  VARCHAR(20)  NOT NULL comment '로그인 ID',
+    shopl_client_id VARCHAR(20)                              NOT NULL comment '고객사 ID',
+    shopl_user_id   VARCHAR(20)                              NOT NULL comment '내부 사용자 ID',
+    shopl_login_id  VARCHAR(20)                              NOT NULL comment '로그인 ID',
+    environment     ENUM ('SHOPL', 'CPS','SSS', 'QA', 'DEV') null comment '계정 운영 환경',
 
-    email           varchar(255) null comment '사용자 이메일',
-    phone           varchar(30)  null comment '사용자 휴대폰 번호',
-    name            varchar(100) null comment '사용자 이름',
-    status          varchar(20)           default 'ACTIVE' null comment '계정 상태 (ACTIVE, INACTIVE, BLOCKED 등)',
-    is_cert_email   TINYINT(1)   NOT NULL DEFAULT 0 comment '이메일 인증 여부',
+    email           varchar(255)                             null comment '사용자 이메일',
+    phone           varchar(30)                              null comment '사용자 휴대폰 번호',
+    name            varchar(100)                             null comment '사용자 이름',
+    status          varchar(20)                                       default 'ACTIVE' null comment '계정 상태 (ACTIVE, INACTIVE, BLOCKED 등)',
+    is_cert_email   TINYINT(1)                               NOT NULL DEFAULT 0 comment '이메일 인증 여부',
 
-    is_temp_pwd     TINYINT(1)   NOT NULL DEFAULT 0 comment '임시 비밀번호 여부',
-    pwd             VARCHAR(255) NULL comment '비밀번호 해시',
-    before_pwd      VARCHAR(255) NULL     DEFAULT NULL comment '이전 비밀번호 해시',
-    pwd_update_dt   DATETIME     NULL     DEFAULT NULL comment '비밀번호 업데이트 시각',
-    role            VARCHAR(20) NOT NULL DEFAULT 'STAFF' comment 'STAFF, LEADER, ADMIN',
+    is_temp_pwd     TINYINT(1)                               NOT NULL DEFAULT 0 comment '임시 비밀번호 여부',
+    pwd             VARCHAR(255)                             NULL comment '비밀번호 해시',
+    before_pwd      VARCHAR(255)                             NULL     DEFAULT NULL comment '이전 비밀번호 해시',
+    pwd_update_dt   DATETIME                                 NULL     DEFAULT NULL comment '비밀번호 업데이트 시각',
+    role            VARCHAR(20)                              NOT NULL DEFAULT 'STAFF' comment 'STAFF, LEADER, ADMIN',
 
-    reg_dt          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP comment '계정 생성 시각',
-    mod_dt          DATETIME     NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP comment '계정 수정 시각',
-    del_dt          DATETIME     NULL     DEFAULT NULL comment '삭제(탈퇴) 시각',
+    reg_dt          DATETIME                                 NOT NULL DEFAULT CURRENT_TIMESTAMP comment '계정 생성 시각',
+    mod_dt          DATETIME                                 NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP comment '계정 수정 시각',
+    del_dt          DATETIME                                 NULL     DEFAULT NULL comment '삭제(탈퇴) 시각',
 
     INDEX idx_shopl_client_user (shopl_client_id, shopl_user_id),
     INDEX idx_status (status)
@@ -58,18 +59,18 @@ create table shopl_authorization.io_idp_account
 create table shopl_authorization.io_idp_account_oauth_link
 (
     id                VARCHAR(20) PRIMARY KEY comment 'PK',
-    account_id        VARCHAR(20)                                                                NOT NULL comment '내부 계정 ID',
-    shopl_client_id   VARCHAR(20)                                                                NOT NULL comment '고객사 ID',
+    account_id        VARCHAR(20)          NOT NULL comment '내부 계정 ID',
+    shopl_client_id   VARCHAR(20)          NOT NULL comment '고객사 ID',
 
-    provider_type     ENUM ('GOOGLE','NAVER','KAKAO','APPLE','MICROSOFT','GITHUB','SAML','OIDC') NOT NULL comment 'OAuth Provider 유형',
-    provider_user_id  VARCHAR(191)                                                               NOT NULL comment '외부 Provider에서의 사용자 식별자 (OIDC sub, SAML NameID 등)',
-    email_at_provider VARCHAR(320)                                                               NULL     DEFAULT NULL comment 'Provider 기준 이메일',
-    name_at_provider  VARCHAR(100)                                                               NULL     DEFAULT NULL comment 'Provider 기준 사용자명',
-    raw_claims        JSON                                                                       NULL     DEFAULT NULL comment 'Provider 원본 Claims',
+    provider_type     ENUM ('SAML','OIDC') NOT NULL comment 'OAuth Provider 유형',
+    provider_user_id  VARCHAR(191)         NOT NULL comment '외부 Provider에서의 사용자 식별자 (OIDC sub, SAML NameID 등)',
+    email_at_provider VARCHAR(320)         NULL     DEFAULT NULL comment 'Provider 기준 이메일',
+    name_at_provider  VARCHAR(100)         NULL     DEFAULT NULL comment 'Provider 기준 사용자명',
+    raw_claims        JSON                 NULL     DEFAULT NULL comment 'Provider 원본 Claims',
 
-    reg_dt            DATETIME                                                                   NOT NULL DEFAULT CURRENT_TIMESTAMP comment '연동 등록 시각',
-    mod_dt            DATETIME                                                                   NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP comment '수정 시각',
-    del_dt            DATETIME                                                                   NULL     DEFAULT NULL comment '삭제 시각',
+    reg_dt            DATETIME             NOT NULL DEFAULT CURRENT_TIMESTAMP comment '연동 등록 시각',
+    mod_dt            DATETIME             NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP comment '수정 시각',
+    del_dt            DATETIME             NULL     DEFAULT NULL comment '삭제 시각',
 
     CONSTRAINT fk_oauth_account_id FOREIGN KEY (account_id) REFERENCES io_idp_account (id) ON DELETE CASCADE,
     UNIQUE KEY uq_provider_subject (shopl_client_id, provider_type, provider_user_id),
@@ -113,44 +114,23 @@ create table shopl_authorization.io_idp_shopl_client_sso_setting
 
 CREATE TABLE io_idp_user_login_history
 (
-    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
-    idp_client_id       VARCHAR(50) NOT NULL COMMENT 'IDP Client ID for minimum client tracking',
-    shopl_client_id     VARCHAR(20) NULL COMMENT 'Shopl Client ID - nullable for invalid login attempts',
-    shopl_user_id       VARCHAR(20) NULL COMMENT 'Shopl User ID - nullable for invalid login attempts',
-    platform            ENUM('DASHBOARD', 'MOBILE', 'APP') NOT NULL COMMENT 'Platform type',
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    idp_client_id   VARCHAR(50)                                                                                NOT NULL COMMENT 'IDP Client ID for minimum client tracking',
+    shopl_client_id VARCHAR(20)                                                                                NULL COMMENT 'Shopl Client ID - nullable for invalid login attempts',
+    shopl_user_id   VARCHAR(20)                                                                                NULL COMMENT 'Shopl User ID - nullable for invalid login attempts',
+    platform        ENUM ('DASHBOARD', 'MOBILE', 'APP')                                                        NOT NULL COMMENT 'Platform type',
 
-    login_type          ENUM('BASIC', 'SOCIAL', 'SSO') NOT NULL COMMENT 'Login type',
-    provider_type       ENUM('BASIC', 'GOOGLE', 'KAKAO', 'NAVER', 'APPLE', 'MICROSOFT', 'GITHUB', 'SAML', 'OIDC') NULL COMMENT 'Provider type',
+    login_type      ENUM ('BASIC', 'SOCIAL', 'SSO')                                                            NOT NULL COMMENT 'Login type',
+    provider_type   ENUM ('BASIC', 'GOOGLE', 'KAKAO', 'NAVER', 'APPLE', 'MICROSOFT', 'GITHUB', 'SAML', 'OIDC') NULL COMMENT 'Provider type',
 
-    result              ENUM('SUCCESS', 'FAIL') NOT NULL COMMENT 'Login result',
-    failure_reason      ENUM(
-        'INVALID_CREDENTIALS',
-        'ACCOUNT_LOCKED',
-        'ACCOUNT_DISABLED',
-        'PASSWORD_EXPIRED',
-        'SSO_ERROR',
-        'SSO_TOKEN_EXCHANGE_FAILED',
-        'SSO_PROVIDER_UNAVAILABLE',
-        'NETWORK_ERROR',
-        'SYSTEM_ERROR',
-        'EXTERNAL_PROVIDER_ERROR',
-        'ACCESS_DENIED',
-        'INVALID_CLIENT',
-        'INVALID_SCOPE',
-        'RATE_LIMIT_EXCEEDED',
-        'UNKNOWN'
-    ) NULL COMMENT 'Failure reason type',
+    result          ENUM ('SUCCESS', 'FAIL')                                                                   NOT NULL COMMENT 'Login result',
+    failure_reason  VARCHAR(30)                                                                                NULL COMMENT 'Failure reason type',
 
-    ip_address          VARCHAR(45) NULL COMMENT 'Client IP address',
-    user_agent          TEXT NULL COMMENT 'User agent string',
+    ip_address      VARCHAR(45)                                                                                NULL COMMENT 'Client IP address',
+    user_agent      TEXT                                                                                       NULL COMMENT 'User agent string',
 
-    session_id          VARCHAR(128) NOT NULL COMMENT 'Session ID',
+    session_id      VARCHAR(128)                                                                               NOT NULL COMMENT 'Session ID',
 
-    reg_dt              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Registration timestamp',
-
-    INDEX idx_user_client_time (shopl_user_id, shopl_client_id, reg_dt),
-    INDEX idx_result_time (result, reg_dt),
-    INDEX idx_client_time (shopl_client_id, reg_dt),
-    INDEX idx_idp_client_time (idp_client_id, reg_dt)
+    reg_dt          DATETIME                                                                                   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Registration timestamp'
 )
 ;

@@ -6,10 +6,15 @@ import me.practice.oauth2.domain.IdpClient
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.TestPropertySource
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.TestConstructor
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import org.testcontainers.containers.MySQLContainer
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -22,9 +27,12 @@ import kotlin.test.assertNotNull
  * - 로그인 이력 검증 헬퍼 메서드
  * - 테스트 계정 생성 헬퍼 메서드
  * - Spring Security 테스트 컨텍스트 설정
+ * - Testcontainers MySQL 설정
  */
 @SpringBootTest
-@TestPropertySource(locations = ["classpath:application-test.yml"])
+@ActiveProfiles("test")
+@TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
+@Testcontainers
 @Transactional
 abstract class AuthenticationIntegrationTestBase {
 
@@ -35,6 +43,14 @@ abstract class AuthenticationIntegrationTestBase {
         const val TEST_SESSION_ID = "SESSION001"
         const val TEST_USER_AGENT = "Mozilla/5.0 Test Browser"
         const val TEST_IP_ADDRESS = "127.0.0.1"
+
+        @Container
+        @ServiceConnection
+        @JvmStatic
+        val mysql = MySQLContainer("mysql:8.0")
+            .withDatabaseName("shopl_authorization")
+            .withUsername("test")
+            .withPassword("test")
     }
 
     @Autowired
